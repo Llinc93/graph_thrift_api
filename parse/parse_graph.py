@@ -1,5 +1,3 @@
-from collections import OrderedDict
-
 import config
 
 
@@ -116,16 +114,15 @@ class Parse():
         :param graph:
         :return:
         '''
-        res_nodes = OrderedDict()
+        res_nodes = {}
         res_links = []
-        tmp_node = set()
         for path in graph:
             nodes = path['n']
             links = path['r']
             if not links:
                 continue
 
-            tmp_links = OrderedDict()
+            tmp_links = {}
             number = 1
             for index in range(len(links)):
                 if links[index]['ID'] not in tmp_links.keys():
