@@ -13,7 +13,7 @@ thrift --gen java java.thrift
 
 + python:  
 ``` 
-thrift --gen java interface.thrift
+thrift --gen py interface.thrift
 ```
 ---
 
