@@ -19,15 +19,17 @@ all_structs = []
 
 
 class Iface(object):
-    def getEntActualContoller(self, entName, uscCode):
+    def getEntActualContoller(self, entName, uscCode, MinRatio):
         """
         企业实际控制人信息
         entName 企业名称
         uscCode 社会信用代码
+        MinRatio 最小占比 0-100 默认值请传入0
 
         Parameters:
          - entName
          - uscCode
+         - MinRatio
 
         """
         pass
@@ -72,25 +74,28 @@ class Client(Iface):
             self._oprot = oprot
         self._seqid = 0
 
-    def getEntActualContoller(self, entName, uscCode):
+    def getEntActualContoller(self, entName, uscCode, MinRatio):
         """
         企业实际控制人信息
         entName 企业名称
         uscCode 社会信用代码
+        MinRatio 最小占比 0-100 默认值请传入0
 
         Parameters:
          - entName
          - uscCode
+         - MinRatio
 
         """
-        self.send_getEntActualContoller(entName, uscCode)
+        self.send_getEntActualContoller(entName, uscCode, MinRatio)
         return self.recv_getEntActualContoller()
 
-    def send_getEntActualContoller(self, entName, uscCode):
+    def send_getEntActualContoller(self, entName, uscCode, MinRatio):
         self._oprot.writeMessageBegin('getEntActualContoller', TMessageType.CALL, self._seqid)
         args = getEntActualContoller_args()
         args.entName = entName
         args.uscCode = uscCode
+        args.MinRatio = MinRatio
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
@@ -237,7 +242,7 @@ class Processor(Iface, TProcessor):
         iprot.readMessageEnd()
         result = getEntActualContoller_result()
         try:
-            result.success = self._handler.getEntActualContoller(args.entName, args.uscCode)
+            result.success = self._handler.getEntActualContoller(args.entName, args.uscCode, args.MinRatio)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -317,13 +322,15 @@ class getEntActualContoller_args(object):
     Attributes:
      - entName
      - uscCode
+     - MinRatio
 
     """
 
 
-    def __init__(self, entName=None, uscCode=None,):
+    def __init__(self, entName=None, uscCode=None, MinRatio=None,):
         self.entName = entName
         self.uscCode = uscCode
+        self.MinRatio = MinRatio
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -344,6 +351,11 @@ class getEntActualContoller_args(object):
                     self.uscCode = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.DOUBLE:
+                    self.MinRatio = iprot.readDouble()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -361,6 +373,10 @@ class getEntActualContoller_args(object):
         if self.uscCode is not None:
             oprot.writeFieldBegin('uscCode', TType.STRING, 2)
             oprot.writeString(self.uscCode.encode('utf-8') if sys.version_info[0] == 2 else self.uscCode)
+            oprot.writeFieldEnd()
+        if self.MinRatio is not None:
+            oprot.writeFieldBegin('MinRatio', TType.DOUBLE, 3)
+            oprot.writeDouble(self.MinRatio)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -385,6 +401,7 @@ getEntActualContoller_args.thrift_spec = (
     None,  # 0
     (1, TType.STRING, 'entName', 'UTF8', None, ),  # 1
     (2, TType.STRING, 'uscCode', 'UTF8', None, ),  # 2
+    (3, TType.DOUBLE, 'MinRatio', None, None, ),  # 3
 )
 
 
