@@ -29,8 +29,9 @@ service Interface {
     * 企业实际控制人信息
     * entName 企业名称
     * uscCode 社会信用代码
+    * MinRatio 最小占比 0-100 默认值请传入0
     */
-    string getEntActualContoller(1: required string entName, 2:string uscCode) throws (1:AuditException e)
+    string getEntActualContoller(1: required string entName, 2:string uscCode, 3:double MinRatio) throws (1:AuditException e)
     /**
     * 企业图谱查询
     * keyword 关键字

@@ -1,5 +1,6 @@
-import config
+from collections import OrderedDict
 
+import config
 
 
 maps = {
@@ -109,59 +110,93 @@ class Parse():
     def get_link_attribute(self, link_type, link):
         return getattr(self, 'get_{}'.format(link_type))(link) if link_type in self.LINK_TYPE else {}
 
-    def get_ent_actual_controller(self, graph):
+    # def get_ent_actual_controller(self, graph):
+    #     '''
+    #     根据neo4j的结果，计算受益所有人
+    #     :param graph:
+    #     :return:
+    #     '''
+    #     ratio_map = {}
+    #     for path in graph:
+    #         print(path)
+    #
+    #         ratio = 1
+    #         for path_link in path['links']:
+    #             link_maps = dict(path_link)
+    #             ratio *= float(link_maps['RATE'])
+    #
+    #         if path['snode']['ID'] in ratio_map.keys():
+    #             ratio_map[path['snode']['ID']]['ratio'] += ratio
+    #             ratio_map[path['snode']['ID']]['layer'] = max([ratio_map[path['snode']['ID']]['layer'], len(path['links'])])
+    #         else:
+    #             tmp = {
+    #                 'type': path['snode_type'][0],
+    #                 'attr': path['snode'],
+    #                 'link_attr': dict(path['links'][0]),
+    #                 'layer': len(path['links']),
+    #                 'ratio': ratio,
+    #             }
+    #             ratio_map[path['snode']['ID']] = tmp
+    #
+    #     rows_per = []
+    #     rows_ent = []
+    #     sum = 0
+    #     for item in ratio_map.values():
+    #         action = {
+    #             'name': item['attr']['NAME'],
+    #             'number': item['ratio'],
+    #             'type': item['type'],
+    #         }
+    #         if item['type'] == 'GS':
+    #             action['per'] = item['attr']['PERSONNAME']
+    #             rows_ent.append(action)
+    #         else:
+    #             sum += item['ratio']
+    #             rows_per.append(action)
+    #
+    #     max_person = max(rows_per, key=lambda x: x['number']) if rows_per else {'number': 0}
+    #     max_ent = max(rows_ent, key=lambda x: x['number']) if rows_ent else {'number': 0}
+    #
+    #     if max_person['number'] >= 0.25:
+    #         return max_person
+    #     elif rows_ent:
+    #         max_ent['ent'] = max_ent['name']
+    #         max_ent['name'] = max_ent.pop('per')
+    #         return max_ent
+    #     else:
+    #         return {}
+
+    def get_ent_actual_controller(self, graph, min_rate):
         '''
         根据neo4j的结果，计算受益所有人
         :param graph:
         :return:
         '''
-        ratio_map = {}
+        res_nodes = OrderedDict()
+        res_links = OrderedDict()
+        tmp_node = set()
         for path in graph:
-            print(path)
+            # print(path)
+            nodes = path['n']
+            links = path['r']
+            if not links:
+                continue
 
-            ratio = 1
-            for path_link in path['links']:
-                link_maps = dict(path_link)
-                ratio *= float(link_maps['RATE'])
+            number = 1
+            for index in range(len(links)):
+                if nodes[index + 1]['ID'] not in res_links.keys():
+                    res_links[links[index]['ID']] = {'id': links[index]['ID'], 'pid': links[index]['ID'], 'number': links[index]['RATE']}
+                if nodes[index + 1]['ID'] not in res_nodes.keys():
+                    res_nodes[nodes[index + 1]['ID']] = {'id': nodes[index + 1]['ID'], 'name': nodes[index + 1]['NAME'], 'number': 0, 'lastnode': 0, 'type': nodes[index + 1]['label'], 'attr': 2 if index + 1 != len(links) else 1}
 
-            if path['snode']['ID'] in ratio_map.keys():
-                ratio_map[path['snode']['ID']]['ratio'] += ratio
-                ratio_map[path['snode']['ID']]['layer'] = max([ratio_map[path['snode']['ID']]['layer'], len(path['links'])])
+                number *= float(links[index]['RATE'])
+
+            if nodes[0]['ID'] not in res_nodes.keys() and nodes[0]['ID'] not in tmp_node:
+                res_nodes[nodes[0]['ID']] = {'id': nodes[0]['ID'], 'name': nodes[0]['NAME'], 'number': number, 'lastnode': 1, 'type': nodes[0]['label'], 'attr': 1}
             else:
-                tmp = {
-                    'type': path['snode_type'][0],
-                    'attr': path['snode'],
-                    'link_attr': dict(path['links'][0]),
-                    'layer': len(path['links']),
-                    'ratio': ratio,
-                }
-                ratio_map[path['snode']['ID']] = tmp
+                res_nodes[nodes[0]['ID']]['number'] += number
 
-        rows_per = []
-        rows_ent = []
-        sum = 0
-        for item in ratio_map.values():
-            action = {
-                'name': item['attr']['NAME'],
-                'number': item['ratio'],
-                'type': item['type'],
-            }
-            if item['type'] == 'GS':
-                action['per'] = item['attr']['PERSONNAME']
-                rows_ent.append(action)
-            else:
-                sum += item['ratio']
-                rows_per.append(action)
-
-        max_person = max(rows_per, key=lambda x: x['number'])
-        max_ent = max(rows_ent, key=lambda x: x['number'])
-
-        if max_person['number'] >= 0.25:
-            return max_person
-        else:
-            max_ent['ent'] = max_ent['name']
-            max_ent['name'] = max_ent.pop('per')
-            return max_ent
+        return [i for i in res_nodes.values()], [k for k in res_links.values()]
 
     def parse(self, graph):
         '''

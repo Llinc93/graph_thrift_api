@@ -9,7 +9,7 @@ from thrift.protocol import TCompactProtocol
 
 class PyClient():
 
-    def getEntActualContoller(self, username, uscCode):
+    def getEntActualContoller(self, username, uscCode, mix_rate):
         try:
             # 建立socket
             transport = TSocket.TSocket('', 9011)
@@ -74,8 +74,12 @@ if __name__ == '__main__':
     cli = PyClient()
     import time
     s = time.time()
-    # cli.getEntActualContoller("晟睿电气科技（江苏）有限公司", "")
+    cli.getEntActualContoller("晟睿电气科技（江苏）有限公司", "", '0')
+    print(time.time() - s)
+    s = time.time()
     # cli.getEntGraphG('镇江市广播电视服务公司经营部', 'R107;R108;R106', '3', 'GS')
-    cli.getEntsRelevanceSeekGraphG('镇江新区鸿业精密机械厂;镇江润豪建筑劳务有限公司', 'R102;R101;R107;R108;R104;R103;R106;R105', '6')
+    print(time.time() - s)
+    s = time.time()
+    # cli.getEntsRelevanceSeekGraphG('镇江新区鸿业精密机械厂;镇江润豪建筑劳务有限公司', 'R102;R101;R107;R108;R104;R103;R106;R105', '6')
     e = time.time()
     print(e-s)

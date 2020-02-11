@@ -26,7 +26,7 @@ class MyFaceHandler(Interface.Iface):
   def __init__(self):
     pass
 
-  def getEntActualContoller(self, entName, uscCode):
+  def getEntActualContoller(self, entName, uscCode, min_ratio=0):
     """
     企业实际控制人信息
     entName 企业名称
@@ -36,14 +36,16 @@ class MyFaceHandler(Interface.Iface):
     """
     try:
         start = time.time()
-        ret = neo4j_client.get_ent_actual_controller(entname=entName, usccode=uscCode)
-        node = parse.get_ent_actual_controller(ret)
+        if not min_ratio:
+            min_ratio = 0
+        ret = neo4j_client.get_ent_actual_controller(entname=entName, usccode=uscCode, rate=min_ratio)
+        nodes, links = parse.get_ent_actual_controller(ret)
         print(time.time() - start)
-        return json.dumps({'data':node, 'status':0})
+        return json.dumps({'data': {'nodes': nodes, 'links': links}, 'status': 0}, ensure_ascii=False)
     except:
         traceback.print_exc()
         print('error')
-        return json.dumps({'data':'', 'success':101})
+        return json.dumps({'data':'', 'success':101}, ensure_ascii=False)
 
   def getEntGraphG(self, keyword, attIds, level, nodeType):
     """
@@ -65,10 +67,10 @@ class MyFaceHandler(Interface.Iface):
         data = neo4j_client.get_ent_graph_g(entname=keyword, level=level, node_type=nodeType, terms=terms)
         nodes, links = parse.parse(data)
         print(time.time() - start)
-        return json.dumps({'nodes': nodes, 'success': 0, 'links': links})
+        return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
     except:
         traceback.print_exc()
-        return json.dumps({'nodes': [], 'success': 102, 'links': []})
+        return json.dumps({'nodes': [], 'success': 102, 'links': []}, ensure_ascii=False)
 
   def getEntsRelevanceSeekGraphG(self, entName, attIds, level):
     """
@@ -90,10 +92,10 @@ class MyFaceHandler(Interface.Iface):
         data = neo4j_client.get_ents_relevance_seek_graph_g(entnames=entName.split(';'), level=level, terms=terms)
         nodes, links = parse.parse(data)
         print(time.time() - start)
-        return json.dumps({'nodes': nodes, 'success': 0, 'links': links})
+        return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
     except:
         traceback.format_exc()
-        return json.dumps({'nodes': [], 'success': 103, 'links': []})
+        return json.dumps({'nodes': [], 'success': 103, 'links': []}, ensure_ascii=False)
 
 
 
