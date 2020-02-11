@@ -20,7 +20,7 @@ class PyClient():
             # 创建客户端
             client = Interface.Client(protocol)
             transport.open()
-            data = client.getEntActualContoller(username, uscCode)
+            data = client.getEntActualContoller(username, uscCode, mix_rate)
             print(data)
             transport.close()
             return data
@@ -74,7 +74,7 @@ if __name__ == '__main__':
     cli = PyClient()
     import time
     s = time.time()
-    cli.getEntActualContoller("晟睿电气科技（江苏）有限公司", "", '0')
+    cli.getEntActualContoller("晟睿电气科技（江苏）有限公司", "", 0)
     print(time.time() - s)
     s = time.time()
     # cli.getEntGraphG('镇江市广播电视服务公司经营部', 'R107;R108;R106', '3', 'GS')

@@ -38,8 +38,8 @@ class MyFaceHandler(Interface.Iface):
         start = time.time()
         if not min_ratio:
             min_ratio = 0
-        ret = neo4j_client.get_ent_actual_controller(entname=entName, usccode=uscCode, rate=min_ratio)
-        nodes, links = parse.get_ent_actual_controller(ret)
+        ret = neo4j_client.get_ent_actual_controller(entname=entName, usccode=uscCode)
+        nodes, links = parse.get_ent_actual_controller(ret, min_rate=min_ratio)
         print(time.time() - start)
         return json.dumps({'data': {'nodes': nodes, 'links': links}, 'status': 0}, ensure_ascii=False)
     except:

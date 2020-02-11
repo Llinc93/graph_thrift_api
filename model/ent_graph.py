@@ -28,7 +28,6 @@ class Neo4jClient(object):
         :param usccode:
         :return:
         '''
-        # todo 统一社会信用代码查询
         if usccode:
             # command = "match p = (n) -[r:IPEE* .. 10]-> (m:GS {UNISCID: '%s'}) return properties(n) as snode, labels(n) as snode_type, r as links"
             command = "match p = (n) -[r:IPEE* .. 10]-> (m:GS {UNISCID: '%s'}) foreach(n in nodes(p) | set n.label=labels(n)[0])  return distinct [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
