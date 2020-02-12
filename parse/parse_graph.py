@@ -157,7 +157,6 @@ class Parse():
         nodes = []
         links = []
         for path in graph:
-            print(path)
 
             start_node = {
                 'NAME': path['snode']['NAME'],
@@ -173,15 +172,15 @@ class Parse():
                 'TYPE': path['snode_type'][0],
             }
             for path_link in path['links']:
-                link_maps = dict(path_link)
-                link_type = list(path_link.types())[0]
+                # link_maps = dict(path_link)
+                # link_type = list(path_link.types())[0]
                 link = {
-                    'NAME': config.RELATIONSHIP_MAP[link_type],
-                    'ID': link_maps.pop('ID'),
+                    'NAME': config.RELATIONSHIP_MAP[path_link['type']],
+                    'ID': path_link.pop('ID'),
                     'FROM': start_node['ID'],
                     'TO': end_node['ID'],
-                    'ATTRIBUTEMAP': self.get_link_attribute(link_type, link_maps),
-                    'TYPE': link_type,
+                    'ATTRIBUTEMAP': self.get_link_attribute(path_link['type'], path_link),
+                    'TYPE': path_link['type'],
                 }
                 links.append(link)
             nodes.extend([start_node, end_node])

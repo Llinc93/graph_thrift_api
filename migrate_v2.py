@@ -1,4 +1,6 @@
 # coding: utf8
+import os
+import subprocess
 import csv
 import cx_Oracle
 import copy
@@ -38,9 +40,12 @@ class Orcale2Neo4j(object):
     person_node_header = ['NAME', 'NAME_GLLZD', 'ID:ID(P-ID)', ':LABEL']
 
     inv_relationship_header = ['ACCONAM', 'BLICNO', 'BLICTYPE', 'CONDATE', 'ID::START_ID(P-ID)', 'INVTYPE', 'PROVINCE', 'PROVINCE_INV', 'SUBCONAM', 'RATE', 'F_BATCH', 'ID:END_ID(ENT-ID)', 'ID', ':TYPE']
+    other_relationship_header = ['ACCONAM', 'BLICNO', 'BLICTYPE', 'CONDATE', 'ID::START_ID(P-ID)', 'INVTYPE', 'PROVINCE', 'PROVINCE_INV', 'SUBCONAM', 'RATE', 'F_BATCH', 'ID:END_ID(ENT-ID)', 'ID', ':TYPE']
     ent_inv_relationship_header = ['ACCONAM', 'BLICNO', 'BLICTYPE', 'CONDATE', 'ID::START_ID(ENT-ID)', 'INVTYPE', 'PROVINCE', 'PROVINCE_INV', 'SUBCONAM', 'RATE', 'F_BATCH', 'ID:END_ID(ENT-ID)', 'ID', ':TYPE']
     pos_relationship_header = ['LEREPSIGN', 'ID::START_ID(P-ID)', 'POSITION', 'PROVINCE', 'ID:END_ID(ENT-ID)', 'F_BATCH', 'ID', ':TYPE']
     bra_relationship_header = ['UDT', 'ID:END_ID(ENT-ID)', 'B_NODENUM', 'ID', 'IDT', 'ID:START_ID(ENT-ID)', 'P_NODENUM', ':TYPE']
+
+    csv_path = r'/opt/neo4j/import'
 
     def __init__(self):
         self.conn = None
@@ -58,7 +63,8 @@ class Orcale2Neo4j(object):
         return None
 
     def write_csv(self, file_type, ret):
-        with open(r"C:\Users\cpf\Desktop\{}.csv".format(file_type), "w", encoding="utf-8", newline="") as fp:
+        # with open(r"C:\Users\cpf\Desktop\{}.csv".format(file_type), "w", encoding="utf-8", newline="") as fp:
+        with open(os.path.join(self.csv_path, f'{file_type}.csv'), "w", encoding="utf-8", newline="") as fp:
             writer = csv.writer(fp)
             writer.writerows([getattr(self, f"{file_type}_header")])
             writer.writerows(ret)
@@ -85,24 +91,6 @@ class Orcale2Neo4j(object):
 
     def get_md5(self, item):
         return hashlib.md5(','.join(item).encode('utf8')).hexdigest()
-
-    # def get_person(self):
-    #     '''获取人员节点'''
-    #     sql = 'select distinct a.INVNAME, a.INVNAME_GLLZD, a.ENTNAME from TSSJJH.ZJ_E_INV_INVESTMENT_BT a inner join TSSJJH.ZJ_E_PRI_PERSON  b on a.LCID = b.LCID and a.INVNAME=b.NAME'
-    #     self.cursor.execute(sql)
-    #     ret = self.cursor.fetchall()
-    #     print([i[0] for i in self.cursor.description])
-    #     print(len(ret))
-    #     data = []
-    #     for i in ret:
-    #         # print(i)
-    #         # tmp = [k if k else 'null' for k in i]
-    #         tmp = list(i)
-    #         md5 = self.get_md5([tmp[0], tmp.pop()])
-    #         tmp.extend([md5, 'GR'])
-    #         data.append(tmp)
-    #     self.write_csv('person_node', data)
-    #     return data
 
     def get_person(self):
         '''获取人员节点'''
@@ -133,20 +121,51 @@ class Orcale2Neo4j(object):
             tmp.append('GR')
             data.append(tmp)
             pid_set.add(m[-1])
+
+        sql3 = 'select distinct inv.INVNAME, inv.INVNAME_GLLZD, inv.LCID from TSSJJH.ZJ_E_INV_INVESTMENT_BT inv INNER JOIN TSSJJH.ZJ_E_PRI_PERSON pos on inv.LCID=pos.LCID and pos.name=inv.INVNAME where inv.LCID_INV is null and inv.PID_INV is null'
+        self.cursor.execute(sql3)
+        ret3 = self.cursor.fetchall()
+        print(len(ret3))
+        for k in ret3:
+            tmp = [l if l else 'null' for l in k]
+            if k[-1] in pid_set:
+                continue
+            # tmp = list(k)
+            tmp[-1] = self.get_md5([tmp[0], tmp[-1]])
+            tmp.append('GR')
+            data.append(tmp)
+            pid_set.add(tmp[-2])
         self.write_csv('person_node', data)
         return data
 
     def get_pos_relationship(self):
         '''获取任职关系'''
-        sql = "select distinct LEREPSIGN, PID, POSITION, PROVINCE, LCID, F_BATCH, ROWKEY from TSSJJH.ZJ_E_PRI_PERSON"  # 434814
+        sql = "select distinct LEREPSIGN, PID, POSITION, PROVINCE, LCID, F_BATCH, ROWKEY from TSSJJH.ZJ_E_PRI_PERSON where PID is not null"  # 434814
         self.cursor.execute(sql)
         ret = self.cursor.fetchall()
         print([i[0] for i in self.cursor.description])
         data = []
+        pid_set = set()
         for i in ret:
             tmp = [k if k else 'null' for k in i]
             # tmp = list(i)
             tmp.append('SPE')
+            data.append(tmp)
+            pid_set.add(i[1])
+
+        sql2 = "select distinct LEREPSIGN, PID, POSITION, PROVINCE, LCID, F_BATCH, ROWKEY, NAME from TSSJJH.ZJ_E_PRI_PERSON where PID is null"
+        self.cursor.execute(sql2)
+        ret2 = self.cursor.fetchall()
+        print([i[0] for i in self.cursor.description])
+        data = []
+        for i in ret2:
+            if i[-1] in pid_set:
+                continue
+            tmp = [k if k else 'null' for k in i]
+            name = tmp.pop()
+            # tmp = list(i)
+            tmp.append('SPE')
+            tmp[1] = self.get_md5([name, tmp[4]])
             data.append(tmp)
 
         self.write_csv('pos_relationship', data)
@@ -175,7 +194,20 @@ class Orcale2Neo4j(object):
             # tmp = list(i)
             tmp.append('IPEE')
             data.append(tmp)
-        self.write_csv('ent_inv_relationship', data)
+
+        sql3 = 'select distinct ACCONAM, BLICNO, BLICTYPE, CONDATE, PID_INV, INVTYPE, PROVINCE, PROVINCE_INV, SUBCONAM, RATE, F_BATCH, LCID, ROWKEY, INVNAME from TSSJJH.ZJ_E_INV_INVESTMENT_BT where LCID_INV is null and PID_INV is null'  # 176726
+        self.cursor.execute(sql3)
+        ret3 = self.cursor.fetchall()
+        data = []
+        for m in ret3:
+            tmp = [n if n else 'null' for n in m]
+            name = tmp.pop()
+            # tmp = list(i)
+            tmp[4] = self.get_md5([name, tmp[11]])
+            tmp.append('IPEE')
+            data.append(tmp)
+        self.write_csv('other_relationship', data)
+
         return ret
 
     def get_bra_relationship(self):
@@ -218,5 +250,18 @@ class Orcale2Neo4j(object):
 
 
 if __name__ == '__main__':
+    # 将dmp文件导入Orcale
+
+    # 生成CSV文件
     with Orcale2Neo4j() as conn:
         conn.run()
+
+    # 将csv文件导入neoj
+    rm_cmd = 'rm -rf /opt/neo4j/data/databases/graph.db'
+    rm_code, rm_ret = subprocess.getstatusoutput(rm_cmd)
+    print(rm_ret)
+    import_cmd = "docker exec -it neo4j_dmp /bin/bash -c 'bin/neo4j-admin import --nodes=import/person_node.csv --nodes=import/ent_node.csv --relationships=import/inv_relationship.csv --relationships=import/ent_inv_relationship.csv  --relationships=import/pos_relationship.csv --relationships=import/bra_relationship.csv --ignore-missing-nodes --ignore-duplicate-nodes'"
+    import_code, import_ret = subprocess.getstatusoutput(import_cmd)
+    print(import_ret)
+    os.system('chown -R 101:100 /opt/neo4j/data/databases/graph.db')
+    os.system('docker restart neo4j_')

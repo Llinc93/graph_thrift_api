@@ -81,7 +81,7 @@ class Neo4jClient(object):
         else:
             label = ' '
 
-        tail = ' return properties(n) as snode, labels(n) as snode_type, properties(m) as enode, labels(m) as enode_type, r as links'
+        tail = ' foreach(link in r | set link.type=type(link)) return properties(n) as snode, labels(n) as snode_type, properties(m) as enode, labels(m) as enode_type, [link in r | properties(link)] as links'
         command = start + relationship + end + label + tail
         print(command % (level, node_type, entname))
         rs = self.graph.run(command % (level, node_type, entname))
@@ -128,7 +128,7 @@ class Neo4jClient(object):
         else:
             label = ' '
 
-        tail = ' return properties(n) as snode, labels(n) as snode_type, properties(m) as enode, labels(m) as enode_type, r as links'
+        tail = ' foreach(link in r | set link.type=type(link)) return properties(n) as snode, labels(n) as snode_type, properties(m) as enode, labels(m) as enode_type, [link in r | properties(link)] as links'
         command = start + relationship + end + label + tail
 
         print(command % (entnames[0], level, entnames[1]))
