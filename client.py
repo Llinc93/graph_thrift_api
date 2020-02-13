@@ -12,7 +12,7 @@ class PyClient():
     def getEntActualContoller(self, username, uscCode, mix_rate):
         try:
             # 建立socket
-            transport = TSocket.TSocket('', 9011)
+            transport = TSocket.TSocket('47.93.228.56', 9918)
             # 选择传输协议，和服务端一致
             transport = TTransport.TBufferedTransport(transport)
             # protocol = TBinaryProtocol.TBinaryProtocol(transport)

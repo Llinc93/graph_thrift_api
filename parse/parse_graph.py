@@ -148,7 +148,7 @@ class Parse():
 
         actions = copy.deepcopy(res_nodes)
         for key, value in actions.items():
-            if value['lastnode'] == 1 and (value['number'] > min_rate and value['number'] < 0.5):
+            if value['lastnode'] == 1 and value['number'] < min_rate:
                 rm_links = res_nodes.pop(key)['path']
                 if rm_links:
                     for item in map(lambda x: list(x.values()), rm_links):
