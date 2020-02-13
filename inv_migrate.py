@@ -155,7 +155,7 @@ class Orcale2Neo4j(object):
 
         sql2 = 'select distinct ACCONAM, BLICNO, BLICTYPE, CONDATE, PID_INV, INVTYPE, PROVINCE, ' \
               'PROVINCE_INV, SUBCONAM, RATE, F_BATCH, LCID from (select t.*, rownum rc ' \
-              'from E_INV_INVESTMENT_TS t where t.LCID_INV is not null and t.PID_INV is null and rownum <= %s) a ' \
+              'from E_INV_INVESTMENT t where t.LCID_INV is not null and t.PID_INV is null and rownum <= %s) a ' \
               'where a.LCID_INV is not null and a.PID_INV is null and a.rc > %s'
         data = []
         pos = 1
