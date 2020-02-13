@@ -29,15 +29,22 @@ connection.close() 
 
 class Orcale2Neo4j(object):
 
-    username = "system"
-    userpwd = "123456"
-    host = "localhost"
+    username = "ts_neo"
+    userpwd = "T471ONd958"
+    host = "172.27.2.3"
     port = 1521
-    dbname = "dmp2neo"
+    dbname = "ocrl"
 
     # CSV配置
     ent_node_header = ['APPRDATE', 'CANDATE', 'DISTRICT', 'DOM', 'ENDDATE', 'NAME', 'NAME_GLLZD', 'ENTSTATUS', 'ENTTYPE', 'ESDATE', 'INDUSTRY', 'PERSONNAME', 'OPFROM', 'OPSCOPE', 'OPTO', 'REGCAP', 'RECCAPCUR', 'REGNO', 'REGORG', 'REVDATE', 'PROVINCE', 'UNISCID', 'F_BATCH', 'ID:ID(ENT-ID)', 'ROWKEY', ':LABEL']
+    tel_node_header = []        # 电话节点
+    email_node_header = []      # 邮箱节点
+    dom_node_header = []        # 办公地节点
     person_node_header = ['NAME', 'NAME_GLLZD', 'ID:ID(P-ID)', ':LABEL']
+    bidding_node_header = []    # 招投标节点
+    litigation_node_header = []     # 诉讼节点
+    patent_node_header = []     # 专利节点
+    annul_node_header = []      #年报节点
 
     inv_relationship_header = ['ACCONAM', 'BLICNO', 'BLICTYPE', 'CONDATE', 'ID::START_ID(P-ID)', 'INVTYPE', 'PROVINCE', 'PROVINCE_INV', 'SUBCONAM', 'RATE', 'F_BATCH', 'ID:END_ID(ENT-ID)', 'ID', ':TYPE']
     other_relationship_header = ['ACCONAM', 'BLICNO', 'BLICTYPE', 'CONDATE', 'ID::START_ID(P-ID)', 'INVTYPE', 'PROVINCE', 'PROVINCE_INV', 'SUBCONAM', 'RATE', 'F_BATCH', 'ID:END_ID(ENT-ID)', 'ID', ':TYPE']
@@ -63,11 +70,13 @@ class Orcale2Neo4j(object):
         return None
 
     def write_csv(self, file_type, ret):
-        # with open(r"C:\Users\cpf\Desktop\{}.csv".format(file_type), "w", encoding="utf-8", newline="") as fp:
         with open(os.path.join(self.csv_path, f'{file_type}.csv'), "w", encoding="utf-8", newline="") as fp:
             writer = csv.writer(fp)
             writer.writerows([getattr(self, f"{file_type}_header")])
             writer.writerows(ret)
+
+    def get_ent_node(self):
+        ''''''
 
     def get_ent(self):
         '''获取企业节点'''
@@ -234,25 +243,23 @@ class Orcale2Neo4j(object):
         #     print(i)
         # 投资人员节点
         ret = self.get_person()
-        # print(len(ret))
+        print(len(ret))
 
         # 投资关系
         ret = self.get_inv_relationship()
-        # print(len(ret))
+        print(len(ret))
 
         # 任职关系
         ret = self.get_pos_relationship()
-        # print(len(ret))
+        print(len(ret))
 
         # 分支关系
         ret = self.get_bra_relationship()
-        # print(len(ret))
+        print(len(ret))
 
 
 if __name__ == '__main__':
-    # 将dmp文件导入Orcale
-
-    # 生成CSV文件
+    # 查询数据库，生成CSV文件
     with Orcale2Neo4j() as conn:
         conn.run()
 
@@ -266,8 +273,11 @@ if __name__ == '__main__':
     os.system('chown -R 101:100 /opt/neo4j/data/databases/graph.db')
     os.system('docker restart neo4j_graph')
 
+    # neo4j 数据库创建索引
+    'create index on :GS(NAME)'
 
-    #todo
+    #todo 用企业名称替换LCID
+
     '''
     企业曾用名表   F_ENT_NAME_HISTORY_TABLE
         历史名称关系
@@ -314,8 +324,7 @@ if __name__ == '__main__':
         相同联系方式 --- 企业表 ??? 电话 or 邮箱
         专利关系 --- 专利表
         诉讼关系 --- 法律信息、法律公司
-        历史投资关系 ？？？
-        历史任职关系 ？？？
+
     neo4j 
         企业节点、人员节点、招投标节点、办公地点节点、邮箱节点、电话节点、专利节点、诉讼节点
         投资关系、任职关系、分支机构、招投标关系、相同办公地、相同联系方式、共有专利关系、诉讼关系、历史投资关系、历史任职关系
