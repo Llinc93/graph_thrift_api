@@ -1,3 +1,6 @@
+import copy
+from collections import defaultdict
+
 import config
 
 
@@ -116,6 +119,7 @@ class Parse():
         '''
         res_nodes = {}
         res_links = []
+        end_node_indegree = defaultdict(int)
         for path in graph:
             nodes = path['n']
             links = path['r']
@@ -126,10 +130,10 @@ class Parse():
             number = 1
             for index in range(len(links)):
                 if links[index]['ID'] not in tmp_links.keys():
-                    tmp_links[links[index]['ID']] = {'id': links[index]['ID'], 'pid': links[index]['ID'], 'number': links[index]['RATE']}
+                    tmp_links[links[index]['ID']] = {'id': nodes[index + 1]['ID'], 'pid': nodes[index]['ID'], 'number': links[index]['RATE']}
                 if nodes[index + 1]['ID'] not in res_nodes.keys():
                     res_nodes[nodes[index + 1]['ID']] = {'id': nodes[index + 1]['ID'], 'name': nodes[index + 1]['NAME'], 'number': 0, 'lastnode': 0, 'type': nodes[index + 1]['label'], 'attr': 2, 'path': []}
-
+                end_node_indegree[nodes[index + 1]['ID']] += 1
                 number *= float(links[index]['RATE'])
 
             if nodes[0]['ID'] not in res_nodes.keys():
@@ -138,12 +142,25 @@ class Parse():
                 res_nodes[nodes[0]['ID']]['number'] += number
                 res_nodes[nodes[0]['ID']]['path'].append(tmp_links)
 
-        for key, value in res_nodes.items():
-            if value['number'] < min_rate:
-                res_nodes.pop(key)
+            if nodes[len(links)]['ID'] not in res_nodes.keys():
+                print(111, nodes[len(links)])
+                res_nodes[nodes[len(links)]['ID']] = {'id': nodes[len(links)]['ID'], 'name': nodes[len(links)]['NAME'], 'number': 0, 'lastnode': 0, 'type': nodes[len(links)]['label'], 'attr': 1, 'path': []}
+
+        actions = copy.deepcopy(res_nodes)
+        for key, value in actions.items():
+            if value['lastnode'] == 1 and (value['number'] > min_rate and value['number'] < 0.5):
+                rm_links = res_nodes.pop(key)['path']
+                if rm_links:
+                    for item in map(lambda x: list(x.values()), rm_links):
+                        for item2 in item:
+                            end_node_indegree[item2['pid']] -= 1
+                for item in end_node_indegree.items():
+                    if item[1] == -1:
+                        if item[0] in res_nodes.keys():
+                            res_nodes.pop(item[0])
                 continue
 
-            for i in value.pop('path'):
+            for i in res_nodes[key].pop('path'):
                 res_links.extend(i.values())
 
         return [i for i in res_nodes.values()], res_links

@@ -41,6 +41,8 @@ class MyFaceHandler(Interface.Iface):
         ret = neo4j_client.get_ent_actual_controller(entname=entName, usccode=uscCode)
         nodes, links = parse.get_ent_actual_controller(ret, min_rate=min_ratio)
         print(time.time() - start)
+        if not links:
+            nodes = []
         return json.dumps({'data': {'nodes': nodes, 'links': links}, 'status': 0}, ensure_ascii=False)
     except:
         traceback.print_exc()

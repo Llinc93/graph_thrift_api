@@ -12,7 +12,7 @@ class PyClient():
     def getEntActualContoller(self, username, uscCode, mix_rate):
         try:
             # 建立socket
-            transport = TSocket.TSocket('47.93.228.56', 9918)
+            transport = TSocket.TSocket('', 9011)
             # 选择传输协议，和服务端一致
             transport = TTransport.TBufferedTransport(transport)
             # protocol = TBinaryProtocol.TBinaryProtocol(transport)
@@ -74,12 +74,12 @@ if __name__ == '__main__':
     cli = PyClient()
     import time
     s = time.time()
-    cli.getEntActualContoller("晟睿电气科技（江苏）有限公司", "", 0)
+    cli.getEntActualContoller("晟睿电气科技（江苏）有限公司", "", 0.1)
     print(time.time() - s)
     s = time.time()
-    cli.getEntGraphG('镇江市广播电视服务公司经营部', 'R107;R108;R106', '3', 'GS')
-    print(time.time() - s)
-    s = time.time()
-    cli.getEntsRelevanceSeekGraphG('镇江新区鸿业精密机械厂;镇江润豪建筑劳务有限公司', 'R102;R101;R107;R108;R104;R103;R106;R105', '6')
-    e = time.time()
-    print(e-s)
+    # cli.getEntGraphG('镇江市广播电视服务公司经营部', 'R107;R108;R106', '3', 'GS')
+    # print(time.time() - s)
+    # s = time.time()
+    # cli.getEntsRelevanceSeekGraphG('镇江新区鸿业精密机械厂;镇江润豪建筑劳务有限公司', 'R102;R101;R107;R108;R104;R103;R106;R105', '6')
+    # e = time.time()
+    # print(e-s)
