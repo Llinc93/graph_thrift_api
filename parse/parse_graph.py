@@ -166,7 +166,7 @@ class Parse():
             tmp = set()
             tmp_res_links = []
             for link in res_links:
-                if link.items() not in tmp:
+                if tuple(link.items()) not in tmp:
                     tmp_res_links.append(link)
                     tmp.add(link.items())
 
