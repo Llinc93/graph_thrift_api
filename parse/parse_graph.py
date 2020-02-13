@@ -163,7 +163,14 @@ class Parse():
             for i in res_nodes[key].pop('path'):
                 res_links.extend(i.values())
 
-        return [i for i in res_nodes.values()], res_links
+            tmp = set()
+            tmp_res_links = []
+            for link in res_links:
+                if link.items() not in tmp:
+                    tmp_res_links.append(link)
+                    tmp.add(link.items())
+
+        return [i for i in res_nodes.values()], tmp_res_links
 
     def parse(self, graph):
         '''
