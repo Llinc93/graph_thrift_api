@@ -168,7 +168,7 @@ class Parse():
             for link in res_links:
                 if tuple(link.items()) not in tmp:
                     tmp_res_links.append(link)
-                    tmp.add(link.items())
+                    tmp.add(tuple(link.items()))
 
         return [i for i in res_nodes.values()], tmp_res_links
 
