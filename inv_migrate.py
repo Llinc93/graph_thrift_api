@@ -5,6 +5,9 @@ import csv
 import cx_Oracle
 import datetime
 
+'''
+sql = 'select a.* from (select t.*, rownum row from table_A t where rownum <= 20) a where a.row > 0'
+'''
 
 class Orcale2Neo4j(object):
 
@@ -33,6 +36,10 @@ class Orcale2Neo4j(object):
     def __init__(self):
         self.conn = None
         self.cursor = None
+        self.ent_node_count = 0
+        self.person_node_count = 0
+        self.inv_ent_ent = 0
+        self.inv_per_ent = 0
 
     def __enter__(self):
         dsn = cx_Oracle.makedsn(self.host, self.port, self.dbname)
@@ -52,19 +59,17 @@ class Orcale2Neo4j(object):
             writer.writerows(ret)
 
     def get_ent(self):
-        '''获取企业节点'''
+        '''获取企业节点(66736199)'''
 
-        count_sql = 'select count(*) from TSSJJH.ZJ_ENTERPRISEBASEINFOCOLLECT'
+        count_sql = 'select count(*) from ENTERPRISEBASEINFOCOLLECT'
         self.cursor.execute(count_sql)
         count = int(self.cursor.fetchall()[0][0])
 
-        sql = 'select distinct APPRDATE, CANDATE, DISTRICT, DOM, ENDDATE, ENTNAME, ENTNAME_GLLZD, ' \
-              'ENTSTATUS, ENTTYPE, ESDATE, INDUSTRY, NAME, OPFROM, OPSCOPE, OPTO, REGCAP, RECCAPCUR, REGNO, ' \
-              'REGORG, REVDATE, PROVINCE, UNISCID, F_BATCH, LCID from TSSJJH.ZJ_ENTERPRISEBASEINFOCOLLECT ' \
-              'where rownum < %s  minus  select distinct APPRDATE, CANDATE, DISTRICT, DOM, ENDDATE, ' \
-              'ENTNAME, ENTNAME_GLLZD, ENTSTATUS, ENTTYPE, ESDATE, INDUSTRY, NAME, OPFROM, OPSCOPE, OPTO, ' \
-              'REGCAP, RECCAPCUR, REGNO, REGORG, REVDATE, PROVINCE, UNISCID, F_BATCH, LCID from ' \
-              'TSSJJH.ZJ_ENTERPRISEBASEINFOCOLLECT where rownum < %s  order by LCID'
+        sql = 'select distinct a.APPRDATE, a.CANDATE, a.DISTRICT, a.DOM, a.ENDDATE, a.ENTNAME, a.ENTNAME_GLLZD, ' \
+              'a.ENTSTATUS, a.ENTTYPE, a.ESDATE, a.INDUSTRY, a.NAME, a.OPFROM, a.OPSCOPE, a.OPTO, a.REGCAP, a.RECCAPCUR, a.REGNO, ' \
+              'a.REGORG, a.REVDATE, a.PROVINCE, a.UNISCID, a.LCID from (select t.*, rownum rc from ENTERPRISEBASEINFOCOLLECT t ' \
+              'where rownum <= %s) a where a.rc > %s'
+
         data = []
         pos = 1
         for index in range(500001, count + 2, 500000):
@@ -81,31 +86,20 @@ class Orcale2Neo4j(object):
                 tmp.append('BEE')
                 data.append(tmp)
 
-        # sql = 'select distinct APPRDATE, CANDATE, DISTRICT, DOM, ENDDATE, ENTNAME, ENTNAME_GLLZD, ENTSTATUS, ENTTYPE, ESDATE, INDUSTRY, NAME, OPFROM, OPSCOPE, OPTO, REGCAP, RECCAPCUR, REGNO, REGORG, REVDATE, PROVINCE, UNISCID, F_BATCH, LCID from TSSJJH.ZJ_ENTERPRISEBASEINFOCOLLECT'
-        # self.cursor.execute(sql)
-        # ret = self.cursor.fetchall()
-        # print([i[0] for i in self.cursor.description])
-        #
-        # data = []
-        # for i in ret:
-        #     tmp = [k if k else 'null' for k in i]
-        #     tmp.append('GS')
-        #     data.append(tmp)
-        #     index[i[-1]] = i[-2]
-
         self.write_csv('ent_node', data)
+        self.ent_node_count = len(data)
         return data
 
     def get_person(self):
-        '''获取人员节点'''
+        '''获取人员节点(120320809)'''
 
-        count_sql = 'select count(*) from TSSJJH.ZJ_E_INV_INVESTMENT_BT where PID_INV is not null'
+        count_sql = 'select count(*) from E_INV_INVESTMENT where PID_INV is not null'
         self.cursor.execute(count_sql)
         count = int(self.cursor.fetchall()[0][0])
 
-        sql = 'select distinct INVNAME, INVNAME_GLLZD, PID_INV from TSSJJH.ZJ_E_INV_INVESTMENT_BT ' \
-              'where PID_INV is not null and rownum < %s  minus  select distinct INVNAME, INVNAME_GLLZD, ' \
-              'PID_INV from TSSJJH.ZJ_E_INV_INVESTMENT_BT where PID_INV is not null and rownum < %s  order by PID_INV'
+        sql = 'select distinct a.INVNAME, a.INVNAME_GLLZD, a.PID_INV from (select t.*, rownum rc ' \
+              'from E_INV_INVESTMENT t where rownum <= %s) a where a.rc > %s'
+
         data = []
         pos = 1
         for index in range(500001, count + 2, 500000):
@@ -122,33 +116,22 @@ class Orcale2Neo4j(object):
                 tmp.append('BEE')
                 data.append(tmp)
 
-        # sql = 'select distinct INVNAME, INVNAME_GLLZD, PID_INV from TSSJJH.ZJ_E_INV_INVESTMENT_BT where PID_INV is not null'
-        # self.cursor.execute(sql)
-        # ret = self.cursor.fetchall()
-        # print([i[0] for i in self.cursor.description])
-        # print(len(ret))
-        # data = []
-        # for k in ret:
-        #     tmp = [l if l else 'null' for l in k]
-        #     tmp.append('GR')
-        #     data.append(tmp)
-
         self.write_csv('person_node', data)
+        self.person_node_count = len(data)
         return data
 
     def get_inv_relationship(self):
-        '''获取投资关系'''
+        '''获取投资关系(120320809)'''
 
-        count_sql = 'select count(*) from TSSJJH.ZJ_E_INV_INVESTMENT_BT where PID_INV is not null and LCID_INV is null'
+        count_sql = 'select count(*) from E_INV_INVESTMENT_TS where PID_INV is not null and LCID_INV is null'
         self.cursor.execute(count_sql)
         count = int(self.cursor.fetchall()[0][0])
 
-        sql = 'select distinct ACCONAM, BLICNO, BLICTYPE, CONDATE, PID_INV, INVTYPE, PROVINCE, PROVINCE_INV, ' \
-              'SUBCONAM, RATE, F_BATCH, LCID from TSSJJH.ZJ_E_INV_INVESTMENT_BT ' \
-              'where PID_INV is not null and LCID_INV is null and rownum < %s  minus  ' \
-              'select distinct ACCONAM, BLICNO, BLICTYPE, CONDATE, PID_INV, INVTYPE, PROVINCE, ' \
-              'PROVINCE_INV, SUBCONAM, RATE, F_BATCH, LCID from TSSJJH.ZJ_E_INV_INVESTMENT_BT where PID_INV is not null and ' \
-              'LCID_INV is null and rownum < %s  order by PID_INV'
+        sql = 'select distinct ACCONAM, BLICNO, BLICTYPE, CONDATE, PID_INV, INVTYPE, PROVINCE, ' \
+              'PROVINCE_INV, SUBCONAM, RATE, F_BATCH, LCID from (select t.*, rownum rc ' \
+              'from E_INV_INVESTMENT_TS t where t.PID_INV is not null and t.LCID_INV is null and rownum <= %s) a ' \
+              'where a.PID_INV is not null and a.LCID_INV is null and a.rc > %s'
+
         data = []
         pos = 1
         for index in range(500001, count + 2, 500000):
@@ -165,17 +148,16 @@ class Orcale2Neo4j(object):
                 tmp.append('BEE')
                 data.append(tmp)
         self.write_csv('inv_relationship', data)
-
-        count_sql2 = 'select count(*) from TSSJJH.ZJ_E_INV_INVESTMENT_BT where LCID_INV is not null and PID_INV is null'
+        self.inv_per_ent = len(data)
+        count_sql2 = 'select count(*) from TSSJJH.E_INV_INVESTMENT where LCID_INV is not null and PID_INV is null'
         self.cursor.execute(count_sql2)
         count2 = int(self.cursor.fetchall()[0][0])
 
-        sql2 = 'select distinct ACCONAM, BLICNO, BLICTYPE, CONDATE, LCID_INV, INVTYPE, PROVINCE, PROVINCE_INV, ' \
-               'SUBCONAM, RATE, F_BATCH, LCID from TSSJJH.ZJ_E_INV_INVESTMENT_BT ' \
-               'where LCID_INV is not null and PID_INV is null and rownum < %s  minus  select distinct ' \
-               'ACCONAM, BLICNO, BLICTYPE, CONDATE, LCID_INV, INVTYPE, PROVINCE, PROVINCE_INV, SUBCONAM, ' \
-               'RATE, F_BATCH, LCID from TSSJJH.ZJ_E_INV_INVESTMENT_BT where LCID_INV is not null and ' \
-               'PID_INV is null and rownum < %s  order by PID_INV'
+        sql2 = 'select distinct ACCONAM, BLICNO, BLICTYPE, CONDATE, PID_INV, INVTYPE, PROVINCE, ' \
+              'PROVINCE_INV, SUBCONAM, RATE, F_BATCH, LCID from (select t.*, rownum rc ' \
+              'from E_INV_INVESTMENT_TS t where t.LCID_INV is not null and t.PID_INV is null and rownum <= %s) a ' \
+              'where a.LCID_INV is not null and a.PID_INV is null and a.rc > %s'
+        data = []
         pos = 1
         for index in range(500001, count2 + 2, 500000):
             self.cursor.execute(sql2 % (index, pos))
@@ -191,40 +173,20 @@ class Orcale2Neo4j(object):
                 tmp.append('BEE')
                 data.append(tmp)
         self.write_csv('ent_inv_relationship', data)
-
-        # sql = 'select distinct ACCONAM, BLICNO, BLICTYPE, CONDATE, PID_INV, INVTYPE, PROVINCE, PROVINCE_INV, SUBCONAM, RATE, F_BATCH, LCID from TSSJJH.ZJ_E_INV_INVESTMENT_BT where PID_INV is not null and LCID_INV is null'
-        # self.cursor.execute(sql)
-        # ret = self.cursor.fetchall()
-        # print([i[0] for i in self.cursor.description])
-        # data = []
-        # for i in ret:
-        #     tmp = [k if k else 'null' for k in i]
-        #     tmp.append('IPEE')
-        #     data.append(tmp)
-        #
-        # sql2 = 'select distinct ACCONAM, BLICNO, BLICTYPE, CONDATE, LCID_INV, INVTYPE, PROVINCE, PROVINCE_INV, SUBCONAM, RATE, F_BATCH, LCID from TSSJJH.ZJ_E_INV_INVESTMENT_BT where LCID_INV is not null and PID_INV is null'
-        # self.cursor.execute(sql2)
-        # ret2 = self.cursor.fetchall()
-        # for m in ret2:
-        #     tmp = [n if n else 'null' for n in m]
-        #     tmp.append('IPEE')
-        #     data.append(tmp)
-
-
+        self.inv_ent_ent = len(data)
         return data
 
     def get_bra_relationship(self):
-        '''获取企业分支关系'''
-        count_sql = 'select count(*) from TSSJJH.ZJ_BRANCH'
+        '''获取企业分支关系(7665150)'''
+        count_sql = 'select count(*) from TSSJJH.BRANCH'
         self.cursor.execute(count_sql)
         count = int(self.cursor.fetchall()[0][0])
 
         data = []
         pos = 1
-        sql = 'select distinct UDT, B_LCID, B_NODENUM, ID, IDT, P_LCID, P_NODENUM from TSSJJH.ZJ_BRANCH ' \
-              'where rownum < %s  minus  select distinct UDT, B_LCID, B_NODENUM, ID, IDT, P_LCID, P_NODENUM ' \
-              'from TSSJJH.ZJ_BRANCH where rownum < %s  order by B_LCID, P_LCID'
-        for index in range(500001, count + 2, 500000):
+        sql = 'select distinct UDT, B_LCID, B_NODENUM, ID, IDT, P_LCID, P_NODENUM from (select t.*, rownum rc from F_ENTBRANCH_TS t where t.row <= %s) a where a.rc > %s'
+
+        for index in range(500001, count + 2, 100000):
             self.cursor.execute(sql % (index, pos))
             for i in self.cursor.fetchall():
                 tmp = [k if k else 'null' for k in i]
@@ -238,41 +200,41 @@ class Orcale2Neo4j(object):
                 tmp.append('BEE')
                 data.append(tmp)
 
-        # sql = 'select distinct UDT, B_LCID, B_NODENUM, ID, IDT, P_LCID, P_NODENUM from TSSJJH.ZJ_BRANCH'
-        # self.cursor.execute(sql)
-        # ret = self.cursor.fetchall()
-        # print([i[0] for i in self.cursor.description])
-        # data = []
-        # for i in ret:
-        #     tmp = [k if k else 'null' for k in i]
-        #     tmp.append('BEE')
-        #     data.append(tmp)
-
         self.write_csv('bra_relationship', data)
         return data
 
     def run(self):
         # 企业节点
-        # ret = self.get_ent()
+        ret = self.get_ent()
         # print(len(ret))
 
         # 投资人员节点
-        # ret = self.get_person()
+        ret = self.get_person()
         # print(len(ret))
 
         # 投资关系
-        # ret = self.get_inv_relationship()
+        ret = self.get_inv_relationship()
         # print(len(ret))
 
         # 分支关系
         ret = self.get_bra_relationship()
         # print(len(ret))
+        return None
 
+    def create_index(self):
+        command = 'create index on :GS(NAME)'
+        self.graph = Graph(config.NEO4J_URL)
+        self.graph.run(command % invname)
+        return None
 
 if __name__ == '__main__':
     # 查询数据库，生成CSV文件
     with Orcale2Neo4j() as conn:
         conn.run()
+        ent_node = conn.ent_node_count
+        per_node = conn.person_node_count
+        inv_ent_ent = conn.inv_ent_ent
+        inv_per_ent = conn.inv_per_ent
 
     # 将csv文件导入neoj
     rm_cmd = 'rm -rf /opt/neo4j/data/databases/graph.db'
@@ -285,6 +247,6 @@ if __name__ == '__main__':
     os.system('docker restart neo4j_graph')
 
     # neo4j 数据库创建索引
-    'create index on :GS(NAME)'
+    Orcale2Neo4j().create_index()
 
 
