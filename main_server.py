@@ -38,8 +38,10 @@ class MyFaceHandler(Interface.Iface):
         start = time.time()
         if not min_ratio:
             min_ratio = 0
-        ret = neo4j_client.get_ent_actual_controller(entname=entName, usccode=uscCode)
-        nodes, links = parse.get_ent_actual_controller(ret, min_rate=min_ratio)
+        data = neo4j_client.get_ent_actual_controller(entname=entName, usccode=uscCode)
+        if not data:
+            return json.dumps({'data': {'nodes': [], 'links': []}, 'status': 0}, ensure_ascii=False)
+        nodes, links = parse.get_ent_actual_controller(data, min_rate=min_ratio)
         print(time.time() - start)
         if not links:
             nodes = []
@@ -67,6 +69,8 @@ class MyFaceHandler(Interface.Iface):
         start = time.time()
         terms = parse.get_term(attIds.split(';'))
         data = neo4j_client.get_ent_graph_g(entname=keyword, level=level, node_type=nodeType, terms=terms)
+        if not data:
+            return json.dumps({'data': {'nodes': [], 'links': []}, 'status': 0}, ensure_ascii=False)
         nodes, links = parse.parse(data)
         print(time.time() - start)
         return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
@@ -92,6 +96,8 @@ class MyFaceHandler(Interface.Iface):
         start = time.time()
         terms = parse.get_term(attIds.split(';'))
         data = neo4j_client.get_ents_relevance_seek_graph_g(entnames=entName.split(';'), level=level, terms=terms)
+        if not data:
+            return json.dumps({'data': {'nodes': [], 'links': []}, 'status': 0}, ensure_ascii=False)
         nodes, links = parse.parse(data)
         print(time.time() - start)
         return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
