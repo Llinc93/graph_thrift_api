@@ -15,7 +15,7 @@ report = {}
 csv_path = r'/opt/neo4j_v2/import'
 
 files = [
-    ('/opt/data/E_INV_INVESTMENT_ENT.csv', '/opt/neo4j_v2/import/ent_inv_relationship.csv', ent_inv_relationship_header, 'IPEE', '企业投资关系'),
+    ('/opt/data/E_INV_INVESTMENT_ENT_new.csv', '/opt/neo4j_v2/import/ent_inv_relationship.csv', ent_inv_relationship_header, 'IPEE', '企业投资关系'),
     ('/opt/data/E_INV_INVESTMENT_ENT_PERSION', '/opt/neo4j_v2/import/inv_relationship.csv', inv_relationship_header, 'IPEE', '股东投资关系'),
     ('/opt/data/enterprisebaseinfocollect.csv', '/opt/neo4j_v2/import/ent_node.csv', ent_node_header, 'GS', '企业节点'),
     ('/opt/data/F_ENTBRRANCH_TS.csv', '/opt/neo4j_v2/import/bra_relationship.csv', bra_relationship_header, 'BEE', '企业分支关系'),
