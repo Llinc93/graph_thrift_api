@@ -2,7 +2,7 @@
 import os
 import subprocess
 import csv
-import datetime
+
 
 ent_node_header = ['APPRDATE', 'CANDATE', 'DISTRICT', 'DOM', 'ENDDATE', 'NAME', 'NAME_GLLZD', 'ENTSTATUS', 'ENTTYPE', 'ESDATE', 'INDUSTRY', 'PERSONNAME', 'OPFROM', 'OPSCOPE', 'OPTO', 'REGCAP', 'RECCAPCUR', 'REGNO', 'REGORG', 'REVDATE', 'PROVINCE', 'UNISCID', 'ID:ID(ENT-ID)', ':LABEL']
 person_node_header = ['NAME', 'NAME_GLLZD', 'ID:ID(P-ID)', ':LABEL']
@@ -58,4 +58,5 @@ if __name__ == '__main__':
     # os.system('chown -R 101:100 /opt/neo4j/data/databases/graph.db')
     os.system('docker restart neo4j_v2')
 
-
+    for key, value in report.items():
+        print(key, value)
