@@ -103,6 +103,13 @@ class Orcale2Neo4j(object):
 
         sql = 'select distinct a.INVNAME, a.INVNAME_GLLZD, a.PID_INV from (select t.*, rownum rc ' \
               'from E_INV_INVESTMENT t where rownum <= %s) a where a.rc > %s'
+'select count(*) from E_INV_INVESTMENT inv inner join ENTERPRISEBASEINFOCOLLECT ent on inv.LCID=ent.LCID where inv.LCID_INV is not null'
+        sql = 'select distinct INVNAME, INVNAME_GLLZD, PID_INV from E_INV_INVESTMENT where PID_INV is not null'  人员节点
+        sql = 'select distinct APPRDATE, CANDATE, DISTRICT, DOM, ENDDATE, ENTNAME, ENTNAME_GLLZD, ENTSTATUS, ENTTYPE, ESDATE, INDUSTRY, NAME, OPFROM, OPSCOPE, OPTO, REGCAP, RECCAPCUR, REGNO, REGORG, REVDATE, ROVINCE, UNISCID, LCID from ENTERPRISEBASEINFOCOLLECT' 企业节点
+        sql = 'select distinct ACCONAM, BLICNO, BLICTYPE, CONDATE, PID_INV, INVTYPE, PROVINCE, PROVINCE_INV, SUBCONAM, RATE, F_BATCH, LCID from E_INV_INVESTMENT where PID_INV is not null and LCID_INV is null' 股东投资
+        sql = 'select distinct ACCONAM, BLICNO, BLICTYPE, CONDATE, PID_INV, INVTYPE, PROVINCE, PROVINCE_INV, SUBCONAM, RATE, F_BATCH, LCID from E_INV_INVESTMENT where PID_INV is null and LCID_INV is not null' 企业投资
+        sql = 'select distinct UDT, B_LCID, B_NODENUM, ID, IDT, P_LCID, P_NODENUM from F_ENTBRANCH_TS ' 分支
+企业对外投资的企业
 
         data = []
         pos = 0
@@ -182,7 +189,7 @@ class Orcale2Neo4j(object):
 
     def get_bra_relationship(self):
         '''获取企业分支关系(7665150)'''
-        count_sql = 'select count(*) from TSSJJH.BRANCH'
+        count_sql = 'select count(*) from F_ENTBRANCH_TS'
         self.cursor.execute(count_sql)
         count = int(self.cursor.fetchall()[0][0])
 
