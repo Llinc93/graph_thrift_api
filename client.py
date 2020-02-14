@@ -9,10 +9,16 @@ from thrift.protocol import TCompactProtocol
 
 class PyClient():
 
+
+    def __init__(self):
+
+        self.host = '47.93.228.56'
+        self.port = 9918
+
     def getEntActualContoller(self, username, uscCode, mix_rate):
         try:
             # 建立socket
-            transport = TSocket.TSocket('47.93.228.56', 9918)
+            transport = TSocket.TSocket(self.host, self.port)
             # 选择传输协议，和服务端一致
             transport = TTransport.TBufferedTransport(transport)
             # protocol = TBinaryProtocol.TBinaryProtocol(transport)
@@ -32,7 +38,7 @@ class PyClient():
     def getEntGraphG(self, keyword, attIds, level, nodeType):
         try:
             # 建立socket
-            transport = TSocket.TSocket('47.93.228.56', 9918)
+            transport = TSocket.TSocket(self.host, self.port)
             # 选择传输协议，和服务端一致
             transport = TTransport.TBufferedTransport(transport)
             # protocol = TBinaryProtocol.TBinaryProtocol(transport)
@@ -52,7 +58,7 @@ class PyClient():
     def getEntsRelevanceSeekGraphG(self, entName, attIds, level):
         try:
             # 建立socket
-            transport = TSocket.TSocket('47.93.228.56', 9918)
+            transport = TSocket.TSocket(self.host, self.port)
             # 选择传输协议，和服务端一致
             transport = TTransport.TBufferedTransport(transport)
             # protocol = TBinaryProtocol.TBinaryProtocol(transport)
