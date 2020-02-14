@@ -4,6 +4,10 @@ import subprocess
 import csv
 import cx_Oracle
 import datetime
+import time
+from py2neo import Graph
+
+import config
 
 '''
 sql = 'select a.* from (select t.*, rownum row from table_A t where rownum <= 20) a where a.row > 0'
@@ -71,8 +75,8 @@ class Orcale2Neo4j(object):
               'where rownum <= %s) a where a.rc > %s'
 
         data = []
-        pos = 1
-        for index in range(500001, count + 2, 500000):
+        pos = 0
+        for index in range(200000, count + 2, 200000):
             self.cursor.execute(sql % (index, pos))
             for i in self.cursor.fetchall():
                 tmp = [k if k else 'null' for k in i]
@@ -101,8 +105,8 @@ class Orcale2Neo4j(object):
               'from E_INV_INVESTMENT t where rownum <= %s) a where a.rc > %s'
 
         data = []
-        pos = 1
-        for index in range(500001, count + 2, 500000):
+        pos = 0
+        for index in range(200000, count + 2, 200000):
             self.cursor.execute(sql % (index, pos))
             for i in self.cursor.fetchall():
                 tmp = [k if k else 'null' for k in i]
@@ -133,8 +137,8 @@ class Orcale2Neo4j(object):
               'where a.PID_INV is not null and a.LCID_INV is null and a.rc > %s'
 
         data = []
-        pos = 1
-        for index in range(500001, count + 2, 500000):
+        pos = 0
+        for index in range(200000, count + 2, 200000):
             self.cursor.execute(sql % (index, pos))
             for i in self.cursor.fetchall():
                 tmp = [k if k else 'null' for k in i]
@@ -158,8 +162,8 @@ class Orcale2Neo4j(object):
               'from E_INV_INVESTMENT t where t.LCID_INV is not null and t.PID_INV is null and rownum <= %s) a ' \
               'where a.LCID_INV is not null and a.PID_INV is null and a.rc > %s'
         data = []
-        pos = 1
-        for index in range(500001, count2 + 2, 500000):
+        pos = 0
+        for index in range(200000, count2 + 2, 200000):
             self.cursor.execute(sql2 % (index, pos))
             for i in self.cursor.fetchall():
                 tmp = [k if k else 'null' for k in i]
@@ -183,10 +187,10 @@ class Orcale2Neo4j(object):
         count = int(self.cursor.fetchall()[0][0])
 
         data = []
-        pos = 1
+        pos = 0
         sql = 'select distinct UDT, B_LCID, B_NODENUM, ID, IDT, P_LCID, P_NODENUM from (select t.*, rownum rc from F_ENTBRANCH_TS t where t.row <= %s) a where a.rc > %s'
 
-        for index in range(500001, count + 2, 100000):
+        for index in range(200000, count + 2, 100000):
             self.cursor.execute(sql % (index, pos))
             for i in self.cursor.fetchall():
                 tmp = [k if k else 'null' for k in i]
@@ -224,7 +228,7 @@ class Orcale2Neo4j(object):
     def create_index(self):
         command = 'create index on :GS(NAME)'
         self.graph = Graph(config.NEO4J_URL)
-        self.graph.run(command % invname)
+        self.graph.run(command)
         return None
 
 if __name__ == '__main__':
@@ -237,7 +241,7 @@ if __name__ == '__main__':
         inv_per_ent = conn.inv_per_ent
 
     # 将csv文件导入neoj
-    rm_cmd = 'rm -rf /opt/neo4j/data/databases/graph.db'
+    rm_cmd = f'mv /opt/neo4j/data/databases/graph.db /opt/neo4j/data/databases/graph.db_{time.strftime("%Y%m%d")}'
     rm_code, rm_ret = subprocess.getstatusoutput(rm_cmd)
     print(rm_ret)
     import_cmd = "docker exec -it neo4j_dmp /bin/bash -c 'bin/neo4j-admin import --nodes=import/person_node.csv --nodes=import/ent_node.csv --relationships=import/inv_relationship.csv --relationships=import/bra_relationship.csv --ignore-missing-nodes --ignore-duplicate-nodes'"
@@ -248,5 +252,5 @@ if __name__ == '__main__':
 
     # neo4j 数据库创建索引
     Orcale2Neo4j().create_index()
-
+    os.system('docker restart neo4j_graph')
 
