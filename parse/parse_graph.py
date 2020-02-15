@@ -129,6 +129,8 @@ class Parse():
             tmp_links = {}
             number = 1
             for index in range(len(links)):
+                if nodes[index]['ID'] == 'null' or nodes[index+1]['ID'] =='null':
+                    continue
                 if links[index]['ID'] not in tmp_links.keys():
                     tmp_links[links[index]['ID']] = {'id': nodes[index + 1]['ID'], 'pid': nodes[index]['ID'], 'number': links[index]['RATE']}
                 if nodes[index + 1]['ID'] not in res_nodes.keys():
@@ -147,6 +149,7 @@ class Parse():
                 res_nodes[nodes[len(links)]['ID']] = {'id': nodes[len(links)]['ID'], 'name': nodes[len(links)]['NAME'], 'number': 0, 'lastnode': 0, 'type': nodes[len(links)]['label'], 'attr': 1, 'path': []}
 
         actions = copy.deepcopy(res_nodes)
+        tmp_res_links = []
         for key, value in actions.items():
             if value['lastnode'] == 1 and value['number'] < min_rate:
                 rm_links = res_nodes.pop(key)['path']
