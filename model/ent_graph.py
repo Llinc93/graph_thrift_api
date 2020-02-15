@@ -30,12 +30,12 @@ class Neo4jClient(object):
         '''
         if usccode:
             # command = "match p = (n) -[r:IPEE* .. 10]-> (m:GS {UNISCID: '%s'}) return properties(n) as snode, labels(n) as snode_type, r as links"
-            command = "match p = (n) -[r:IPEE* .. 10]-> (m:GS {UNISCID: '%s'}) foreach(n in nodes(p) | set n.label=labels(n)[0])  return distinct [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
+            command = "match p = (n) -[r:IPEE* .. 10]-> (m:GS {UNISCID: '%s'}) foreach(n in nodes(p) | set n.label=labels(n)[0]) foreach(link in relationships(p) | set link.ID=lid(link)) return distinct [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
             print(command % usccode)
             rs = self.graph.run(command % usccode)
         else:
             # command = "match p = (n) -[r:IPEE* .. 10]-> (m:GS {NAME: '%s'}) return properties(n) as snode, labels(n) as snode_type, r as links"
-            command = "match p = (n) -[r:IPEE* .. 10]-> (m:GS {NAME: '%s'}) foreach(n in nodes(p) | set n.label=labels(n)[0])  return distinct [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
+            command = "match p = (n) -[r:IPEE* .. 10]-> (m:GS {NAME: '%s'}) foreach(n in nodes(p) | set n.label=labels(n)[0]) foreach(link in relationships(p) | set link.ID=lid(link)) return distinct [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
             print(command % entname)
             rs = self.graph.run(command % entname)
         info = rs.data()
