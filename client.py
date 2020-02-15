@@ -80,7 +80,10 @@ if __name__ == '__main__':
     cli = PyClient()
     import time
     s = time.time()
-    cli.getEntActualContoller("镇江润豪建筑劳务有限公司", "", 0)
+    cli.getEntActualContoller("九次方大数据信息集团有限公司", "", 0)
+    print(time.time() - s)
+    s = time.time()
+    cli.getEntActualContoller("华为技术有限公司", "", 0)
     print(time.time() - s)
     s = time.time()
     # cli.getEntGraphG('镇江市广播电视服务公司经营部', 'R107;R108;R106', '3', 'GS')
