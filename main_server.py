@@ -38,15 +38,17 @@ class MyFaceHandler(Interface.Iface):
         if not min_ratio:
             min_ratio = 0
         lcid = neo4j_client.get_lcid(entname=entName, usccode=uscCode)
+        if not lcid:
+            return json.dumps({'data': {'nodes': [], 'links': []}, 'success': 0}, ensure_ascii=False)
         level = neo4j_client.get_level(lcid=lcid)
         data = neo4j_client.get_ent_actual_controller(entname=entName, usccode=uscCode, level=level)
         if not data:
-            return json.dumps({'data': {'nodes': [], 'links': []}, 'status': 0}, ensure_ascii=False)
+            return json.dumps({'data': {'nodes': [], 'links': []}, 'success': 0}, ensure_ascii=False)
         nodes, links = parse.get_ent_actual_controller(data, min_rate=min_ratio)
         print(time.time() - start)
         if not links:
             nodes = []
-        return json.dumps({'data': {'nodes': nodes, 'links': links}, 'status': 0}, ensure_ascii=False)
+        return json.dumps({'data': {'nodes': nodes, 'links': links}, 'success': 0}, ensure_ascii=False)
     except:
         traceback.print_exc()
         print('error')
@@ -71,7 +73,7 @@ class MyFaceHandler(Interface.Iface):
         terms = parse.get_term(attIds.split(';'))
         data = neo4j_client.get_ent_graph_g(entname=keyword, level=level, node_type=nodeType, terms=terms)
         if not data:
-            return json.dumps({'data': {'nodes': [], 'links': []}, 'status': 0}, ensure_ascii=False)
+            return json.dumps({'data': {'nodes': [], 'links': []}, 'success': 0}, ensure_ascii=False)
         nodes, links = parse.parse(data)
         print(time.time() - start)
         return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
@@ -98,16 +100,13 @@ class MyFaceHandler(Interface.Iface):
         terms = parse.get_term(attIds.split(';'))
         data = neo4j_client.get_ents_relevance_seek_graph_g(entnames=entName.split(';'), level=level, terms=terms)
         if not data:
-            return json.dumps({'data': {'nodes': [], 'links': []}, 'status': 0}, ensure_ascii=False)
+            return json.dumps({'data': {'nodes': [], 'links': []}, 'success': 0}, ensure_ascii=False)
         nodes, links = parse.parse(data)
         print(time.time() - start)
         return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
     except:
         traceback.format_exc()
         return json.dumps({'nodes': [], 'success': 103, 'links': []}, ensure_ascii=False)
-
-
-
 
 
 if __name__ == '__main__':

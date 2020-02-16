@@ -44,14 +44,14 @@ class Neo4jClient(object):
         :return:
         '''
         if entname:
-            command = "match (n:GS {UNISCID: '%s'}) return n.ID as lcid"
-            print(command % usccode)
-            rs = self.graph.run(command % usccode)
-        else:
             command = "match (n:GS {NAME: '%s'}) return n.ID as lcid"
             print(command % entname)
             rs = self.graph.run(command % entname)
-        return rs.data()[0]['lcid']
+        else:
+            command = "match (n:GS {UNISCID: '%s'}) return n.ID as lcid"
+            print(command % usccode)
+            rs = self.graph.run(command % usccode)
+        return rs.data()[0]['lcid'] if rs.data() else ''
 
     def get_ent_actual_controller(self, entname, usccode, level):
         '''
