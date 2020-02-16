@@ -1,4 +1,4 @@
-import time
+import time, redis
 from py2neo import Graph
 
 import config
@@ -11,6 +11,21 @@ class Neo4jClient(object):
         self.graph = Graph(config.NEO4J_URL, username=config.NEO4J_USER, password =config.NEO4J_PASSWD)
         print(time.time() - start)
 
+        self.pool = redis.ConnectionPool(host='localhost', port=6379, db=0, decode_responses=True)
+        self.r = redis.Redis(connection_pool=self.pool)
+
+    def get_level(self, lcid):
+        '''
+        获取查询层级
+        :param lcid:
+        :return:
+        '''
+        if self.r.exists(lcid):
+            level = int(self.r.get(lcid)) + 1
+        else:
+            level = 3
+        return level
+
     def example(self, invname):
         """
         获取节点状态
@@ -21,23 +36,38 @@ class Neo4jClient(object):
         rs.close()
         return node_status
 
-    def get_ent_actual_controller(self, entname, usccode):
+    def get_lcid(self, entname, usccode):
+        '''
+        获取企业ID
+        :param entname:
+        :param usccode:
+        :return:
+        '''
+        if entname:
+            command = "match (n:GS {UNISCID: '%s'}) return n.ID as lcid"
+            print(command % usccode)
+            rs = self.graph.run(command % usccode)
+        else:
+            command = "match (n:GS {NAME: '%s'}) return n.ID as lcid"
+            print(command % entname)
+            rs = self.graph.run(command % entname)
+        return rs.data()[0]['lcid']
+
+    def get_ent_actual_controller(self, entname, usccode, level):
         '''
         企业实际控制人接口
         :param entname:
         :param usccode:
         :return:
         '''
-        if usccode:
-            # command = "match p = (n) -[r:IPEE* .. 10]-> (m:GS {UNISCID: '%s'}) return properties(n) as snode, labels(n) as snode_type, r as links"
-            command = "match p = (n) -[r:IPEE* .. 10]-> (m:GS {UNISCID: '%s'}) foreach(n in nodes(p) | set n.label=labels(n)[0]) foreach(link in relationships(p) | set link.ID=id(link)) return distinct [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
+        if entname:
+            command = "match p = (n) -[r:IPEE* 1 .. %s]-> (m:GS {UNISCID: '%s'}) foreach(n in nodes(p) | set n.label=labels(n)[0]) foreach(link in relationships(p) | set link.ID=id(link)) return distinct [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
             print(command % usccode)
-            rs = self.graph.run(command % usccode)
+            rs = self.graph.run(command % (level, usccode))
         else:
-            # command = "match p = (n) -[r:IPEE* .. 10]-> (m:GS {NAME: '%s'}) return properties(n) as snode, labels(n) as snode_type, r as links"
-            command = "match p = (n) -[r:IPEE* .. 10]-> (m:GS {NAME: '%s'}) foreach(n in nodes(p) | set n.label=labels(n)[0]) foreach(link in relationships(p) | set link.ID=id(link)) return distinct [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
+            command = "match p = (n) -[r:IPEE* 1 .. %s]-> (m:GS {NAME: '%s'}) foreach(n in nodes(p) | set n.label=labels(n)[0]) foreach(link in relationships(p) | set link.ID=id(link)) return distinct [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
             print(command % entname)
-            rs = self.graph.run(command % entname)
+            rs = self.graph.run(command % (level, entname))
         info = rs.data()
         rs.close()
         return info
@@ -173,14 +203,3 @@ if __name__ == '__main__':
     # ret = parse.parse(info)
     print(ret)
     # print('end:', time.time() - start)
-
-实际控制人
-    match p = (n) -[r:IPEE* .. 10]-> (m:GS {NAME: '九次方大数据信息集团有限公司'}) foreach(n in nodes(p) | set n.label=labels(n)[0]) foreach(link in relationships(p) | set link.ID=id(link)) return distinct [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r
-match p = (n) -[r:IPEE* .. 10]-> (m:GS {NAME: '九次方大数据信息集团有限公司'}) foreach(n in nodes(p) | set n.label=labels(n)[0]) foreach(link in relationships(p) | set link.ID=id(link)) return distinct [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r
-
-
-'''
-1. 把所有3-10层的企业查出来 
-match (m) -[r:IPEE* 3 .. 10]-> (n:GS) return properties(n)
-
-'''

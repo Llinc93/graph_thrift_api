@@ -2,7 +2,7 @@
 """
 thrift服务端
 """
-import traceback, os, sys, json, time
+import traceback, os, sys, json, time, redis
 if sys.platform.startswith('win'):
     sys.path.append( os.getcwd() + '\com\\thrift\interface\server')
     sys.path.append( os.getcwd() + '\com\\thrift')
@@ -18,7 +18,6 @@ from interface.server import Interface
 from interface.server.ttypes import AuditException
 from model.ent_graph import neo4j_client
 from parse.parse_graph import parse
-
 
 
 class MyFaceHandler(Interface.Iface):
@@ -38,7 +37,9 @@ class MyFaceHandler(Interface.Iface):
         start = time.time()
         if not min_ratio:
             min_ratio = 0
-        data = neo4j_client.get_ent_actual_controller(entname=entName, usccode=uscCode)
+        lcid = neo4j_client.get_lcid(entname=entName, uscCode=uscCode)
+        level = neo4j_client.get_level(lcid=lcid)
+        data = neo4j_client.get_ent_actual_controller(entname=entName, usccode=uscCode, level=level)
         if not data:
             return json.dumps({'data': {'nodes': [], 'links': []}, 'status': 0}, ensure_ascii=False)
         nodes, links = parse.get_ent_actual_controller(data, min_rate=min_ratio)

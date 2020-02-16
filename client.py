@@ -80,6 +80,10 @@ if __name__ == '__main__':
     cli = PyClient()
     import time
     s = time.time()
+    cli.getEntActualContoller("华为技术有限公司", "", 0)
+    print(time.time() - s)
+    print()
+    s = time.time()
     cli.getEntActualContoller("九次方大数据信息集团有限公司", "", 0)
     print(time.time() - s)
     print()
