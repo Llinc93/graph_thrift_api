@@ -30,12 +30,12 @@ class Neo4jClient(object):
         '''
         if usccode:
             # command = "match p = (n) -[r:IPEE* .. 10]-> (m:GS {UNISCID: '%s'}) return properties(n) as snode, labels(n) as snode_type, r as links"
-            command = "match p = (n) -[r:IPEE* .. 10]-> (m:GS {UNISCID: '%s'}) foreach(n in nodes(p) | set n.label=labels(n)[0]) foreach(link in relationships(p) | set link.ID=lid(link)) return distinct [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
+            command = "match p = (n) -[r:IPEE* .. 10]-> (m:GS {UNISCID: '%s'}) foreach(n in nodes(p) | set n.label=labels(n)[0]) foreach(link in relationships(p) | set link.ID=id(link)) return distinct [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
             print(command % usccode)
             rs = self.graph.run(command % usccode)
         else:
             # command = "match p = (n) -[r:IPEE* .. 10]-> (m:GS {NAME: '%s'}) return properties(n) as snode, labels(n) as snode_type, r as links"
-            command = "match p = (n) -[r:IPEE* .. 10]-> (m:GS {NAME: '%s'}) foreach(n in nodes(p) | set n.label=labels(n)[0]) foreach(link in relationships(p) | set link.ID=lid(link)) return distinct [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
+            command = "match p = (n) -[r:IPEE* .. 10]-> (m:GS {NAME: '%s'}) foreach(n in nodes(p) | set n.label=labels(n)[0]) foreach(link in relationships(p) | set link.ID=id(link)) return distinct [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
             print(command % entname)
             rs = self.graph.run(command % entname)
         info = rs.data()
@@ -173,3 +173,14 @@ if __name__ == '__main__':
     # ret = parse.parse(info)
     print(ret)
     # print('end:', time.time() - start)
+
+实际控制人
+    match p = (n) -[r:IPEE* .. 10]-> (m:GS {NAME: '九次方大数据信息集团有限公司'}) foreach(n in nodes(p) | set n.label=labels(n)[0]) foreach(link in relationships(p) | set link.ID=id(link)) return distinct [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r
+match p = (n) -[r:IPEE* .. 10]-> (m:GS {NAME: '九次方大数据信息集团有限公司'}) foreach(n in nodes(p) | set n.label=labels(n)[0]) foreach(link in relationships(p) | set link.ID=id(link)) return distinct [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r
+
+
+'''
+1. 把所有3-10层的企业查出来 
+match (m) -[r:IPEE* 3 .. 10]-> (n:GS) return properties(n)
+
+'''

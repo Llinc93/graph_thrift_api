@@ -145,7 +145,7 @@ class Parse():
                 res_nodes[nodes[0]['ID']]['path'].append(tmp_links)
 
             if nodes[len(links)]['ID'] not in res_nodes.keys():
-                print(111, nodes[len(links)])
+                #print(111, nodes[len(links)])
                 res_nodes[nodes[len(links)]['ID']] = {'id': nodes[len(links)]['ID'], 'name': nodes[len(links)]['NAME'], 'number': 0, 'lastnode': 0, 'type': nodes[len(links)]['label'], 'attr': 1, 'path': []}
 
         actions = copy.deepcopy(res_nodes)

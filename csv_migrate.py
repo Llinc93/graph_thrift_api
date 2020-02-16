@@ -15,7 +15,7 @@ report = {}
 csv_path = r'/opt/neo4j_v2/import'
 
 files = [
-    ('/opt/data/E_INV_INVESTMENT_ENT_new.csv', '/opt/neo4j_v2/import/ent_inv_relationship.csv', ent_inv_relationship_header, 'IPEE', '企业投资关系'),
+    ('/opt/data/E_INV_INVESTMENT_ENT_20200215.csv', '/opt/neo4j_v2/import/ent_inv_relationship.csv', ent_inv_relationship_header, 'IPEE', '企业投资关系'),
     ('/opt/data/E_INV_INVESTMENT_ENT_PERSION', '/opt/neo4j_v2/import/inv_relationship.csv', inv_relationship_header, 'IPEE', '股东投资关系'),
     ('/opt/data/enterprisebaseinfocollect.csv', '/opt/neo4j_v2/import/ent_node.csv', ent_node_header, 'GS', '企业节点'),
     ('/opt/data/F_ENTBRRANCH_TS.csv', '/opt/neo4j_v2/import/bra_relationship.csv', bra_relationship_header, 'BEE', '企业分支关系'),
@@ -53,11 +53,11 @@ if __name__ == '__main__':
     rm_cmd = f'rm -rf /opt/neo4j_v2/data/graph.db'
     rm_code, rm_ret = subprocess.getstatusoutput(rm_cmd)
     import_cmd = "docker exec -it neo4j_v2 /bin/bash -c 'bin/neo4j-admin import --nodes=import/person_node.csv --nodes=import/ent_node.csv --relationships=import/inv_relationship.csv --relationships=import/ent_inv_relationship.csv --relationships=import/bra_relationship.csv --ignore-missing-nodes --ignore-duplicate-nodes'"
-    # import_code, import_ret = subprocess.getstatusoutput(import_cmd)
     os.system(import_cmd)
-    # os.system('chown -R 101:100 /opt/neo4j/data/databases/graph.db')
     os.system('docker restart neo4j_v2')
 
+
+    # 返回表中数据
     for key, value in report.items():
         print(key, value)
 
