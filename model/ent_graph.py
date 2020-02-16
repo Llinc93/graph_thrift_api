@@ -51,7 +51,8 @@ class Neo4jClient(object):
             command = "match (n:GS {UNISCID: '%s'}) return n.ID as lcid"
             print(command % usccode)
             rs = self.graph.run(command % usccode)
-        return rs.data()[0]['lcid'] if rs.data() else ''
+        lcid = rs.data()[0]
+        return lcid['lcid'] if lcid else ''
 
     def get_ent_actual_controller(self, entname, usccode, level):
         '''
@@ -61,13 +62,13 @@ class Neo4jClient(object):
         :return:
         '''
         if entname:
-            command = "match p = (n) -[r:IPEE* 1 .. %s]-> (m:GS {UNISCID: '%s'}) foreach(n in nodes(p) | set n.label=labels(n)[0]) foreach(link in relationships(p) | set link.ID=id(link)) return distinct [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
-            print(command % usccode)
-            rs = self.graph.run(command % (level, usccode))
-        else:
             command = "match p = (n) -[r:IPEE* 1 .. %s]-> (m:GS {NAME: '%s'}) foreach(n in nodes(p) | set n.label=labels(n)[0]) foreach(link in relationships(p) | set link.ID=id(link)) return distinct [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
             print(command % entname)
             rs = self.graph.run(command % (level, entname))
+        else:
+            command = "match p = (n) -[r:IPEE* 1 .. %s]-> (m:GS {UNISCID: '%s'}) foreach(n in nodes(p) | set n.label=labels(n)[0]) foreach(link in relationships(p) | set link.ID=id(link)) return distinct [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
+            print(command % usccode)
+            rs = self.graph.run(command % (level, usccode))
         info = rs.data()
         rs.close()
         return info
