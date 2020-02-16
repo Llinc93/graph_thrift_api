@@ -12,7 +12,7 @@ class PyClient():
 
     def __init__(self):
 
-        self.host = '47.93.228.56'
+        self.host = '172.27.2.2'
         self.port = 9918
 
     def getEntActualContoller(self, username, uscCode, mix_rate):

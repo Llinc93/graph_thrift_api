@@ -37,7 +37,7 @@ class MyFaceHandler(Interface.Iface):
         start = time.time()
         if not min_ratio:
             min_ratio = 0
-        lcid = neo4j_client.get_lcid(entname=entName, uscCode=uscCode)
+        lcid = neo4j_client.get_lcid(entname=entName, usccode=uscCode)
         level = neo4j_client.get_level(lcid=lcid)
         data = neo4j_client.get_ent_actual_controller(entname=entName, usccode=uscCode, level=level)
         if not data:
