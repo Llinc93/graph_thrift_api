@@ -139,6 +139,7 @@ class Parse():
                 end_node_indegree[nodes[index + 1]['ID']] += 1
                 if links[index]['RATE'] != 'null':
                     number *= float(links[index]['RATE'])
+                else:
                     count += 1
 
             if count == len(links):
