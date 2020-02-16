@@ -128,6 +128,7 @@ class Parse():
 
             tmp_links = {}
             number = 1
+            count = 0
             for index in range(len(links)):
                 if nodes[index]['ID'] == 'null' or nodes[index+1]['ID'] =='null':
                     continue
@@ -136,7 +137,12 @@ class Parse():
                 if nodes[index + 1]['ID'] not in res_nodes.keys():
                     res_nodes[nodes[index + 1]['ID']] = {'id': nodes[index + 1]['ID'], 'name': nodes[index + 1]['NAME'], 'number': 0, 'lastnode': 0, 'type': nodes[index + 1]['label'], 'attr': 2, 'path': []}
                 end_node_indegree[nodes[index + 1]['ID']] += 1
-                number *= float(links[index]['RATE'])
+                if links[index]['RATE'] != 'null':
+                    number *= float(links[index]['RATE'])
+                    count += 1
+
+            if count == len(links):
+                number = 0
 
             if nodes[0]['ID'] not in res_nodes.keys():
                 res_nodes[nodes[0]['ID']] = {'id': nodes[0]['ID'], 'name': nodes[0]['NAME'], 'number': number, 'lastnode': 1, 'type': nodes[0]['label'], 'attr': 1, 'path': [tmp_links]}
