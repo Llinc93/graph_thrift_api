@@ -2,6 +2,7 @@ import redis
 
 pool = redis.ConnectionPool(host='localhost', port=6379, db=0, decode_responses=True)
 r = redis.Redis(connection_pool=pool)
+r.flushdb()
 
 node_level_path = '/opt/graph_thrift_api/data/ent_level_{}.csv'
 

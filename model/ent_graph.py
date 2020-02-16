@@ -50,8 +50,8 @@ class Neo4jClient(object):
         else:
             command = "match (n:GS {UNISCID: '%s'}) return n.ID as lcid"
             print(command % usccode)
-            rs = self.graph.run(command % usccode)
-        lcid = rs.data()[0]
+            rs = self.graph.run(command % usccode).data()
+        lcid = rs[0] if rs else ''
         return lcid['lcid'] if lcid else ''
 
     def get_ent_actual_controller(self, entname, usccode, level):
