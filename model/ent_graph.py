@@ -45,11 +45,11 @@ class Neo4jClient(object):
         '''
         if entname:
             command = "match (n:GS {NAME: '%s'}) return n.ID as lcid"
-            print(command % entname)
+            # print(command % entname)
             rs = self.graph.run(command % entname).data()
         else:
             command = "match (n:GS {UNISCID: '%s'}) return n.ID as lcid"
-            print(command % usccode)
+            # print(command % usccode)
             rs = self.graph.run(command % usccode).data()
         lcid = rs[0] if rs else ''
         return lcid['lcid'] if lcid else ''
@@ -113,7 +113,7 @@ class Neo4jClient(object):
 
         tail = ' foreach(link in r | set link.type=type(link)) return properties(n) as snode, labels(n) as snode_type, properties(m) as enode, labels(m) as enode_type, [link in r | properties(link)] as links'
         command = start + relationship + end + label + tail
-        print(command % (level, node_type, entname))
+        # print(command % (level, node_type, entname))
         rs = self.graph.run(command % (level, node_type, entname))
         info = rs.data()
         rs.close()
@@ -124,9 +124,9 @@ class Neo4jClient(object):
         企业关联
         :return:
         '''
-        command = "match p= (n:GS {NAME: '%s'}) -[r* .. %s]- (m:GS {NAME: '%s'}) return p"
+        # command = "match p= (n:GS {NAME: '%s'}) -[r* .. %s]- (m:GS {NAME: '%s'}) return p"
 
-        print(terms)
+        # print(terms)
         nodes_type, links_type, direction = terms
         start = "match p = (n:GS {NAME: '%s'})"
 
@@ -161,7 +161,7 @@ class Neo4jClient(object):
         tail = ' foreach(link in r | set link.type=type(link)) return properties(n) as snode, labels(n) as snode_type, properties(m) as enode, labels(m) as enode_type, [link in r | properties(link)] as links'
         command = start + relationship + end + label + tail
 
-        print(command % (entnames[0], level, entnames[1]))
+        # print(command % (entnames[0], level, entnames[1]))
         rs = self.graph.run(command % (entnames[0], level, entnames[1]))
         info = rs.data()
         rs.close()

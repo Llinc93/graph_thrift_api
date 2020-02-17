@@ -34,7 +34,7 @@ class MyFaceHandler(Interface.Iface):
      - entName
     """
     try:
-        start = time.time()
+        # start = time.time()
         if not min_ratio:
             min_ratio = 0
         lcid = neo4j_client.get_lcid(entname=entName, usccode=uscCode)
@@ -45,13 +45,13 @@ class MyFaceHandler(Interface.Iface):
         if not data:
             return json.dumps({'data': {'nodes': [], 'links': []}, 'success': 0}, ensure_ascii=False)
         nodes, links = parse.get_ent_actual_controller(data, min_rate=min_ratio)
-        print(time.time() - start)
+        # print(time.time() - start)
         if not links:
             nodes = []
         return json.dumps({'data': {'nodes': nodes, 'links': links}, 'success': 0}, ensure_ascii=False)
     except:
         traceback.print_exc()
-        print('error')
+        # print('error')
         return json.dumps({'data':'', 'success':101}, ensure_ascii=False)
 
   def getEntGraphG(self, keyword, attIds, level, nodeType):
@@ -69,13 +69,13 @@ class MyFaceHandler(Interface.Iface):
      - nodeType
     """
     try:
-        start = time.time()
+        # start = time.time()
         terms = parse.get_term(attIds.split(';'))
         data = neo4j_client.get_ent_graph_g(entname=keyword, level=level, node_type=nodeType, terms=terms)
         if not data:
             return json.dumps({'data': {'nodes': [], 'links': []}, 'success': 0}, ensure_ascii=False)
         nodes, links = parse.parse(data)
-        print(time.time() - start)
+        # print(time.time() - start)
         return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
     except:
         traceback.print_exc()
@@ -96,13 +96,13 @@ class MyFaceHandler(Interface.Iface):
     try:
         if not attIds or not entName:
             return {'nodes': [], 'success': 0, 'links': []}
-        start = time.time()
+        # start = time.time()
         terms = parse.get_term(attIds.split(';'))
         data = neo4j_client.get_ents_relevance_seek_graph_g(entnames=entName.split(';'), level=level, terms=terms)
         if not data:
             return json.dumps({'data': {'nodes': [], 'links': []}, 'success': 0}, ensure_ascii=False)
         nodes, links = parse.parse(data)
-        print(time.time() - start)
+        # print(time.time() - start)
         return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
     except:
         traceback.format_exc()
@@ -117,9 +117,9 @@ if __name__ == '__main__':
     tfactory = TTransport.TBufferedTransportFactory()
     pfactory = TCompactProtocol.TCompactProtocolFactory()
     # pfactory = TBinaryProtocol.TBinaryProtocolFactory()
-    #server = TProcessPoolServer.TProcessPoolServer(processor, transport, tfactory, pfactory)
-    #server.setNumWorkers(4)
-    #server.serve()
+    server = TProcessPoolServer.TProcessPoolServer(processor, transport, tfactory, pfactory)
+    server.setNumWorkers(os.cpu_count())
+    server.serve()
 
 
     rpc_server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
