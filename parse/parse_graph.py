@@ -196,41 +196,11 @@ class Parse():
 
         data = []
         for i in res_nodes.values():
-            if hasattr(i, 'layer'):
-                data.append(i)
+            if i.get('layer'):
+                i.pop('layer')
+            data.append(i)
         return data, res_links
 
-        # 过滤综合占比小于最小投资比例的数据,计算实际控制人
-        # actions = copy.deepcopy(res_nodes)
-        # tmp_res_links = []
-        # for key, value in actions.items():
-        #     if value['attr'] == 1 and value['number'] < min_rate:
-        #         rm_links = res_nodes.pop(key)['path']
-        #         if rm_links:
-        #             for item in map(lambda x: list(x.values()), rm_links):
-        #                 for item2 in item:
-        #                     end_node_indegree[item2['pid']] -= 1
-        #         for item in end_node_indegree.items():
-        #             if item[1] == -1:
-        #                 if item[0] in res_nodes.keys():
-        #                     res_nodes.pop(item[0])
-        #         continue
-        #
-        #     # 综合站比大于等与25的人员节点设置为控制人节点
-        #     if value['number'] >= 0.25 and value['type'] == 'GR':
-        #         value['lastnode'] = 1
-        #
-        #     for i in res_nodes[key].pop('path'):
-        #         res_links.extend(i.values())
-        #
-        #     tmp = set()
-        #     tmp_res_links = []
-        #     for link in res_links:
-        #         if tuple(link.items()) not in tmp:
-        #             tmp_res_links.append(link)
-        #             tmp.add(tuple(link.items()))
-        #
-        # return [i for i in res_nodes.values()], tmp_res_links
 
     def parse(self, graph):
         '''
