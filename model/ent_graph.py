@@ -46,7 +46,7 @@ class Neo4jClient(object):
         if entname:
             command = "match (n:GS {NAME: '%s'}) return n.ID as lcid"
             print(command % entname)
-            rs = self.graph.run(command % entname)
+            rs = self.graph.run(command % entname).data()
         else:
             command = "match (n:GS {UNISCID: '%s'}) return n.ID as lcid"
             print(command % usccode)

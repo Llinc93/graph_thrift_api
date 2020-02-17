@@ -196,8 +196,8 @@ class Parse():
 
         data = []
         for i in res_nodes.values():
-            i.pop('layer')
-            data.append(i)
+            if hasattr(i, 'layer'):
+                data.append(i)
         return data, res_links
 
         # 过滤综合占比小于最小投资比例的数据,计算实际控制人
