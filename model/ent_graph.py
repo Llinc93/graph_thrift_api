@@ -62,12 +62,12 @@ class Neo4jClient(object):
         :return:
         '''
         if entname:
-            command = "match p = (n) -[r:IPEE* 1 .. %s]-> (m:GS {NAME: '%s'}) foreach(n in nodes(p) | set n.label=labels(n)[0]) foreach(link in relationships(p) | set link.ID=id(link)) return distinct [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
-            print(command % (level, entname))
+            command = "match p = (n) -[r:IPEE|:BEE* 1 .. %s]-> (m:GS {NAME: '%s'}) foreach(n in nodes(p) | set n.label=labels(n)[0]) foreach(link in relationships(p) | set link.ID=id(link)) foreach(link in relationships(p) | set link.label=type(link)) return distinct [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
+            # print(command % (level, entname))
             rs = self.graph.run(command % (level, entname))
         else:
-            command = "match p = (n) -[r:IPEE* 1 .. %s]-> (m:GS {UNISCID: '%s'}) foreach(n in nodes(p) | set n.label=labels(n)[0]) foreach(link in relationships(p) | set link.ID=id(link)) return distinct [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
-            print(command % (level, usccode))
+            command = "match p = (n) -[r:IPEE|:BEE* 1 .. %s]-> (m:GS {UNISCID: '%s'}) foreach(n in nodes(p) | set n.label=labels(n)[0]) foreach(link in relationships(p) | set link.ID=id(link)) foreach(link in relationships(p) | set link.label=type(link)) return distinct [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
+            # print(command % (level, usccode))
             rs = self.graph.run(command % (level, usccode))
         info = rs.data()
         rs.close()
@@ -80,7 +80,6 @@ class Neo4jClient(object):
         :param level:
         :return:
         '''
-        print(terms)
         nodes_type, links_type, direction = terms
         start = "match p = (n)"
 

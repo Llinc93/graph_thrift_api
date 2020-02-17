@@ -119,6 +119,7 @@ class Parse():
         '''
         res_nodes = {}
         res_links = []
+        links_set = set()
         end_node_indegree = defaultdict(int)
         for path in graph:
             nodes = path['n']
@@ -126,14 +127,20 @@ class Parse():
             if not links:
                 continue
 
+            # 获取每一条路径上的节点，并计算每一条路径上的综合占比
             tmp_links = {}
             number = 1
             count = 0
             for index in range(len(links)):
-                if nodes[index]['ID'] == 'null' or nodes[index+1]['ID'] =='null':
+                if nodes[index]['ID'] == 'null' or nodes[index+1]['ID'] == 'null':
                     continue
+
+                # 分支关系，比例为1
+                if links[index]['label'] == 'BEE':
+                    links[index]['RATE'] = 1
+
                 if links[index]['ID'] not in tmp_links.keys():
-                    tmp_links[links[index]['ID']] = {'id': nodes[index + 1]['ID'], 'pid': nodes[index]['ID'], 'number': links[index]['RATE']}
+                    tmp_links[links[index]['ID']] = {'id': nodes[index + 1]['ID'], 'pid': nodes[index]['ID'], 'number': links[index]['RATE'], 'type': links[index]['label']}
                 if nodes[index + 1]['ID'] not in res_nodes.keys():
                     res_nodes[nodes[index + 1]['ID']] = {'id': nodes[index + 1]['ID'], 'name': nodes[index + 1]['NAME'], 'number': 0, 'lastnode': 0, 'type': nodes[index + 1]['label'], 'attr': 2, 'path': []}
                 end_node_indegree[nodes[index + 1]['ID']] += 1
@@ -142,45 +149,88 @@ class Parse():
                 else:
                     count += 1
 
+            # 若整条路径的占比都为空，则这条路径的占比为空
             if count == len(links):
                 number = 0
 
+            # 计算最终的综合占比
             if nodes[0]['ID'] not in res_nodes.keys():
-                res_nodes[nodes[0]['ID']] = {'id': nodes[0]['ID'], 'name': nodes[0]['NAME'], 'number': number, 'lastnode': 1, 'type': nodes[0]['label'], 'attr': 1, 'path': [tmp_links]}
+                res_nodes[nodes[0]['ID']] = {'id': nodes[0]['ID'], 'name': nodes[0]['NAME'], 'number': number, 'lastnode': 0, 'type': nodes[0]['label'], 'attr': 1, 'path': [tmp_links], 'layer': len(links)}
             else:
-                res_nodes[nodes[0]['ID']]['number'] += number
-                res_nodes[nodes[0]['ID']]['path'].append(tmp_links)
+                if res_nodes[nodes[0]['ID']]['attr'] == 1:
+                    res_nodes[nodes[0]['ID']]['number'] += number
+                    res_nodes[nodes[0]['ID']]['path'].append(tmp_links)
+                else:
+                    res_nodes[nodes[0]['ID']] = {'id': nodes[0]['ID'], 'name': nodes[0]['NAME'], 'number': 0, 'lastnode': 0, 'type': nodes[0]['label'], 'attr': 2, 'path': []}
 
             if nodes[len(links)]['ID'] not in res_nodes.keys():
                 #print(111, nodes[len(links)])
                 res_nodes[nodes[len(links)]['ID']] = {'id': nodes[len(links)]['ID'], 'name': nodes[len(links)]['NAME'], 'number': 0, 'lastnode': 0, 'type': nodes[len(links)]['label'], 'attr': 1, 'path': []}
 
+        # 去除综合占比小于最小投资比例的节点并计算实际控制人
         actions = copy.deepcopy(res_nodes)
         tmp_res_links = []
+        flag = False
         for key, value in actions.items():
-            if value['lastnode'] == 1 and value['number'] < min_rate:
-                rm_links = res_nodes.pop(key)['path']
-                if rm_links:
-                    for item in map(lambda x: list(x.values()), rm_links):
-                        for item2 in item:
-                            end_node_indegree[item2['pid']] -= 1
-                for item in end_node_indegree.items():
-                    if item[1] == -1:
-                        if item[0] in res_nodes.keys():
-                            res_nodes.pop(item[0])
+            if value['attr'] == 1 and value['number'] < min_rate:
+                res_nodes.pop(key)
                 continue
 
+            if value['attr'] == 1 and value['type'] == 'GR' and value['number'] >= 0.25:
+                res_nodes[key]['lastnode'] = 1
+                flag = True
+
+            # 将关系加入关系列表
             for i in res_nodes[key].pop('path'):
-                res_links.extend(i.values())
+                for item in i.values():
+                    r = (item['id'], item['pid'], item['number'], item['type'])
+                    if r not in links_set:
+                        res_links.append(item)
+                        links_set.add(r)
 
-            tmp = set()
-            tmp_res_links = []
-            for link in res_links:
-                if tuple(link.items()) not in tmp:
-                    tmp_res_links.append(link)
-                    tmp.add(tuple(link.items()))
+        # 在人员节点中没有找到控制人，则寻找企业
+        if not flag:
+            for key, value in res_nodes.items():
+                if value['type'] == 'GS' and value['attr'] == 1 and value['layer'] == 10:
+                    res_nodes[key]['lastnode'] = 1
 
-        return [i for i in res_nodes.values()], tmp_res_links
+        data = []
+        for i in res_nodes.values():
+            i.pop('layer')
+            data.append(i)
+        return data, res_links
+
+        # 过滤综合占比小于最小投资比例的数据,计算实际控制人
+        # actions = copy.deepcopy(res_nodes)
+        # tmp_res_links = []
+        # for key, value in actions.items():
+        #     if value['attr'] == 1 and value['number'] < min_rate:
+        #         rm_links = res_nodes.pop(key)['path']
+        #         if rm_links:
+        #             for item in map(lambda x: list(x.values()), rm_links):
+        #                 for item2 in item:
+        #                     end_node_indegree[item2['pid']] -= 1
+        #         for item in end_node_indegree.items():
+        #             if item[1] == -1:
+        #                 if item[0] in res_nodes.keys():
+        #                     res_nodes.pop(item[0])
+        #         continue
+        #
+        #     # 综合站比大于等与25的人员节点设置为控制人节点
+        #     if value['number'] >= 0.25 and value['type'] == 'GR':
+        #         value['lastnode'] = 1
+        #
+        #     for i in res_nodes[key].pop('path'):
+        #         res_links.extend(i.values())
+        #
+        #     tmp = set()
+        #     tmp_res_links = []
+        #     for link in res_links:
+        #         if tuple(link.items()) not in tmp:
+        #             tmp_res_links.append(link)
+        #             tmp.add(tuple(link.items()))
+        #
+        # return [i for i in res_nodes.values()], tmp_res_links
 
     def parse(self, graph):
         '''

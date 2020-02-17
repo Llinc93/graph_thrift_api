@@ -16,9 +16,9 @@ if not os.path.exists(path):
 for index in range(3, 10):
     wf = open(os.path.join(path, tmp_name.format(index)), 'a', encoding='utf8')
     if index != 9:
-        command = 'match (n:GS) -[:IPEE* %s .. %s]-> (m:GS) where not (:GS) -[:IPEE]-> (n) return distinct m.ID as nid'
+        command = 'match (n:GS) -[:IPEE|:BEE* %s .. %s]-> (m:GS) where not (:GS) -[:IPEE|:BEE]-> (n) return distinct m.ID as nid'
     else:
-        command = 'match (n:GS) -[:IPEE* %s .. %s]-> (m:GS) return distinct m.ID as nid'
+        command = 'match (n:GS) -[:IPEE|:BEE* %s .. %s]-> (m:GS) return distinct m.ID as nid'
 
     graph = py2neo.Graph(uri=neo4j_uri, username=username, password=password)
     ret = graph.run(command % (index, index)).data()
