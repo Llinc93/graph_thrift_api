@@ -24,7 +24,7 @@ class Parse():
     LINK_TYPE = ['IPEE', 'SPE', 'LEE', 'IHPEEN', 'SHPEN']
     ATTLDS = {
         # 节点、关系、里外侧(里 偶数,外奇数,全 0)
-        'R101': ['GS', 'IPEE', 1], # 企业对外投资
+        'R101': ['GS', 'IPEE', 1], # 企业对外投资  
         'R102': ['GS', 'IPEE', 2], # 企业股东
         'R103': ['GR', 'IPEE', 1], # 自然人对外投资
         'R104': ['GR', 'IPEE', 2], # 自然人股东
@@ -54,7 +54,41 @@ class Parse():
     MAX_LINK = 10
     MAX_NODE = 8
 
+    CONDITION_MAP = {
+        'R101': {'n': 'GS', 'r': 'IPEE'},   # 企业对外投资
+        'R102': {'n': 'GS', 'r': 'IPEE'},   # 企业股东
+        'R103': {'n': 'GR', 'r': 'IPEE'},   # 自然人对外投资
+        'R104': {'n': 'GR', 'r': 'IPEE'},   # 自然人股东
+        'R105': {'n': 'GR', 'r': 'SPE'},    # 管理人员其他公司任职
+        'R106': {'n': 'GR', 'r': 'SPE'},    # 公司管理人员
+        'R107': {'n': 'GR', 'r': 'BEE'},    # 分支机构
+        'R108': {'n': 'GR', 'r': 'BEE'},    # 总部
+        'R109': {'n': 'GB', 'r': 'WEB'},    # 企业关联中标
+        'R110': {'n': 'GB', 'r': 'WEB'},    # 中标关联企业
+        'R111': {'n': 'DD', 'r': 'RED'},    # 企业关联注册地
+        'R112': {'n': 'DD', 'r': 'RED'},    # 注册地关联企业
+        'R113': {'n': ['EE', 'TT'], 'r': 'LEE'},     # 企业关联邮箱 / 电话
+        'R114': {'n': ['EE', 'TT'], 'r': 'LEE'},     # 邮箱 / 电话关联企业
+        'R115': {'n': 'PP', 'r': 'OPEP'},     # 企业关联专利
+        'R116': {'n': 'PP', 'r': 'OPEP'},     # 专利关联企业
+        'R117': {'n': 'LL', 'r': 'LEL'},     # 企业关联诉讼
+        'R118': {'n': 'LL', 'r': 'LEL'},     # 诉讼关联企业
+        # 'R119': {'n': '', 'r': ''},     # 人员关联专利
+        # 'R120': {'n': '', 'r': ''},     # 专利关联人员
+        # 'R139': {'n': '', 'r': ''},     # 历史企业股东
+        # 'R140': {'n': '', 'r': ''},     # 历史企业对外投资
+        # 'R141': {'n': '', 'r': ''},     # 历史自然人股东
+        # 'R142': {'n': '', 'r': ''},     # 历史自然人对外投资
+        # 'R143': {'n': '', 'r': ''},     # 历史公司管理人员
+        # 'R144': {'n': '', 'r': ''},     # 历史管理人员其他公司任职
+    }
+
     def get_term(self, attlds):
+        '''
+        拆分条件中包含的节点类型和关系类型
+        :param attlds:
+        :return:
+        '''
         direction = set()
         nodes = set()
         links = set()
@@ -67,6 +101,20 @@ class Parse():
         nodes_type = list(nodes) if len(nodes) != self.MAX_NODE else []
         links_type = list(links) if len(links) != self.MAX_LINK else []
         return nodes_type, links_type, sum(direction) % 3
+
+    def get_term_v2(self, attlds):
+        ''''拆分条件中包含的节点类型和关系类型'''
+        nodes = set()
+        links = set()
+        for attld in attlds:
+            n = self.CONDITION_MAP[attld]['n']
+            r = self.CONDITION_MAP[attld]['r']
+            if isinstance(n, list):
+                nodes = nodes.union(set(n))
+            else:
+                nodes.add(n)
+            links.add(r)
+        return nodes, links
 
     def get_GS(self, node):
         data = {
@@ -172,7 +220,7 @@ class Parse():
         tmp_res_links = []
         flag = False
         for key, value in actions.items():
-            if value['attr'] == 1 and value['number'] < min_rate:
+            if value['attr'] == 1 and value['number'] < min_rate and value['type'] == 'GR':
                 res_nodes.pop(key)
                 continue
 
@@ -188,11 +236,11 @@ class Parse():
                         res_links.append(item)
                         links_set.add(r)
 
-        # 在人员节点中没有找到控制人，则寻找企业
-        if not flag:
-            for key, value in res_nodes.items():
-                if value['type'] == 'GS' and value['attr'] == 1 and value['layer'] == 10:
-                    res_nodes[key]['lastnode'] = 1
+        # 寻找第10层企业
+        # if not flag:
+        for key, value in res_nodes.items():
+            if value['type'] == 'GS' and value['attr'] == 1 and value['layer'] == 10:
+                res_nodes[key]['lastnode'] = 1
 
         data = []
         for i in res_nodes.values():
@@ -200,7 +248,6 @@ class Parse():
                 i.pop('layer')
             data.append(i)
         return data, res_links
-
 
     def parse(self, graph):
         '''
@@ -226,8 +273,6 @@ class Parse():
                 'TYPE': path['snode_type'][0],
             }
             for path_link in path['links']:
-                # link_maps = dict(path_link)
-                # link_type = list(path_link.types())[0]
                 link = {
                     'NAME': config.RELATIONSHIP_MAP[path_link['type']],
                     'ID': path_link.pop('ID'),
@@ -239,6 +284,25 @@ class Parse():
                 links.append(link)
             nodes.extend([start_node, end_node])
 
+        return nodes, links
+
+    def parse_v2(self, graph):
+        '''
+        解析neo4j返回的结果
+        :param graph:
+        :return:
+        '''
+        nodes = []
+        links = []
+        nodes_set = set()
+        links_set = set()
+        for path in graph:
+            for node in path['n']:
+                if node['ID'] not in nodes_set:
+                    nodes.append(node)
+            for link in path['r']:
+                if link['ID'] not in links_set:
+                    links.append(link)
         return nodes, links
 
 

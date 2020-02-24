@@ -69,13 +69,19 @@ class MyFaceHandler(Interface.Iface):
      - nodeType
     """
     try:
-        # start = time.time()
-        terms = parse.get_term(attIds.split(';'))
-        data = neo4j_client.get_ent_graph_g(entname=keyword, level=level, node_type=nodeType, terms=terms)
-        if not data:
-            return json.dumps({'data': {'nodes': [], 'links': []}, 'success': 0}, ensure_ascii=False)
-        nodes, links = parse.parse(data)
-        # print(time.time() - start)
+        # # start = time.time()
+        # terms = parse.get_term(attIds.split(';'))
+        # data = neo4j_client.get_ent_graph_g(entname=keyword, level=level, node_type=nodeType, terms=terms)
+        # if not data:
+        #     return json.dumps({'data': {'nodes': [], 'links': []}, 'success': 0}, ensure_ascii=False)
+        # nodes, links = parse.parse(data)
+        # # print(time.time() - start)
+        # return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
+        terms = parse.get_term_v2(attIds.split(';'))
+        data, flag = neo4j_client.get_ent_graph_g_v2(entname=keyword, level=level, node_type=nodeType, terms=terms)
+        if not flag:
+            return json.dumps({'nodes': [data], 'success': 0, 'links': []}, ensure_ascii=False)
+        nodes, links = parse.parse_v2(data)
         return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
     except:
         traceback.print_exc()

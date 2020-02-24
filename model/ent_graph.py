@@ -119,6 +119,60 @@ class Neo4jClient(object):
         rs.close()
         return info
 
+    def get_ent_graph_g_v2(self, entname, level, node_type, terms):
+        '''
+        企业族谱
+            match p = (n) -[r* 1 .. 3]- (m:GS {NAME: '江苏荣马城市建设有限公司'})
+            where n:GS or n:GR
+            foreach(r in relationships(p) | set r.start_id=properties(startNode(r))['ID'])
+            foreach(r in relationships(p) | set r.end_id=properties(endNode(r))['ID'])
+            foreach(r in relationships(p) | set r.labe=type(r)) foreach(n in nodes(p) | set n.label=labels(n)[0])
+            where n:GS or n:GR or
+            return [n in nodes(p) | properties(n)], [r in relationships(p) | properties(r)]
+        :param entname:
+        :param level:
+        :return:
+        '''
+        flag = True
+        nodes_type, links_type = terms
+        start = "match p = (n)"
+
+        relationship = ' -[r{}* .. %s]-'
+
+        if len(links_type) == 1:
+            link_term = ':{}'.format(links_type[0])
+        elif links_type:
+            link_term = ':{}'.format(' | :'.join(links_type))
+        else:
+            link_term = ''
+        relationship = relationship.format(link_term)
+
+        end = " (m:%s {NAME: '%s'})"
+
+        if len(nodes_type) == 1:
+            label = ' where n:{} '.format(nodes_type[0])
+        elif nodes_type:
+            tmp = []
+            for n in nodes_type:
+                tmp.append('n:{}'.format(n))
+            label_term = ' or '.join(tmp)
+            label = ' where ' + label_term
+        else:
+            label = ' '
+        tail = " foreach(r in relationships(p) | set r.start_id=properties(startNode(r))['ID']) foreach(r in relationships(p) | set r.end_id=properties(endNode(r))['ID']) foreach(r in relationships(p) | set r.labe=type(r)) foreach(n in nodes(p) | set n.label=labels(n)[0]) return [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
+        # tail = ' foreach(link in r | set link.type=type(link)) return properties(n) as snode, labels(n) as snode_type, properties(m) as enode, labels(m) as enode_type, [link in r | properties(link)] as links'
+        command = start + relationship + end + label + tail
+        # print(command % (level, node_type, entname))
+        rs = self.graph.run(command % (level, node_type, entname))
+        info = rs.data()
+        if not info:
+            node_command = "match (n:%s {NAME: '%s'}) return proerties(n)"
+            rs = self.graph.run(node_command % (node_type, entname))
+            info = rs.data()
+            flag = False
+        rs.close()
+        return info, flag
+
     def get_ents_relevance_seek_graph_g(self, entnames, level, terms):
         '''
         企业关联
