@@ -54,67 +54,134 @@ class Parse():
     MAX_LINK = 10
     MAX_NODE = 8
 
+    # d表示方向, 1:in 2:out 3:in and out
     CONDITION_MAP = {
-        'R101': {'n': 'GS', 'r': 'IPEE'},   # 企业对外投资
-        'R102': {'n': 'GS', 'r': 'IPEE'},   # 企业股东
-        'R103': {'n': 'GR', 'r': 'IPEE'},   # 自然人对外投资
-        'R104': {'n': 'GR', 'r': 'IPEE'},   # 自然人股东
-        'R105': {'n': 'GR', 'r': 'SPE'},    # 管理人员其他公司任职
-        'R106': {'n': 'GR', 'r': 'SPE'},    # 公司管理人员
-        'R107': {'n': 'GR', 'r': 'BEE'},    # 分支机构
-        'R108': {'n': 'GR', 'r': 'BEE'},    # 总部
-        'R109': {'n': 'GB', 'r': 'WEB'},    # 企业关联中标
-        'R110': {'n': 'GB', 'r': 'WEB'},    # 中标关联企业
-        'R111': {'n': 'DD', 'r': 'RED'},    # 企业关联注册地
-        'R112': {'n': 'DD', 'r': 'RED'},    # 注册地关联企业
-        'R113': {'n': ['EE', 'TT'], 'r': 'LEE'},     # 企业关联邮箱 / 电话
-        'R114': {'n': ['EE', 'TT'], 'r': 'LEE'},     # 邮箱 / 电话关联企业
-        'R115': {'n': 'PP', 'r': 'OPEP'},     # 企业关联专利
-        'R116': {'n': 'PP', 'r': 'OPEP'},     # 专利关联企业
-        'R117': {'n': 'LL', 'r': 'LEL'},     # 企业关联诉讼
-        'R118': {'n': 'LL', 'r': 'LEL'},     # 诉讼关联企业
-        # 'R119': {'n': '', 'r': ''},     # 人员关联专利
-        # 'R120': {'n': '', 'r': ''},     # 专利关联人员
-        # 'R139': {'n': '', 'r': ''},     # 历史企业股东
-        # 'R140': {'n': '', 'r': ''},     # 历史企业对外投资
-        # 'R141': {'n': '', 'r': ''},     # 历史自然人股东
-        # 'R142': {'n': '', 'r': ''},     # 历史自然人对外投资
-        # 'R143': {'n': '', 'r': ''},     # 历史公司管理人员
-        # 'R144': {'n': '', 'r': ''},     # 历史管理人员其他公司任职
+        'R101': {'n': 'GS', 'r': 'IPEE', 'd': 2},   # 企业对外投资
+        'R102': {'n': 'GS', 'r': 'IPEE', 'd': 1},   # 企业股东
+        'R103': {'n': 'GR', 'r': 'IPEE', 'd': 2},   # 自然人对外投资
+        'R104': {'n': 'GR', 'r': 'IPEE', 'd': 1},   # 自然人股东
+        'R105': {'n': 'GR', 'r': 'SPE', 'd': 2},    # 管理人员其他公司任职
+        'R106': {'n': 'GR', 'r': 'SPE', 'd': 1},    # 公司管理人员
+        'R107': {'n': 'GR', 'r': 'BEE', 'd': 3},    # 分支机构
+        'R108': {'n': 'GR', 'r': 'BEE', 'd': 3},    # 总部
+        'R109': {'n': 'GB', 'r': 'WEB', 'd': 3},    # 企业关联中标
+        'R110': {'n': 'GB', 'r': 'WEB', 'd': 3},    # 中标关联企业
+        'R111': {'n': 'DD', 'r': 'RED', 'd': 3},    # 企业关联注册地
+        'R112': {'n': 'DD', 'r': 'RED', 'd': 3},    # 注册地关联企业
+        'R113': {'n': ['EE', 'TT'], 'r': 'LEE', 'd': 3},     # 企业关联邮箱 / 电话
+        'R114': {'n': ['EE', 'TT'], 'r': 'LEE', 'd': 3},     # 邮箱 / 电话关联企业
+        'R115': {'n': 'PP', 'r': 'OPEP', 'd': 3},     # 企业关联专利
+        'R116': {'n': 'PP', 'r': 'OPEP', 'd': 3},     # 专利关联企业
+        'R117': {'n': 'LL', 'r': 'LEL', 'd': 3},     # 企业关联诉讼
+        'R118': {'n': 'LL', 'r': 'LEL', 'd': 3},     # 诉讼关联企业
+        # 'R119': {'n': '', 'r': '', 'd': 3},     # 人员关联专利
+        # 'R120': {'n': '', 'r': '', 'd': 3},     # 专利关联人员
+        # 'R139': {'n': '', 'r': '', 'd': 3},     # 历史企业股东
+        # 'R140': {'n': '', 'r': '', 'd': 3},     # 历史企业对外投资
+        # 'R141': {'n': '', 'r': '', 'd': 3},     # 历史自然人股东
+        # 'R142': {'n': '', 'r': '', 'd': 3},     # 历史自然人对外投资
+        # 'R143': {'n': '', 'r': '', 'd': 3},     # 历史公司管理人员
+        # 'R144': {'n': '', 'r': '', 'd': 3},     # 历史管理人员其他公司任职
+    }
+    filter_map = {
+        'R101': 'R102',  # 企业对外投资
+        'R102': 'R101',  # 企业股东
+        'R103': 'R104',  # 自然人对外投资
+        'R104': 'R103',  # 自然人股东
+        'R105': 'R106',  # 管理人员其他公司任职
+        'R106': 'R105',  # 公司管理人员
+        'R107': 'R108',  # 分支机构
+        'R108': 'R107',  # 总部
+        'R109': 'R110',  # 企业关联中标
+        'R110': 'R109',  # 中标关联企业
+        'R111': 'R112',  # 企业关联注册地
+        'R112': 'R111',  # 注册地关联企业
+        'R113': 'R114',  # 企业关联邮箱 / 电话
+        'R114': 'R113',  # 邮箱 / 电话关联企业
+        'R115': 'R116',  # 企业关联专利
+        'R116': 'R115',  # 专利关联企业
+        'R117': 'R118',  # 企业关联诉讼
+        'R118': 'R117',  # 诉讼关联企业
+        # 'R119': {'n': '', 'r': '', 'd': 3},     # 人员关联专利
+        # 'R120': {'n': '', 'r': '', 'd': 3},     # 专利关联人员
+        # 'R139': {'n': '', 'r': '', 'd': 3},     # 历史企业股东
+        # 'R140': {'n': '', 'r': '', 'd': 3},     # 历史企业对外投资
+        # 'R141': {'n': '', 'r': '', 'd': 3},     # 历史自然人股东
+        # 'R142': {'n': '', 'r': '', 'd': 3},     # 历史自然人对外投资
+        # 'R143': {'n': '', 'r': '', 'd': 3},     # 历史公司管理人员
+        # 'R144': {'n': '', 'r': '', 'd': 3},     # 历史管理人员其他公司任职
     }
 
-    def get_term(self, attlds):
+    def get_term_v3(self, attIds):
         '''
-        拆分条件中包含的节点类型和关系类型
-        :param attlds:
+        根据传入的条件获取节点类型和关系类型，并获取过滤条件
+        1. 传入条件过滤
+        2. 判断方向
+        3. 获取过滤条件
+            1. 同一方向的单向, 均为1，或均为2
+            2. 不同方向的单向， 1和2
+            3. 全部不定向， 均为3
+            4. 单向、不定向混合， 1和3， 2和3
+        :param attIds:
         :return:
         '''
-        direction = set()
+        # step1 传入条件过滤
+        if 'R103' in attIds and 'R104' not in attIds:
+            attIds.remove('R103')
+        if 'R105' in attIds and 'R106' not in attIds:
+            attIds.remove('R105')
+        # if 'R142' in attIds and 'R141' not in attIds:
+        #     attIds.remove('R142')
+        # if 'R144' in attIds and 'R143' not in attIds:
+        #     attIds.remove('R144')
+
+        # step2 判断方向，并获取节点和关系
+        filter = []
+        d = {}
         nodes = set()
         links = set()
-        for attld in attlds:
-            tmp = self.ATTLDS[attld]
-            nodes.add(tmp[0])
-            links.add(tmp[1])
-            direction.add(tmp[2])
+        for attId in attIds:
+            n = self.CONDITION_MAP[attId]['n']
+            r = self.CONDITION_MAP[attId]['r']
 
-        nodes_type = list(nodes) if len(nodes) != self.MAX_NODE else []
-        links_type = list(links) if len(links) != self.MAX_LINK else []
-        return nodes_type, links_type, sum(direction) % 3
-
-    def get_term_v2(self, attlds):
-        ''''拆分条件中包含的节点类型和关系类型'''
-        nodes = set()
-        links = set()
-        for attld in attlds:
-            n = self.CONDITION_MAP[attld]['n']
-            r = self.CONDITION_MAP[attld]['r']
             if isinstance(n, list):
                 nodes = nodes.union(set(n))
+                label = f'{"_".join(n)}_{r}'
             else:
                 nodes.add(n)
+                label = f'{n}_{r}'
             links.add(r)
-        return nodes, links
+
+            if label in d:
+                d[label]['value'].add(self.CONDITION_MAP[attId]['d'])
+            else:
+                d[label] = {'value':set([self.CONDITION_MAP[attId]['d']]), 'attid': attId}
+
+        # step3 根据方向，获取过滤条件
+        direct = ''
+        key_action = []
+        value_action = []
+        for key, value in d.items():
+            key_action.append(key)
+            value_action.append(sum(value['value']))
+
+        # 1. 同一方向的单向, 均为1，或均为2, 不需要过滤
+        if value_action.count(1) == len(value_action):
+            direct = 'in'
+        elif value_action.count(2) == len(value_action):
+            direct = 'out'
+        # 2. 全部不定向， 均为3， 不需要过滤
+        elif value_action.count(3) == len(value_action):
+            direct = 'full'
+        # 3. 不同方向的单向, 1和2, 没有不定向, A1和B3
+        # 4. 单向、不定向混合， 1和3， 2和3
+        else:
+            direct = 'full'
+            for index in range(len(value_action)):
+                if value_action[index] != 3:
+                    filter.append(self.filter_map[d[key_action[index]]['attid']])
+
+        return nodes, links, filter, direct
 
     def get_GS(self, node):
         data = {
@@ -249,44 +316,121 @@ class Parse():
             data.append(i)
         return data, res_links
 
-    def parse(self, graph):
+    def R101(self, link, current, next):
         '''
-        解析neo4j返回的结果
-        :param graph:
+        过滤企业对外投资
+        :param link:
+        :param current:
+        :param next:
         :return:
         '''
-        nodes = []
-        links = []
-        for path in graph:
+        if current['ID'] == link['id'] and next['ID'] == link['pid'] and link['label'] != 'IPEE' and current['label'] == 'GS' and next['label'] == 'GS':
+            return False
+        return True
 
-            start_node = {
-                'NAME': path['snode']['NAME'],
-                'ID': path['snode']['ID'],
-                'ATTRIBUTEMAP': self.get_node_attribute(path['snode_type'][0], path['snode']),
-                'TYPE': path['snode_type'][0],
-            }
+    def R102(self, link, current, next):
+        '''
+        过滤企业股东
+        :param link:
+        :param current:
+        :param next:
+        :return:
+        '''
+        if current['ID'] == link['pid'] and next['ID'] == link['id'] and link['label'] != 'IPEE' and current['label'] == 'GS' and next['label'] == 'GS':
+            return False
+        return True
 
-            end_node = {
-                'NAME': path['enode']['NAME'],
-                'ID': path['enode']['ID'],
-                'ATTRIBUTEMAP': self.get_node_attribute(path['enode_type'][0], path['enode']),
-                'TYPE': path['snode_type'][0],
-            }
-            for path_link in path['links']:
-                link = {
-                    'NAME': config.RELATIONSHIP_MAP[path_link['type']],
-                    'ID': path_link.pop('ID'),
-                    'FROM': start_node['ID'],
-                    'TO': end_node['ID'],
-                    'ATTRIBUTEMAP': self.get_link_attribute(path_link['type'], path_link),
-                    'TYPE': path_link['type'],
-                }
-                links.append(link)
-            nodes.extend([start_node, end_node])
+    def R103(self, link, current, next):
+        '''
+        过滤自然人对外投资
+        :param link:
+        :param current:
+        :param next:
+        :return:
+        '''
+        if current['ID'] == link['id'] and next['ID'] == link['pid'] and link['label'] != 'IPEE' and current['label'] == 'GS' and next['label'] == 'GR':
+            return False
+        return True
 
-        return nodes, links
+    def R104(self, link, current, next):
+        '''
+        过滤自然人股东
+        :param link:
+        :param current:
+        :param next:
+        :return:
+        '''
+        if current['ID'] == link['pid'] and next['ID'] == link['id'] and link['label'] != 'IPEE' and current['label'] == 'GR' and next['label'] == 'GS':
+            return False
+        return True
 
-    def parse_v2(self, graph):
+    def R105(self, link, current, next):
+        '''
+        过滤管理人员其他公司任职
+        :param link:
+        :param current:
+        :param next:
+        :return:
+        '''
+        if current['ID'] == link['id'] and next['ID'] == link['pid'] and link['label'] != 'SPE' and current['label'] == 'GS' and next['label'] == 'GR':
+            return False
+        return True
+
+    def R106(self, link, current, next):
+        '''
+        过滤公司管理人员
+        :param link:
+        :param current:
+        :param next:
+        :return:
+        '''
+        if current['ID'] == link['pid'] and next['ID'] == link['id'] and link['label'] != 'SPE' and current['label'] == 'GR' and next['label'] == 'GS':
+            return False
+        return True
+
+    def filter_graph(self, path, filter, level, entname):
+        '''
+        对图数据库返回的结果进行过滤
+            1. 去除超过指定层级部分的路径
+            2. 按照过滤条件进行过滤
+                1. 过滤的节点处于路径的起始节点
+                2. 过滤的节点处于路径中间
+        :param path:
+        :param filter:
+        :param level:
+        :return:
+        '''
+        nodes = path['n']
+        links = path['r']
+
+        # step1 去除超过指定层级部分的路径
+        if len(links) > level and nodes[-1]['NAME'] == entname:
+            links = links[len(links) - level:]
+
+        # step2 按照过滤条件进行过滤
+        tmp_nodes = [nodes[0]]
+        tmp_links = []
+        for index in range(len(links)):
+            link = links[index]
+            cur_node = nodes[index]
+            next_node = nodes[index + 1]
+
+            # 按照条件进行过滤
+            flag = True
+            for condition in filter:
+                if hasattr(self, condition):
+                    if not getattr(self, condition)(link, cur_node, next_node):
+                        flag = False
+            if flag:
+                tmp_nodes.append(next_node)
+                tmp_links.append(link)
+            else:
+                tmp_nodes = [next_node]
+                tmp_links = []
+
+        return {'n': tmp_nodes, 'r': tmp_links}
+
+    def parse_v3(self, graph, filter, level, entname):
         '''
         解析neo4j返回的结果
         :param graph:
@@ -297,13 +441,59 @@ class Parse():
         nodes_set = set()
         links_set = set()
         for path in graph:
+            if filter:
+                path = self.filter_graph(path, filter, level, entname)
             for node in path['n']:
                 if node['ID'] not in nodes_set:
                     nodes.append(node)
+                    nodes_set.add(node['ID'])
             for link in path['r']:
                 if link['ID'] not in links_set:
                     links.append(link)
+                    links_set.add(link['ID'])
         return nodes, links
 
 
 parse = Parse()
+
+if __name__ == '__main__':
+    CONDITION_MAP = {
+        'R101': {'n': 'GS', 'r': 'IPEE', 'd': 2},   # 企业对外投资
+        'R102': {'n': 'GS', 'r': 'IPEE', 'd': 1},   # 企业股东
+        'R103': {'n': 'GR', 'r': 'IPEE', 'd': 2},   # 自然人对外投资
+        'R104': {'n': 'GR', 'r': 'IPEE', 'd': 1},   # 自然人股东
+        'R105': {'n': 'GR', 'r': 'SPE', 'd': 2},    # 管理人员其他公司任职
+        'R106': {'n': 'GR', 'r': 'SPE', 'd': 1},    # 公司管理人员
+        'R107': {'n': 'GR', 'r': 'BEE', 'd': 3},    # 分支机构
+        'R108': {'n': 'GR', 'r': 'BEE', 'd': 3},    # 总部
+        'R109': {'n': 'GB', 'r': 'WEB', 'd': 3},    # 企业关联中标
+        'R110': {'n': 'GB', 'r': 'WEB', 'd': 3},    # 中标关联企业
+        'R111': {'n': 'DD', 'r': 'RED', 'd': 3},    # 企业关联注册地
+        'R112': {'n': 'DD', 'r': 'RED', 'd': 3},    # 注册地关联企业
+        'R113': {'n': ['EE', 'TT'], 'r': 'LEE', 'd': 3},     # 企业关联邮箱 / 电话
+        'R114': {'n': ['EE', 'TT'], 'r': 'LEE', 'd': 3},     # 邮箱 / 电话关联企业
+        'R115': {'n': 'PP', 'r': 'OPEP', 'd': 3},     # 企业关联专利
+        'R116': {'n': 'PP', 'r': 'OPEP', 'd': 3},     # 专利关联企业
+        'R117': {'n': 'LL', 'r': 'LEL', 'd': 3},     # 企业关联诉讼
+        'R118': {'n': 'LL', 'r': 'LEL', 'd': 3},     # 诉讼关联企业
+        # 'R119': {'n': '', 'r': '', 'd': 3},     # 人员关联专利
+        # 'R120': {'n': '', 'r': '', 'd': 3},     # 专利关联人员
+        # 'R139': {'n': '', 'r': '', 'd': 3},     # 历史企业股东
+        # 'R140': {'n': '', 'r': '', 'd': 3},     # 历史企业对外投资
+        # 'R141': {'n': '', 'r': '', 'd': 3},     # 历史自然人股东
+        # 'R142': {'n': '', 'r': '', 'd': 3},     # 历史自然人对外投资
+        # 'R143': {'n': '', 'r': '', 'd': 3},     # 历史公司管理人员
+        # 'R144': {'n': '', 'r': '', 'd': 3},     # 历史管理人员其他公司任职
+    }
+    att = 'R101;R102;R104;R106'
+    ret = parse.get_term_v3(att.split(';'))
+    print(ret)
+    nodes, links, filter, direct = parse.get_term_v3(att.split(';'))
+    from model.ent_graph import neo4j_client
+    data, flag = neo4j_client.get_ent_graph_g_v3(entname='江苏荣马城市建设有限公司', level=3, node_type='GS', terms=(nodes, links, direct))
+    if not flag:
+        print('null')
+    nodes, links = parse.parse_v3(data, filter, 3, '江苏荣马城市建设有限公司')
+    print(nodes)
+    print()
+    print(links)

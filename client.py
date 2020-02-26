@@ -12,7 +12,9 @@ class PyClient():
 
     def __init__(self):
 
-        self.host = '48.93.228.56'
+        # self.host = '47.93.228.56'
+        # self.post = 9918
+        self.host = '127.0.0.1'
         self.port = 9918
 
     def getEntActualContoller(self, username, uscCode, mix_rate):
@@ -79,14 +81,13 @@ if __name__ == '__main__':
     ent = []
     cli = PyClient()
     import time
-    for i in ent:
-        s = time.time()
-        cli.getEntActualContoller(i, "", 0)
-        print(time.time() - s)
-        print()
+    # for i in ent:
+    #     s = time.time()
+    #     cli.getEntActualContoller(i, "", 0)
+    #     print(time.time() - s)
+    #     print()
     # s = time.time()
-    # cli.getEntGraphG('镇江市广播电视服务公司经营部', 'R107;R108;R106', '3', 'GS')
-    # print(time.time() - s)
+    cli.getEntGraphG('江苏荣马城市建设有限公司', 'R101;R102;R103;R104;R106;R107', '2', 'GS')
     # s = time.time()
     # cli.getEntsRelevanceSeekGraphG('镇江新区鸿业精密机械厂;镇江润豪建筑劳务有限公司', 'R102;R101;R107;R108;R104;R103;R106;R105', '6')
     # e = time.time()

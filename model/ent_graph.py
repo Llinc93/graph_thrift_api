@@ -7,10 +7,9 @@ import config
 class Neo4jClient(object):
 
     def __init__(self):
-        start = time.time()
+        s = time.time()
         self.graph = Graph(config.NEO4J_URL, username=config.NEO4J_USER, password =config.NEO4J_PASSWD)
-        print(time.time() - start)
-
+        print(time.time() - s)
         self.pool = redis.ConnectionPool(host='localhost', port=6379, db=0, decode_responses=True)
         self.r = redis.Redis(connection_pool=self.pool)
 
@@ -135,6 +134,8 @@ class Neo4jClient(object):
         '''
         flag = True
         nodes_type, links_type = terms
+        nodes_type = list(nodes_type)
+        links_type = list(links_type)
         start = "match p = (n)"
 
         relationship = ' -[r{}* .. %s]-'
@@ -162,11 +163,71 @@ class Neo4jClient(object):
         tail = " foreach(r in relationships(p) | set r.start_id=properties(startNode(r))['ID']) foreach(r in relationships(p) | set r.end_id=properties(endNode(r))['ID']) foreach(r in relationships(p) | set r.labe=type(r)) foreach(n in nodes(p) | set n.label=labels(n)[0]) return [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
         # tail = ' foreach(link in r | set link.type=type(link)) return properties(n) as snode, labels(n) as snode_type, properties(m) as enode, labels(m) as enode_type, [link in r | properties(link)] as links'
         command = start + relationship + end + label + tail
-        # print(command % (level, node_type, entname))
+        print(command % (level, node_type, entname))
         rs = self.graph.run(command % (level, node_type, entname))
         info = rs.data()
         if not info:
-            node_command = "match (n:%s {NAME: '%s'}) return proerties(n)"
+            node_command = "match (n:%s {NAME: '%s'}) set n.label=labels(n)[0] return proerties(n)"
+            rs = self.graph.run(node_command % (node_type, entname))
+            info = rs.data()
+            flag = False
+        rs.close()
+        return info, flag
+
+    def get_ent_graph_g_v3(self, entname, level, node_type, terms):
+        '''
+        企业族谱
+            match p = (n) -[r* 1 .. 3]- (m:GS {NAME: '江苏荣马城市建设有限公司'})
+            where n:GS or n:GR
+            foreach(r in relationships(p) | set r.start_id=properties(startNode(r))['ID'])
+            foreach(r in relationships(p) | set r.end_id=properties(endNode(r))['ID'])
+            foreach(r in relationships(p) | set r.labe=type(r)) foreach(n in nodes(p) | set n.label=labels(n)[0])
+            where n:GS or n:GR or
+            return [n in nodes(p) | properties(n)], [r in relationships(p) | properties(r)]
+        :param entname:
+        :param level:
+        :return:
+        '''
+        flag = True
+        nodes_type, links_type, direction = terms
+        nodes_type = list(nodes_type)
+        links_type = list(links_type)
+        start = "match p = (n)"
+
+        if direction == 'full':
+            relationship = ' -[r{}* .. %s]-'
+        elif direction == 'out':
+            relationship = ' <-[r{}* .. %s]-'
+        else:
+            relationship = ' -[r{}* .. %s]->'
+
+        if len(links_type) == 1:
+            link_term = ':{}'.format(links_type[0])
+        elif links_type:
+            link_term = ':{}'.format(' | :'.join(links_type))
+        else:
+            link_term = ''
+        relationship = relationship.format(link_term)
+
+        end = " (m:%s {NAME: '%s'})"
+
+        if len(nodes_type) == 1:
+            label = ' where n:{} '.format(nodes_type[0])
+        elif nodes_type:
+            tmp = []
+            for n in nodes_type:
+                tmp.append('n:{}'.format(n))
+            label_term = ' or '.join(tmp)
+            label = ' where ' + label_term
+        else:
+            label = ' '
+        tail = " foreach(r in relationships(p) | set r.pid=properties(startNode(r))['ID']) foreach(r in relationships(p) | set r.id=properties(endNode(r))['ID']) foreach(r in relationships(p) | set r.label=type(r)) foreach(r in relationships(p) | set r.ID=id(r)) foreach(n in nodes(p) | set n.label=labels(n)[0]) return [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
+        command = start + relationship + end + label + tail
+        print(command % (level, node_type, entname))
+        rs = self.graph.run(command % (level, node_type, entname))
+        info = rs.data()
+        if not info:
+            node_command = "match (n:%s {NAME: '%s'}) set n.label=labels(n)[0] return proerties(n)"
             rs = self.graph.run(node_command % (node_type, entname))
             info = rs.data()
             flag = False
@@ -220,6 +281,116 @@ class Neo4jClient(object):
         info = rs.data()
         rs.close()
         return info
+
+    def get_ents_relevance_seek_graph_g_v2(self, entnames, level, terms):
+        '''
+        多节点关系查询
+        :param entnames:
+        :param level:
+        :param terms:
+        :return:
+        '''
+        # command = "match p= (n:GS {NAME: '%s'}) -[r* .. %s]- (m:GS {NAME: '%s'}) return p"
+
+        # print(terms)
+        nodes_type, links_type, direction = terms
+        start = "match p = (n:GS {NAME: '%s'})"
+
+        if direction == 0:
+            relationship = ' -[r{}* .. %s]-'
+        elif direction == 1:
+            relationship = ' <-[r{}* .. %s]-'
+        else:
+            relationship = ' -[r{}* .. %s]->'
+
+        if len(links_type) == 1:
+            link_term = ':{}'.format(links_type[0])
+        elif links_type:
+            link_term = ':{}'.format(' | '.join(links_type))
+        else:
+            link_term = ''
+        relationship = relationship.format(link_term)
+
+        end = " (m:GS {NAME: '%s'})"
+
+        if len(nodes_type) == 1:
+            label = ' where n:{} '.format(nodes_type[0])
+        elif nodes_type:
+            tmp = []
+            for n in nodes_type:
+                tmp.append('n:{}'.format(n))
+            label_term = ' or '.join(tmp)
+            label = ' where ' + label_term
+        else:
+            label = ' '
+
+        tail = " foreach(r in relationships(p) | set r.start_id=properties(startNode(r))['ID']) foreach(r in relationships(p) | set r.end_id=properties(endNode(r))['ID']) foreach(r in relationships(p) | set r.labe=type(r)) foreach(n in nodes(p) | set n.label=labels(n)[0]) return [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
+        command = start + relationship + end + label + tail
+
+        # print(command % (entnames[0], level, entnames[1]))
+        rs = self.graph.run(command % (entnames[0], level, entnames[1]))
+        info = rs.data()
+        if not info:
+            node_command = "match (n:GS) where n.NAME='%s' or n.NAME='%s' set n.lab=labels(n)[0] return properties(n)"
+            rs = self.graph.run(node_command % (entnames[0], entnames[1]))
+            info = rs.data()
+        rs.close()
+        return info
+
+    def get_ents_relevance_seek_graph_g_v3(self, entnames, level, terms):
+        '''
+        多节点关系查询
+        :param entnames:
+        :param level:
+        :param terms:
+        :return:
+        '''
+        # command = "match p= (n:GS {NAME: '%s'}) -[r* .. %s]- (m:GS {NAME: '%s'}) return p"
+
+        # print(terms)
+        nodes_type, links_type, direction = terms
+        start = "match p = (n:GS {NAME: '%s'})"
+
+        if direction == 'full':
+            relationship = ' -[r{}* .. %s]-'
+        elif direction == 'out':
+            relationship = ' <-[r{}* .. %s]-'
+        else:
+            relationship = ' -[r{}* .. %s]->'
+
+        if len(links_type) == 1:
+            link_term = ':{}'.format(links_type[0])
+        elif links_type:
+            link_term = ':{}'.format(' | '.join(links_type))
+        else:
+            link_term = ''
+        relationship = relationship.format(link_term)
+
+        end = " (m:GS {NAME: '%s'})"
+
+        if len(nodes_type) == 1:
+            label = ' where n:{} '.format(nodes_type[0])
+        elif nodes_type:
+            tmp = []
+            for n in nodes_type:
+                tmp.append('n:{}'.format(n))
+            label_term = ' or '.join(tmp)
+            label = ' where ' + label_term
+        else:
+            label = ' '
+
+        tail = " foreach(r in relationships(p) | set r.start_id=properties(startNode(r))['ID']) foreach(r in relationships(p) | set r.end_id=properties(endNode(r))['ID']) foreach(r in relationships(p) | set r.labe=type(r)) foreach(n in nodes(p) | set n.label=labels(n)[0]) return [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
+        command = start + relationship + end + label + tail
+
+        # print(command % (entnames[0], level, entnames[1]))
+        rs = self.graph.run(command % (entnames[0], level, entnames[1]))
+        info = rs.data()
+        if not info:
+            node_command = "match (n:GS) where n.NAME='%s' or n.NAME='%s' set n.lab=labels(n)[0] return properties(n)"
+            rs = self.graph.run(node_command % (entnames[0], entnames[1]))
+            info = rs.data()
+        rs.close()
+        return info, flag
 
 
 neo4j_client = Neo4jClient()

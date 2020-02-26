@@ -3,6 +3,7 @@
 thrift服务端
 """
 import traceback, os, sys, json, time, redis
+from itertools import permutations
 if sys.platform.startswith('win'):
     sys.path.append( os.getcwd() + '\com\\thrift\interface\server')
     sys.path.append( os.getcwd() + '\com\\thrift')
@@ -69,19 +70,16 @@ class MyFaceHandler(Interface.Iface):
      - nodeType
     """
     try:
-        # # start = time.time()
-        # terms = parse.get_term(attIds.split(';'))
-        # data = neo4j_client.get_ent_graph_g(entname=keyword, level=level, node_type=nodeType, terms=terms)
-        # if not data:
-        #     return json.dumps({'data': {'nodes': [], 'links': []}, 'success': 0}, ensure_ascii=False)
-        # nodes, links = parse.parse(data)
-        # # print(time.time() - start)
-        # return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
-        terms = parse.get_term_v2(attIds.split(';'))
-        data, flag = neo4j_client.get_ent_graph_g_v2(entname=keyword, level=level, node_type=nodeType, terms=terms)
+        if level > 3 or level <= 0:
+            raise ValueError
+
+        nodes, links, filter, direct = parse.get_term_v3(attIds.split(';'))
+        data, flag = neo4j_client.get_ent_graph_g_v3(entname=keyword, level=level, node_type=nodeType, terms=(nodes, links, direct))
+
         if not flag:
             return json.dumps({'nodes': [data], 'success': 0, 'links': []}, ensure_ascii=False)
-        nodes, links = parse.parse_v2(data)
+
+        nodes, links = parse.parse_v3(data, filter, level, keyword)
         return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
     except:
         traceback.print_exc()
@@ -100,33 +98,43 @@ class MyFaceHandler(Interface.Iface):
      - level
     """
     try:
-        if not attIds or not entName:
-            return {'nodes': [], 'success': 0, 'links': []}
-        # start = time.time()
-        terms = parse.get_term(attIds.split(';'))
-        data = neo4j_client.get_ents_relevance_seek_graph_g(entnames=entName.split(';'), level=level, terms=terms)
-        if not data:
-            return json.dumps({'data': {'nodes': [], 'links': []}, 'success': 0}, ensure_ascii=False)
-        nodes, links = parse.parse(data)
-        # print(time.time() - start)
-        return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
+        if level <= 0 or level > 6:
+            raise ValueError
+
+        terms = parse.get_term_v3(attIds=attIds.split(';'))
+
+        # 序列之间的两两组合(Cn2),查询结果取并集
+        nodes = {}
+        links = {}
+        entNames = entName.split(';')
+        for ent_names in permutations(entNames, 2):
+            if ent_names[0] != entName[0]:
+                continue
+            data = neo4j_client.get_ents_relevance_seek_graph_g_v3(entnames=ent_names, level=level, terms=terms)
+
+            tmp_nodes, tmp_links = parse.parse_v3(data)
+            for node in tmp_nodes:
+                if node['ID'] not in nodes:
+                    nodes[node['ID']] = node
+            for link in tmp_links:
+                if link not in links:
+                    links[link['ID']] = link
+        return json.dumps({'nodes': [node for node in nodes.values()], 'success': 0, 'links': [link for link in links.values()]}, ensure_ascii=False)
     except:
-        traceback.format_exc()
+        traceback.print_exc()
         return json.dumps({'nodes': [], 'success': 103, 'links': []}, ensure_ascii=False)
 
 
 if __name__ == '__main__':
-
     handler = MyFaceHandler()
     processor = Interface.Processor(handler)
     transport = TSocket.TServerSocket(host='0.0.0.0', port=9918)
     tfactory = TTransport.TBufferedTransportFactory()
     pfactory = TCompactProtocol.TCompactProtocolFactory()
     # pfactory = TBinaryProtocol.TBinaryProtocolFactory()
-    server = TProcessPoolServer.TProcessPoolServer(processor, transport, tfactory, pfactory)
-    server.setNumWorkers(os.cpu_count())
-    server.serve()
-
+    # server = TProcessPoolServer.TProcessPoolServer(processor, transport, tfactory, pfactory)
+    # server.setNumWorkers(os.cpu_count())
+    # server.serve()
 
     rpc_server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
     rpc_server.serve()
