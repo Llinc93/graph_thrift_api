@@ -101,16 +101,16 @@ class MyFaceHandler(Interface.Iface):
         if level <= 0 or level > 6:
             raise ValueError
 
-        terms = parse.get_term_v3(attIds=attIds.split(';'))
+        nodes, links, filter, direct = parse.get_term_v3(attIds.split(';'))
 
         # 序列之间的两两组合(Cn2),查询结果取并集
         nodes = {}
         links = {}
         entNames = entName.split(';')
         for ent_names in permutations(entNames, 2):
-            if ent_names[0] != entName[0]:
+            if ent_names[0] != entNames[0]:
                 continue
-            data = neo4j_client.get_ents_relevance_seek_graph_g_v3(entnames=ent_names, level=level, terms=terms)
+            data = neo4j_client.get_ents_relevance_seek_graph_g_v3(entnames=ent_names, level=level, terms=(nodes, links, direct))
 
             tmp_nodes, tmp_links = parse.parse_v3(data)
             for node in tmp_nodes:

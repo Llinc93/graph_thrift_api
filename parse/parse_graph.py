@@ -1,56 +1,12 @@
-import copy
+import copy, time
 from collections import defaultdict
 
-import config
-
-
-maps = {
-    'GS': {
-        'industry_class': 'INDUSTRY',
-        'bussiness_age': 'OPFROM',
-        'province': 'PROVINCE',
-        'registered_capital': 'REGISTERED_CAPITAL',
-        'regcapcur': 'REGCAPCUR',
-        'business_status': 'ENTSTATUS',
-        'extendnumber': 'EXTENDNUMBER',
-    },
-    'IPEE': {},
-    'SPE': {},
-}
 
 class Parse():
 
     NODE_TYPE = ['GS']
     LINK_TYPE = ['IPEE', 'SPE', 'LEE', 'IHPEEN', 'SHPEN']
-    ATTLDS = {
-        # 节点、关系、里外侧(里 偶数,外奇数,全 0)
-        'R101': ['GS', 'IPEE', 1], # 企业对外投资  
-        'R102': ['GS', 'IPEE', 2], # 企业股东
-        'R103': ['GR', 'IPEE', 1], # 自然人对外投资
-        'R104': ['GR', 'IPEE', 2], # 自然人股东
-        'R105': ['GR', 'BEE', 1], # 管理人员其他公司任职
-        'R106': ['GR', 'SPE', 2], # 公司管理人员
-        'R107': ['GS', 'BEE', 1], # 分支机构
-        'R108': ['GS', 'BEE', 2], # 总部
-        # 'R109' # 企业关联中标
-        # 'R110' # 中标关联企业
-        # 'R111' # 企业关联注册地
-        # 'R112' # 注册地关联企业
-        # 'R113' # 企业关联邮箱 / 电话
-        # 'R114' # 邮箱 / 电话关联企业
-        # 'R115' # 企业关联专利
-        # 'R116' # 专利关联企业
-        # 'R117' # 企业关联诉讼
-        # 'R118' # 诉讼关联企业
-        # 'R119' # 人员关联专利
-        # 'R120' # 专利关联人员
-        # 'R139' # 历史企业股东
-        # 'R140' # 历史企业对外投资
-        # 'R141' # 历史自然人股东
-        # 'R142' # 历史自然人对外投资
-        # 'R143' # 历史公司管理人员
-        # 'R144' # 历史管理人员其他公司任职
-    }
+
     MAX_LINK = 10
     MAX_NODE = 8
 
@@ -125,18 +81,25 @@ class Parse():
         :param attIds:
         :return:
         '''
+        filter = []
         # step1 传入条件过滤
-        if 'R103' in attIds and 'R104' not in attIds:
-            attIds.remove('R103')
-        if 'R105' in attIds and 'R106' not in attIds:
-            attIds.remove('R105')
+        # if 'R103' in attIds and 'R104' not in attIds:
+        #     attIds.remove('R103')
+        #     filter.append('R104')
+
+        # if 'R105' in attIds and 'R106' not in attIds:
+        #     attIds.remove('R105')
+        #     filter.append('R106')
+
         # if 'R142' in attIds and 'R141' not in attIds:
         #     attIds.remove('R142')
+        #     filter.append('R141')
+
         # if 'R144' in attIds and 'R143' not in attIds:
         #     attIds.remove('R144')
+        #     filter.append('R143')
 
         # step2 判断方向，并获取节点和关系
-        filter = []
         d = {}
         nodes = set()
         links = set()
@@ -324,7 +287,7 @@ class Parse():
         :param next:
         :return:
         '''
-        if current['ID'] == link['id'] and next['ID'] == link['pid'] and link['label'] != 'IPEE' and current['label'] == 'GS' and next['label'] == 'GS':
+        if current['ID'] == link['id'] and next['ID'] == link['pid'] and link['label'] == 'IPEE' and current['label'] == 'GS' and next['label'] == 'GS':
             return False
         return True
 
@@ -336,7 +299,7 @@ class Parse():
         :param next:
         :return:
         '''
-        if current['ID'] == link['pid'] and next['ID'] == link['id'] and link['label'] != 'IPEE' and current['label'] == 'GS' and next['label'] == 'GS':
+        if current['ID'] == link['pid'] and next['ID'] == link['id'] and link['label'] == 'IPEE' and current['label'] == 'GS' and next['label'] == 'GS':
             return False
         return True
 
@@ -348,7 +311,7 @@ class Parse():
         :param next:
         :return:
         '''
-        if current['ID'] == link['id'] and next['ID'] == link['pid'] and link['label'] != 'IPEE' and current['label'] == 'GS' and next['label'] == 'GR':
+        if current['ID'] == link['id'] and next['ID'] == link['pid'] and link['label'] == 'IPEE' and current['label'] == 'GS' and next['label'] == 'GR':
             return False
         return True
 
@@ -360,7 +323,7 @@ class Parse():
         :param next:
         :return:
         '''
-        if current['ID'] == link['pid'] and next['ID'] == link['id'] and link['label'] != 'IPEE' and current['label'] == 'GR' and next['label'] == 'GS':
+        if current['ID'] == link['pid'] and next['ID'] == link['id'] and link['label'] == 'IPEE' and current['label'] == 'GR' and next['label'] == 'GS':
             return False
         return True
 
@@ -372,7 +335,7 @@ class Parse():
         :param next:
         :return:
         '''
-        if current['ID'] == link['id'] and next['ID'] == link['pid'] and link['label'] != 'SPE' and current['label'] == 'GS' and next['label'] == 'GR':
+        if current['ID'] == link['id'] and next['ID'] == link['pid'] and link['label'] == 'SPE' and current['label'] == 'GS' and next['label'] == 'GR':
             return False
         return True
 
@@ -384,7 +347,7 @@ class Parse():
         :param next:
         :return:
         '''
-        if current['ID'] == link['pid'] and next['ID'] == link['id'] and link['label'] != 'SPE' and current['label'] == 'GR' and next['label'] == 'GS':
+        if current['ID'] == link['pid'] and next['ID'] == link['id'] and link['label'] == 'SPE' and current['label'] == 'GR' and next['label'] == 'GS':
             return False
         return True
 
@@ -414,7 +377,6 @@ class Parse():
             link = links[index]
             cur_node = nodes[index]
             next_node = nodes[index + 1]
-
             # 按照条件进行过滤
             flag = True
             for condition in filter:
@@ -441,8 +403,10 @@ class Parse():
         nodes_set = set()
         links_set = set()
         for path in graph:
+            s = time.time()
             if filter:
                 path = self.filter_graph(path, filter, level, entname)
+            print(f'过滤所耗时间: {time.time() - s}')
             for node in path['n']:
                 if node['ID'] not in nodes_set:
                     nodes.append(node)
@@ -485,15 +449,45 @@ if __name__ == '__main__':
         # 'R143': {'n': '', 'r': '', 'd': 3},     # 历史公司管理人员
         # 'R144': {'n': '', 'r': '', 'd': 3},     # 历史管理人员其他公司任职
     }
-    att = 'R101;R102;R104;R106'
+    # 企业族谱接口
+    att = 'R101;R102;R103;R104;R106'
+    level = 2
+    entname = '江苏荣马城市建设有限公司'
     ret = parse.get_term_v3(att.split(';'))
     print(ret)
     nodes, links, filter, direct = parse.get_term_v3(att.split(';'))
     from model.ent_graph import neo4j_client
-    data, flag = neo4j_client.get_ent_graph_g_v3(entname='江苏荣马城市建设有限公司', level=3, node_type='GS', terms=(nodes, links, direct))
+    data, flag = neo4j_client.get_ent_graph_g_v3(entname=entname, level=level, node_type='GS', terms=(nodes, links, direct))
     if not flag:
         print('null')
-    nodes, links = parse.parse_v3(data, filter, 3, '江苏荣马城市建设有限公司')
-    print(nodes)
+    nodes, links = parse.parse_v3(data, filter, level, entname)
+    print(len(nodes), nodes)
     print()
-    print(links)
+    print(len(links), links)
+
+    # 企业关联接口
+    # att = 'R101;R102;R103;R104;R105;R107'
+    # level = 4
+    # entname = '江苏荣马城市建设有限公司;江苏荣马实业有限公司'
+    # node_type, link_type, filter, direct = parse.get_term_v3(att.split(';'))
+    # print(node_type, link_type, filter, direct)
+    # from model.ent_graph import neo4j_client
+    # from itertools import permutations
+    # nodes = {}
+    # links = {}
+    # entNames = entname.split(';')
+    # for ent_names in permutations(entNames, 2):
+    #     if ent_names[0] != entNames[0]:
+    #         continue
+    #     data = neo4j_client.get_ents_relevance_seek_graph_g_v3(entnames=ent_names, level=level, terms=(node_type, link_type, direct))
+    #
+    #     tmp_nodes, tmp_links = parse.parse_v3(data, filter, level, entname)
+    #     for node in tmp_nodes:
+    #         if node['ID'] not in nodes:
+    #             nodes[node['ID']] = node
+    #     for link in tmp_links:
+    #         if link['ID'] not in links:
+    #             links[link['ID']] = link
+    # print(len(nodes), [node for node in nodes.values()])
+    # print()
+    # print(len(links), [link for link in links.values()])
