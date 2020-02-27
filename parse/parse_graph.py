@@ -450,44 +450,44 @@ if __name__ == '__main__':
         # 'R144': {'n': '', 'r': '', 'd': 3},     # 历史管理人员其他公司任职
     }
     # 企业族谱接口
-    att = 'R101;R102;R103;R104;R106'
-    level = 2
-    entname = '江苏荣马城市建设有限公司'
-    ret = parse.get_term_v3(att.split(';'))
-    print(ret)
-    nodes, links, filter, direct = parse.get_term_v3(att.split(';'))
-    from model.ent_graph import neo4j_client
-    data, flag = neo4j_client.get_ent_graph_g_v3(entname=entname, level=level, node_type='GS', terms=(nodes, links, direct))
-    if not flag:
-        print('null')
-    nodes, links = parse.parse_v3(data, filter, level, entname)
-    print(len(nodes), nodes)
-    print()
-    print(len(links), links)
+    # att = 'R101;R102;R103;R104;R106'
+    # level = 2
+    # entname = '江苏荣马城市建设有限公司'
+    # ret = parse.get_term_v3(att.split(';'))
+    # print(ret)
+    # nodes, links, filter, direct = parse.get_term_v3(att.split(';'))
+    # from model.ent_graph import neo4j_client
+    # data, flag = neo4j_client.get_ent_graph_g_v3(entname=entname, level=level, node_type='GS', terms=(nodes, links, direct))
+    # if not flag:
+    #     print('null')
+    # nodes, links = parse.parse_v3(data, filter, level, entname)
+    # print(len(nodes), nodes)
+    # print()
+    # print(len(links), links)
 
     # 企业关联接口
-    # att = 'R101;R102;R103;R104;R105;R107'
-    # level = 4
-    # entname = '江苏荣马城市建设有限公司;江苏荣马实业有限公司'
-    # node_type, link_type, filter, direct = parse.get_term_v3(att.split(';'))
-    # print(node_type, link_type, filter, direct)
-    # from model.ent_graph import neo4j_client
-    # from itertools import permutations
-    # nodes = {}
-    # links = {}
-    # entNames = entname.split(';')
-    # for ent_names in permutations(entNames, 2):
-    #     if ent_names[0] != entNames[0]:
-    #         continue
-    #     data = neo4j_client.get_ents_relevance_seek_graph_g_v3(entnames=ent_names, level=level, terms=(node_type, link_type, direct))
-    #
-    #     tmp_nodes, tmp_links = parse.parse_v3(data, filter, level, entname)
-    #     for node in tmp_nodes:
-    #         if node['ID'] not in nodes:
-    #             nodes[node['ID']] = node
-    #     for link in tmp_links:
-    #         if link['ID'] not in links:
-    #             links[link['ID']] = link
-    # print(len(nodes), [node for node in nodes.values()])
-    # print()
-    # print(len(links), [link for link in links.values()])
+    att = 'R101;R102;R103;R104;R106'
+    level = 4
+    entname = '江苏荣马城市建设有限公司;江苏荣马实业有限公司'
+    node_type, link_type, filter, direct = parse.get_term_v3(att.split(';'))
+    print(node_type, link_type, filter, direct)
+    from model.ent_graph import neo4j_client
+    from itertools import permutations
+    nodes = {}
+    links = {}
+    entNames = entname.split(';')
+    for ent_names in permutations(entNames, 2):
+        if ent_names[0] != entNames[0]:
+            continue
+        data = neo4j_client.get_ents_relevance_seek_graph_g_v3(entnames=ent_names, level=level, terms=(node_type, link_type, direct))
+
+        tmp_nodes, tmp_links = parse.parse_v3(data, filter, level, entname)
+        for node in tmp_nodes:
+            if node['ID'] not in nodes:
+                nodes[node['ID']] = node
+        for link in tmp_links:
+            if link['ID'] not in links:
+                links[link['ID']] = link
+    print(len(nodes), [node for node in nodes.values()])
+    print()
+    print(len(links), [link for link in links.values()])
