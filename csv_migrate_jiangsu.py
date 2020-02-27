@@ -61,10 +61,10 @@ TEL,ENTNAME_GLLZD,LCID,EMAIL
 025-83409842,南京源承八九号文化艺术品投资合伙企业,1f063cd939edf1758b0542d850853a8f,zxy@zixingyun.com
 18021926600,洪泽县四明眼镜有限公司,cb43f17129a7466593e1f1e76eea5a50,511611378@qq.com
 '''
-tel_node_header = ['ID:(TEL-ID)', 'NAME', ':LABEL']
+tel_node_header = ['ID:ID(TEL-ID)', 'NAME', ':LABEL']
 tel_relationship_header = ['ID:START_ID(ENT-ID)', 'ID:END_ID(TEL-ID)', ':TYPE']
 
-email_node_header = ['ID:(EMAIL-ID)', 'NAME', ':LABEL']
+email_node_header = ['ID:ID(EMAIL-ID)', 'NAME', ':LABEL']
 email_relationship_header = ['ID:START_ID(ENT-ID)', 'ID:END_ID(EMAIL-ID)', ':TYPE']
 
 files = [
@@ -148,12 +148,16 @@ for read_file, write_file, header, label, desc in files:
         if index == 1:
             writer.writerow(header)
         else:
-            new_row = getattr(w_csv, label)(row)
+            try:
+                new_row = getattr(w_csv, label)(row)
+            except:
+                print(row)
+                continue
             if isinstance(new_row, tuple):
                 for item in new_row:
                     writer.writerow([k if k else 'null' for k in item])
             else:
-                writer.writerow([k if k else 'null' for k in row])
+                writer.writerow([k if k else 'null' for k in new_row])
         index += 1
     else:
         report[desc] = index
