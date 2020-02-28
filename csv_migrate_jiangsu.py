@@ -83,9 +83,9 @@ email_relationship_header = ['ID:START_ID(ENT-ID)', 'ID:END_ID(EMAIL-ID)', ':TYP
 files = [
     ('/opt/csv/企业投资.csv', r'/opt/neo4j/import/ent_inv_relationship.csv', ent_inv_relationship_header, 'IPEE', '企业投资'),
     ('/opt/csv/自然人投资.csv', r'/opt/neo4j/import/inv_relationship.csv', inv_relationship_header, 'IPEE', '股东投资'),
-    ('/opt/csv/企业节点.csv', r'/opt/neo4j/import/ent_node.csv', ent_node_header, 'GS', '企业节点'),
+    ('/opt/csv/基本信息企业节点.csv', r'/opt/neo4j/import/ent_node.csv', ent_node_header, 'GS', '企业节点'),
     ('/opt/csv/人员节点.csv', r'/opt/neo4j/import/person_node.csv', person_node_header, 'GR', '人员节点'),
-    ('/opt/csv/分支.csv', r'/opt/neo4j/import/bra_relationship.csv', bra_relationship_header, 'BEE', '分支机构'),
+    ('/opt/csv/企业分支.csv', r'/opt/neo4j/import/bra_relationship.csv', bra_relationship_header, 'BEE', '分支机构'),
     ('/opt/csv/任职.csv', r'/opt/neo4j/import/pos_relationship.csv', pos_relationship_header, 'SPE', '人员任职'),
     ('/opt/csv/专利_20200221.csv', r'/opt/neo4j/import/fzl_node.csv', fzl_node_header, 'PP', '专利节点'),
     ('/opt/csv/专利_20200221.csv', r'/opt/neo4j/import/fzl_relationship.csv', fzl_relationship_header, 'OPEP', '专利关系'),
@@ -144,7 +144,7 @@ class WriteCSV(object):
         return row
 
     def WEB(self, row):
-        return [row[4], self.get_id(row[0]), 'WEB']
+        return [row[2], self.get_id(row[0]), 'WEB']
 
     def RED(self, row):
         return [row[2], self.get_id(row[0]), 'RED']
