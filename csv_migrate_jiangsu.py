@@ -101,6 +101,8 @@ files = [
 class WriteCSV(object):
     '''转化成neo4j需要的格式文件'''
 
+
+
     def get_id(self, name):
         return hashlib.md5(name.encode('utf8')).hexdigest()
 
@@ -152,37 +154,40 @@ class WriteCSV(object):
     def LEL(self, row):
         return [row[2], self.get_id(row[0]), 'LEL']
 
-w_csv = WriteCSV()
-for read_file, write_file, header, label, desc in files:
-    rf = open(read_file, 'r', encoding='utf8')
-    wf = open(write_file, 'w', encoding='utf8')
 
-    index = 1
-    for row in csv.reader(rf):
-        writer = csv.writer(wf)
-        if index == 1:
-            writer.writerow(header)
-        else:
-            try:
-                new_row = getattr(w_csv, label)(row)
-            except:
-                print(row)
-                continue
-            if isinstance(new_row, tuple):
-                for item in new_row:
-                    writer.writerow([k if k else 'null' for k in item])
+def run():
+    w_csv = WriteCSV()
+    for read_file, write_file, header, label, desc in files:
+        rf = open(read_file, 'r', encoding='utf8')
+        wf = open(write_file, 'w', encoding='utf8')
+
+        index = 1
+        for row in csv.reader(rf):
+            writer = csv.writer(wf)
+            if index == 1:
+                writer.writerow(header)
             else:
-                writer.writerow([k if k else 'null' for k in new_row])
-        index += 1
-    else:
-        report[desc] = index
+                try:
+                    new_row = getattr(w_csv, label)(row)
+                except:
+                    print(row)
+                    continue
+                if isinstance(new_row, tuple):
+                    for item in new_row:
+                        writer.writerow([k if k else 'null' for k in item])
+                else:
+                    writer.writerow([k if k else 'null' for k in new_row])
+            index += 1
+        else:
+            report[desc] = index
 
-    rf.close()
-    wf.close()
+        rf.close()
+        wf.close()
+    return None
 
 
 if __name__ == '__main__':
-
+    run()
     # 将csv文件导入neoj
     rm_cmd = f'rm -rf /opt/neo4j/data/graph.db'
     rm_code, rm_ret = subprocess.getstatusoutput(rm_cmd)
