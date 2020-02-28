@@ -68,18 +68,18 @@ email_node_header = ['ID:ID(EMAIL-ID)', 'NAME', ':LABEL']
 email_relationship_header = ['ID:START_ID(ENT-ID)', 'ID:END_ID(EMAIL-ID)', ':TYPE']
 
 files = [
-    ('/disk/data_neo4j/专利_20200221.csv', r'/disk/data_neo4j/fzl_node.csv', fzl_node_header, 'PP', '专利节点'),
-    ('/disk/data_neo4j/专利_20200221.csv', r'/disk/data_neo4j/fzl_relationship.csv', fzl_relationship_header, 'OPEP', '专利关系'),
-    ('/disk/data_neo4j/法律文书.csv', r'/disk/data_neo4j/ffl_node.csv', ffl_node_header, 'LL', '诉讼节点'),
-    ('/disk/data_neo4j/法律文书.csv', r'/disk/data_neo4j/ffl_relationship.csv', ffl_relationship_header, 'LEL', '诉讼关系'),
-    ('/disk/data_neo4j/招投标.csv', r'/disk/data_neo4j/fze_node.csv', fze_node_header, 'GB', '招投标节点'),
-    ('/disk/data_neo4j/招投标.csv', r'/disk/data_neo4j/fze_relationship.csv', fze_relationship_header, 'WEB', '招投标关系'),
-    ('/disk/data_neo4j/相同办公地_年报.csv', r'/disk/data_neo4j/addr_node.csv', addr_node_header, 'DD', '办公地节点'),
-    ('/disk/data_neo4j/相同办公地_年报.csv', r'/disk/data_neo4j/addr_relationship.csv', addr_relationship_header, 'RED', '办公地关系'),
-    ('/disk/data_neo4j/相同联系方式_年报.csv', r'/disk/data_neo4j/tel_node.csv', tel_node_header, 'TT', '电话节点'),
-    ('/disk/data_neo4j/相同联系方式_年报.csv', r'/disk/data_neo4j/tel_relationship.csv', tel_relationship_header, 'LEE', '企业专利关系'),
-    ('/disk/data_neo4j/相同联系方式_年报.csv', r'/disk/data_neo4j/email_node.csv', email_node_header, 'EE', '企业专利关系'),
-    ('/disk/data_neo4j/相同联系方式_年报.csv', r'/disk/data_neo4j/email_relationship.csv', email_relationship_header, 'LEE', '企业专利关系'),
+    ('/opt/csv/专利_20200221.csv', r'/opt/neo4j/import/fzl_node.csv', fzl_node_header, 'PP', '专利节点'),
+    ('/opt/csv/专利_20200221.csv', r'/opt/neo4j/import/fzl_relationship.csv', fzl_relationship_header, 'OPEP', '专利关系'),
+    ('/opt/csv/法律文书.csv', r'/opt/neo4j/import/ffl_node.csv', ffl_node_header, 'LL', '诉讼节点'),
+    ('/opt/csv/法律文书.csv', r'/opt/neo4j/import/ffl_relationship.csv', ffl_relationship_header, 'LEL', '诉讼关系'),
+    ('/opt/csv/招投标.csv', r'/opt/neo4j/import/fze_node.csv', fze_node_header, 'GB', '招投标节点'),
+    ('/opt/csv/招投标.csv', r'/opt/neo4j/import/fze_relationship.csv', fze_relationship_header, 'WEB', '招投标关系'),
+    ('/opt/csv/相同办公地_年报.csv', r'/opt/neo4j/import/addr_node.csv', addr_node_header, 'DD', '办公地节点'),
+    ('/opt/csv/相同办公地_年报.csv', r'/opt/neo4j/import/addr_relationship.csv', addr_relationship_header, 'RED', '办公地关系'),
+    ('/opt/csv/相同联系方式_年报.csv', r'/opt/neo4j/import/tel_node.csv', tel_node_header, 'TT', '电话节点'),
+    ('/opt/csv/相同联系方式_年报.csv', r'/opt/neo4j/import/tel_relationship.csv', tel_relationship_header, 'LEE', '企业专利关系'),
+    ('/opt/csv/相同联系方式_年报.csv', r'/opt/neo4j/import/email_node.csv', email_node_header, 'EE', '企业专利关系'),
+    ('/opt/csv/相同联系方式_年报.csv', r'/opt/neo4j/import/email_relationship.csv', email_relationship_header, 'LEE', '企业专利关系'),
 ]
 
 
@@ -169,7 +169,7 @@ for read_file, write_file, header, label, desc in files:
 if __name__ == '__main__':
 
     # 将csv文件导入neoj
-    rm_cmd = f'rm -rf /opt/neo4j_graph/data/graph.db'
+    rm_cmd = f'rm -rf /opt/neo4j/data/graph.db'
     rm_code, rm_ret = subprocess.getstatusoutput(rm_cmd)
     import_cmd = "docker exec -it neo4j_graph /bin/bash -c 'bin/neo4j-admin import " \
                  "--nodes=import/person_node.csv " \
