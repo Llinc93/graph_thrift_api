@@ -108,7 +108,7 @@ class MyFaceHandler(Interface.Iface):
         links = {}
         entNames = entName.split(';')
         for ent_names in permutations(entNames, 2):
-            if ent_names[0] != entNames[0]:
+            if ent_names[-1] != entNames[0] or ent_names[0] == ent_names[-1]:
                 continue
             data = neo4j_client.get_ents_relevance_seek_graph_g_v3(entnames=ent_names, level=level, terms=(nodes, links, direct))
 
