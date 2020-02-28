@@ -4,25 +4,38 @@ import hashlib
 import subprocess
 import csv
 
+'''
+企业节点.csv   --- 企业基本信息表
+LCID、ENTNAME、UNISCID
 
-ent_node_header = ['NAME', 'UNISCID', 'ID:ID(ENT-ID)', ':LABEL']
-person_node_header = ['NAME', 'ID:ID(P-ID)', ':LABEL']
+人员节点.csv  --- 企业股东表和企业任职表
+PID、NAME
 
-inv_relationship_header = ['ID:START_ID(P-ID)', 'RATE', 'ID:END_ID(ENT-ID)', ':TYPE']
-ent_inv_relationship_header = ['ID:START_ID(ENT-ID)', 'RATE', 'ID:END_ID(ENT-ID)', ':TYPE']
-bra_relationship_header = ['ID:END_ID(ENT-ID)', 'ID:START_ID(ENT-ID)', ':TYPE']
-pos_relationship_header = ['ID:END_ID(ENT-ID)', 'POSITION', 'ID:START_ID(ENT-ID)', ':TYPE']
+自然人投资.csv --- 企业股东表
+PID_INV、RATE、LCID
+
+企业投资.csv  --- 企业股东表
+LCID_INV、RATE、LCID
+
+分支.csv   --- 企业分支表
+B_LCID、P_LCID
+
+任职.csv   --- 企业任职表
+LCID、POSITION、PID
+'''
+
 report = {}
 # csv_path = r'/opt/neo4j_v2/import'
 
 # CS文件位置、导入用的neo4j的CSV文件位置(无需修改)、CSV文件字段定义、关系类型、说明
-# files = [
-#     ('/opt/data/E_INV_INVESTMENT_ENT_20200215.csv', '/opt/neo4j_v2/import/ent_inv_relationship.csv', ent_inv_relationship_header, 'IPEE', '企业投资关系'),
-#     ('/opt/data/E_INV_INVESTMENT_ENT_PERSION', '/opt/neo4j_v2/import/inv_relationship.csv', inv_relationship_header, 'IPEE', '股东投资关系'),
-#     ('/opt/data/enterprisebaseinfocollect.csv', '/opt/neo4j_v2/import/ent_node.csv', ent_node_header, 'GS', '企业节点'),
-#     ('/opt/data/F_ENTBRRANCH_TS.csv', '/opt/neo4j_v2/import/bra_relationship.csv', bra_relationship_header, 'BEE', '企业分支关系'),
-#     ('/opt/data/persion.csv', '/opt/neo4j_v2/import/person_node.csv', person_node_header, 'GR', '人员节点')
-# ]
+
+ent_node_header = ['ID:ID(ENT-ID)', 'NAME', 'UNISCID', ':LABEL']
+person_node_header = ['ID:ID(P-ID)', 'NAME', ':LABEL']
+
+inv_relationship_header = ['ID:START_ID(P-ID)', 'RATE', 'ID:END_ID(ENT-ID)', ':TYPE']
+ent_inv_relationship_header = ['ID:START_ID(ENT-ID)', 'RATE', 'ID:END_ID(ENT-ID)', ':TYPE']
+bra_relationship_header = ['ID:START_ID(ENT-ID)', 'ID:END_ID(ENT-ID)', ':TYPE']
+pos_relationship_header = ['ID:START_ID(P-ID)', 'POSITION', 'ID:END_ID(ENT-ID)', ':TYPE']
 
 '''
 FZL_MC,FZL_SQH,FZL_SQZLQR,FZL_STATUS,FZL_FMSJR,LCID
@@ -68,6 +81,8 @@ email_node_header = ['ID:ID(EMAIL-ID)', 'NAME', ':LABEL']
 email_relationship_header = ['ID:START_ID(ENT-ID)', 'ID:END_ID(EMAIL-ID)', ':TYPE']
 
 files = [
+    ('/opt/csv/ent_inv_relationship.csv', r'/opt/neo4j/import/ent_inv_relationship.csv', ent_inv_relationship_header, 'IPEE', '企业投资'),
+    ('/opt/csv/inv_relationship.csv', r'/opt/neo4j/import/inv_relationship.csv', inv_relationship_header, 'IPEE', '股东投资'),
     ('/opt/csv/专利_20200221.csv', r'/opt/neo4j/import/fzl_node.csv', fzl_node_header, 'PP', '专利节点'),
     ('/opt/csv/专利_20200221.csv', r'/opt/neo4j/import/fzl_relationship.csv', fzl_relationship_header, 'OPEP', '专利关系'),
     ('/opt/csv/法律文书.csv', r'/opt/neo4j/import/ffl_node.csv', ffl_node_header, 'LL', '诉讼节点'),
