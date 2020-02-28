@@ -129,7 +129,7 @@ class WriteCSV(object):
         return [self.get_id(row[0]), row[0], row[3], 'LL']
 
     def IPEE(self, row):
-        pass
+        return [row[0], row[1] if row[1] else 0, row[2]]
 
     def SPE(self, row):
         pass
