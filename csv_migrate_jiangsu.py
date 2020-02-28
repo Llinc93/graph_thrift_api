@@ -94,7 +94,7 @@ files = [
     ('/opt/csv/招投标.csv', r'/opt/neo4j/import/fze_node.csv', fze_node_header, 'GB', '招投标节点'),
     ('/opt/csv/招投标.csv', r'/opt/neo4j/import/fze_relationship.csv', fze_relationship_header, 'WEB', '招投标关系'),
     ('/opt/csv/相同办公地_年报.csv', r'/opt/neo4j/import/addr_node.csv', addr_node_header, 'DD', '办公地节点'),
-    ('/opt/csv/相同办公地_年报.csv', r'/opt/neo4j/import/addr_relationship.csv', addr_relationship_header, 'RED', '办公地关系'),
+    ('/opt/csv/相同办公地_年报.csv', r'/opt/neo4j/import/addr_relationship.csv', addr_relationship_header, 'WEB', '办公地关系'),
     ('/opt/csv/相同联系方式_年报.csv', r'/opt/neo4j/import/tel_node.csv', tel_node_header, 'TT', '电话节点'),
     ('/opt/csv/相同联系方式_年报.csv', r'/opt/neo4j/import/tel_relationship.csv', tel_relationship_header, 'LEE', '企业专利关系'),
     ('/opt/csv/相同联系方式_年报.csv', r'/opt/neo4j/import/email_node.csv', email_node_header, 'EE', '企业专利关系'),
@@ -144,7 +144,7 @@ class WriteCSV(object):
         return row
 
     def WEB(self, row):
-        return [row[4], self.get_id(row[0]), 'LEE']
+        return [row[4], self.get_id(row[0]), 'WEB']
 
     def RED(self, row):
         return [row[2], self.get_id(row[0]), 'RED']
