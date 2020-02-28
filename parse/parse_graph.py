@@ -118,7 +118,7 @@ class Parse():
             if label in d:
                 d[label]['value'].add(self.CONDITION_MAP[attId]['d'])
             else:
-                d[label] = {'value':set([self.CONDITION_MAP[attId]['d']]), 'attid': attId}
+                d[label] = {'value': set([self.CONDITION_MAP[attId]['d']]), 'attid': attId}
 
         # step3 根据方向，获取过滤条件
         direct = ''
@@ -136,8 +136,7 @@ class Parse():
         # 2. 全部不定向， 均为3， 不需要过滤
         elif value_action.count(3) == len(value_action):
             direct = 'full'
-        # 3. 不同方向的单向, 1和2, 没有不定向, A1和B3
-        # 4. 单向、不定向混合， 1和3， 2和3
+        # 3. 不同方向的单向, 1和2, 没有不定向, A1和B3;单向、不定向混合， 1和3， 2和3
         else:
             direct = 'full'
             for index in range(len(value_action)):

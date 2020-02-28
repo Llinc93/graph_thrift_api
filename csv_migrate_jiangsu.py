@@ -8,7 +8,7 @@ import csv
 企业节点.csv   --- 企业基本信息表
 LCID、ENTNAME、UNISCID
 
-人员节点.csv  --- 企业股东表和企业任职表
+人员节点.csv  --- 企业股东表和主要管理人员表
 PID、NAME
 
 自然人投资.csv --- 企业股东表
@@ -20,7 +20,7 @@ LCID_INV、RATE、LCID
 分支.csv   --- 企业分支表
 B_LCID、P_LCID
 
-任职.csv   --- 企业任职表
+任职.csv   --- 主要管理人员表
 LCID、POSITION、PID
 '''
 
@@ -34,7 +34,7 @@ person_node_header = ['ID:ID(P-ID)', 'NAME', ':LABEL']
 
 inv_relationship_header = ['ID:START_ID(P-ID)', 'RATE', 'ID:END_ID(ENT-ID)', ':TYPE']
 ent_inv_relationship_header = ['ID:START_ID(ENT-ID)', 'RATE', 'ID:END_ID(ENT-ID)', ':TYPE']
-bra_relationship_header = ['ID:START_ID(ENT-ID)', 'ID:END_ID(ENT-ID)', ':TYPE']
+bra_relationship_header = ['ID:END_ID(ENT-ID)', 'ID:START_ID(ENT-ID)', ':TYPE']
 pos_relationship_header = ['ID:START_ID(P-ID)', 'POSITION', 'ID:END_ID(ENT-ID)', ':TYPE']
 
 '''
@@ -81,8 +81,12 @@ email_node_header = ['ID:ID(EMAIL-ID)', 'NAME', ':LABEL']
 email_relationship_header = ['ID:START_ID(ENT-ID)', 'ID:END_ID(EMAIL-ID)', ':TYPE']
 
 files = [
-    ('/opt/csv/ent_inv_relationship.csv', r'/opt/neo4j/import/ent_inv_relationship.csv', ent_inv_relationship_header, 'IPEE', '企业投资'),
-    ('/opt/csv/inv_relationship.csv', r'/opt/neo4j/import/inv_relationship.csv', inv_relationship_header, 'IPEE', '股东投资'),
+    ('/opt/csv/企业投资.csv', r'/opt/neo4j/import/ent_inv_relationship.csv', ent_inv_relationship_header, 'IPEE', '企业投资'),
+    ('/opt/csv/自然人投资.csv', r'/opt/neo4j/import/inv_relationship.csv', inv_relationship_header, 'IPEE', '股东投资'),
+    ('/opt/csv/企业节点.csv', r'/opt/neo4j/import/ent_node.csv', ent_node_header, 'GS', '企业节点'),
+    ('/opt/csv/人员节点.csv', r'/opt/neo4j/import/person_node.csv', person_node_header, 'GR', '人员节点'),
+    ('/opt/csv/分支.csv', r'/opt/neo4j/import/bra_relationship.csv', bra_relationship_header, 'BEE', '分支机构'),
+    ('/opt/csv/任职.csv', r'/opt/neo4j/import/pos_relationship.csv', pos_relationship_header, 'SPE', '人员任职'),
     ('/opt/csv/专利_20200221.csv', r'/opt/neo4j/import/fzl_node.csv', fzl_node_header, 'PP', '专利节点'),
     ('/opt/csv/专利_20200221.csv', r'/opt/neo4j/import/fzl_relationship.csv', fzl_relationship_header, 'OPEP', '专利关系'),
     ('/opt/csv/法律文书.csv', r'/opt/neo4j/import/ffl_node.csv', ffl_node_header, 'LL', '诉讼节点'),
@@ -107,10 +111,10 @@ class WriteCSV(object):
         return hashlib.md5(name.encode('utf8')).hexdigest()
 
     def GS(self, row):
-        pass
+        return row
 
     def GR(self, row):
-        pass
+        return row
 
     def GB(self, row):
         return [self.get_id(row[0]), row[0], row[2], 'GB']
@@ -134,10 +138,10 @@ class WriteCSV(object):
         return [row[0], row[1] if row[1] else 0, row[2]]
 
     def SPE(self, row):
-        pass
+        return row
 
     def BEE(self, row):
-        pass
+        return row
 
     def WEB(self, row):
         return [row[4], self.get_id(row[0]), 'LEE']
@@ -159,7 +163,7 @@ def run():
     w_csv = WriteCSV()
     for read_file, write_file, header, label, desc in files:
         rf = open(read_file, 'r', encoding='utf8')
-        wf = open(write_file, 'w', encoding='utf8')
+        wf = open(write_file, 'w', encoding='utf8', newline='')
 
         index = 1
         for row in csv.reader(rf):
@@ -189,7 +193,7 @@ def run():
 if __name__ == '__main__':
     run()
     # 将csv文件导入neoj
-    rm_cmd = f'rm -rf /opt/neo4j/data/graph.db'
+    rm_cmd = f'rm -rf /opt/neo4j/data/databases/graph.db'
     rm_code, rm_ret = subprocess.getstatusoutput(rm_cmd)
     import_cmd = "docker exec -it neo4j_graph /bin/bash -c 'bin/neo4j-admin import " \
                  "--nodes=import/person_node.csv " \
@@ -210,7 +214,7 @@ if __name__ == '__main__':
                  "--relationships=import/addr_relationship.csv " \
                  "--relationships=import/tel_relationship.csv " \
                  "--relationships=import/email_relationship.csv " \
-                 "--ignore-missing-nodes --ignore-duplicate-nodes'"
+                 "--ignore-missing-nodes --ignore-duplicate-nodes --high-io=true'"
     os.system(import_cmd)
     os.system('docker restart neo4j_graph')
 

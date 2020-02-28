@@ -18,10 +18,13 @@ class Neo4jClient(object):
         :param lcid:
         :return:
         '''
-        if self.r.exists(lcid):
-            level = int(self.r.get(lcid)) + 1
-        else:
-            level = 3
+        try:
+            if self.r.exists(lcid):
+                level = int(self.r.get(lcid)) + 1
+            else:
+                level = 3
+        except:
+            level = 10
         return level
 
     def get_lcid(self, entname, usccode):
