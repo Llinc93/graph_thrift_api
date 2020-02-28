@@ -117,9 +117,13 @@ class Neo4jClient(object):
         rs = self.graph.run(command % (level, node_type, entname))
         info = rs.data()
         if not info:
-            node_command = "match (n:%s {NAME: '%s'}) set n.label=labels(n)[0] return proerties(n) as n"
+            node_command = "match (n:%s {NAME: '%s'}) set n.label=labels(n)[0] return properties(n) as n"
             rs = self.graph.run(node_command % (node_type, entname))
-            info = rs.data()['n']
+            info = rs.data()
+            if not info:
+                info = []
+            else:
+                info = info[0]['n']
             flag = False
         rs.close()
         return info, flag
