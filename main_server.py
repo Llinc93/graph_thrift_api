@@ -112,9 +112,9 @@ class MyFaceHandler(Interface.Iface):
         for ent_names in permutations(entNames, 2):
             if ent_names[-1] != entNames[0] or ent_names[0] == ent_names[-1]:
                 continue
-            data = neo4j_client.get_ents_relevance_seek_graph_g_v3(entnames=ent_names, level=level, terms=(nodes, links, direct))
+            data = neo4j_client.get_ents_relevance_seek_graph_g_v3(entnames=ent_names, level=int(level), terms=(nodes, links, direct))
 
-            tmp_nodes, tmp_links = parse.parse_v3(data)
+            tmp_nodes, tmp_links = parse.parse_v3(data, filter, int(level), ent_names[-1])
             for node in tmp_nodes:
                 if node['ID'] not in nodes:
                     nodes[node['ID']] = node

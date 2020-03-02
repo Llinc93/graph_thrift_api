@@ -5,8 +5,8 @@ import subprocess
 import csv
 
 '''
-企业节点.csv   --- 企业基本信息表
-LCID、ENTNAME、UNISCID
+基本信息企业节点.csv   --- 企业基本信息表
+LCID、ENTNAME、UNISCID、STATUS
 
 人员节点.csv  --- 企业股东表和主要管理人员表
 PID、NAME
@@ -17,11 +17,13 @@ PID_INV、RATE、LCID
 企业投资.csv  --- 企业股东表
 LCID_INV、RATE、LCID
 
-分支.csv   --- 企业分支表
+企业分支.csv   --- 企业分支表
 B_LCID、P_LCID
 
 任职.csv   --- 主要管理人员表
 LCID、POSITION、PID
+
+
 '''
 
 report = {}
@@ -29,7 +31,7 @@ report = {}
 
 # CS文件位置、导入用的neo4j的CSV文件位置(无需修改)、CSV文件字段定义、关系类型、说明
 
-ent_node_header = ['ID:ID(ENT-ID)', 'NAME', 'UNISCID', ':LABEL']
+ent_node_header = ['ID:ID(ENT-ID)', 'NAME', 'UNISCID', 'STATUS', ':LABEL']
 person_node_header = ['ID:ID(P-ID)', 'NAME', ':LABEL']
 
 inv_relationship_header = ['ID:START_ID(P-ID)', 'RATE', 'ID:END_ID(ENT-ID)', ':TYPE']
@@ -46,7 +48,7 @@ fzl_node_header = ['ID:ID(FZL-ID)', 'NAME', 'SQH', ':LABEL']
 fzl_relationship_header = ['ID:START_ID(ENT-ID)', 'ID:END_ID(FZL-ID)', ':TYPE']
 
 '''
-FFL_TITLE,FFL_ENTNAME_GLLZD,LCID,FFL_CASENUM,FFL_STATUS
+FFL_TITLE,LCID,FFL_CASENUM,FFL_STATUS
 王祥子虚开增值税专用发票、用于骗取出口退税、抵扣税款发票一审刑事判决书,盐城市艳阳棉业有限公司,0b4bf97634753010e8e5e8cc36ead307,（2014）沪二中刑初字第48号,1
 苏州建恒国际货运代理有限公司与王香不当得利纠纷一审民事判决书,苏州建恒国际货运代理有限公司,84dcb2ecf8276ed598651c7775c28584,（2014）虎民初字第1521号,1
 '''
@@ -81,39 +83,39 @@ email_node_header = ['ID:ID(EMAIL-ID)', 'NAME', ':LABEL']
 email_relationship_header = ['ID:START_ID(ENT-ID)', 'ID:END_ID(EMAIL-ID)', ':TYPE']
 
 files = [
-    #('/opt/csv/企业投资.csv', r'/home/neo4j/import/ent_inv_relationship.csv', ent_inv_relationship_header, 'IPEE', '企业投资'),
-    #('/opt/csv/自然人投资.csv', r'/home/neo4j/import/inv_relationship.csv', inv_relationship_header, 'IPEE', '股东投资'),
-    #('/opt/csv/基本信息企业节点.csv', r'/home/neo4j/import/ent_node.csv', ent_node_header, 'GS', '企业节点'),
-    #('/opt/csv/人员节点.csv', r'/home/neo4j/import/person_node.csv', person_node_header, 'GR', '人员节点'),
-    #('/opt/csv/企业分支.csv', r'/home/neo4j/import/bra_relationship.csv', bra_relationship_header, 'BEE', '分支机构'),
-    #('/opt/csv/任职.csv', r'/opt/neo4j/import/pos_relationship.csv', pos_relationship_header, 'SPE', '人员任职'),
-    # ('/opt/csv/专利_20200221.csv', r'/home/neo4j/import/fzl_node.csv', fzl_node_header, 'PP', '专利节点'),
-    # ('/opt/csv/专利_20200221.csv', r'/home/neo4j/import/fzl_relationship.csv', fzl_relationship_header, 'OPEP', '专利关系'),
-    # ('/opt/csv/法律文书.csv', r'/home/neo4j/import/ffl_node.csv', ffl_node_header, 'LL', '诉讼节点'),
-    # ('/opt/csv/法律文书.csv', r'/home/neo4j/import/ffl_relationship.csv', ffl_relationship_header, 'LEL', '诉讼关系'),
-    # ('/opt/csv/招投标.csv', r'/home/neo4j/import/fze_node.csv', fze_node_header, 'GB', '招投标节点'),
-    # ('/opt/csv/招投标.csv', r'/home/neo4j/import/fze_relationship.csv', fze_relationship_header, 'WEB', '招投标关系'),
-    # ('/opt/csv/相同办公地_年报.csv', r'/home/neo4j/import/addr_node.csv', addr_node_header, 'DD', '办公地节点'),
-    # ('/opt/csv/相同办公地_年报.csv', r'/home/neo4j/import/addr_relationship.csv', addr_relationship_header, 'WEB', '办公地关系'),
+    ('/opt/csv/企业投资.csv', r'/home/neo4j/import/ent_inv_relationship.csv', ent_inv_relationship_header, 'IPEE', '企业投资'),
+    ('/opt/csv/自然人投资.csv', r'/home/neo4j/import/inv_relationship.csv', inv_relationship_header, 'IPEE', '股东投资'),
+    ('/opt/csv/基本信息企业节点.csv', r'/home/neo4j/import/ent_node.csv', ent_node_header, 'GS', '企业节点'),
+    ('/opt/csv/人员节点.csv', r'/home/neo4j/import/person_node.csv', person_node_header, 'GR', '人员节点'),
+    ('/opt/csv/企业分支.csv', r'/home/neo4j/import/bra_relationship.csv', bra_relationship_header, 'BEE', '分支机构'),
+    ('/opt/csv/主要管理人员.csv', r'/opt/neo4j/import/pos_relationship.csv', pos_relationship_header, 'SPE', '人员任职'),
+    ('/opt/csv/专利_20200221.csv', r'/home/neo4j/import/fzl_node.csv', fzl_node_header, 'PP', '专利节点'),
+    ('/opt/csv/专利_20200221.csv', r'/home/neo4j/import/fzl_relationship.csv', fzl_relationship_header, 'OPEP', '专利关系'),
+    ('/opt/csv/法律文书.csv', r'/home/neo4j/import/ffl_node.csv', ffl_node_header, 'LL', '诉讼节点'),
+    ('/opt/csv/法律文书.csv', r'/home/neo4j/import/ffl_relationship.csv', ffl_relationship_header, 'LEL', '诉讼关系'),
+    ('/opt/csv/招投标.csv', r'/home/neo4j/import/fze_node.csv', fze_node_header, 'GB', '招投标节点'),
+    ('/opt/csv/招投标.csv', r'/home/neo4j/import/fze_relationship.csv', fze_relationship_header, 'WEB', '招投标关系'),
+    ('/opt/csv/相同办公地_年报.csv', r'/home/neo4j/import/addr_node.csv', addr_node_header, 'DD', '办公地节点'),
+    ('/opt/csv/相同办公地_年报.csv', r'/home/neo4j/import/addr_relationship.csv', addr_relationship_header, 'WEB', '办公地关系'),
     ('/opt/csv/相同联系方式_年报.csv', r'/home/neo4j/import/tel_node.csv', tel_node_header, 'TT', '电话节点'),
-    ('/opt/csv/相同联系方式_年报.csv', r'/home/neo4j/import/tel_relationship.csv', tel_relationship_header, 'LEE1', '企业专利关系'),
-    ('/opt/csv/相同联系方式_年报.csv', r'/home/neo4j/import/email_node.csv', email_node_header, 'EE', '企业专利关系'),
-    ('/opt/csv/相同联系方式_年报.csv', r'/home/neo4j/import/email_relationship.csv', email_relationship_header, 'LEE2', '企业专利关系'),
+    ('/opt/csv/相同联系方式_年报.csv', r'/home/neo4j/import/tel_relationship.csv', tel_relationship_header, 'LEE1', '相同联系方式'),
+    ('/opt/csv/相同联系方式_年报.csv', r'/home/neo4j/import/email_node.csv', email_node_header, 'EE', '邮箱节点'),
+    ('/opt/csv/相同联系方式_年报.csv', r'/home/neo4j/import/email_relationship.csv', email_relationship_header, 'LEE2', '相同联系方式'),
 ]
 
 
 class WriteCSV(object):
     '''转化成neo4j需要的格式文件'''
 
-
-
     def get_id(self, name):
         return hashlib.md5(name.encode('utf8')).hexdigest()
 
     def GS(self, row):
+        row.append('GS')
         return row
 
     def GR(self, row):
+        row.append('GR')
         return row
 
     def GB(self, row):
@@ -123,27 +125,26 @@ class WriteCSV(object):
         return [self.get_id(row[0]), row[0], 'DD']
 
     def EE(self, row):
-        # return [self.get_id(row[3]), row[3], 'EE']
         return [row[3], row[3], 'EE']
 
     def TT(self, row):
-        # return [self.get_id(row[0]), row[0], 'TT']
         return [row[0], row[0], 'TT']
 
     def PP(self, row):
-        # return [self.get_id(row[0]), row[0], row[1], 'PP']
         return [row[1], row[0], row[1], 'PP']
 
     def LL(self, row):
         return [self.get_id(row[0]), row[0], row[3], 'LL']
 
     def IPEE(self, row):
-        return [row[0], row[1] if row[1] else 0, row[2]]
+        return [row[0], row[1] if row[1] else 0, row[2], 'IPEE']
 
     def SPE(self, row):
+        row.append('SPE')
         return row
 
     def BEE(self, row):
+        row.append('BEE')
         return row
 
     def WEB(self, row):
@@ -159,7 +160,6 @@ class WriteCSV(object):
         return [row[2], row[3], 'LEE']
 
     def OPEP(self, row):
-        # return [row[5], self.get_id(row[0]), 'OPEP']
         return [row[5], row[1], 'OPEP']
 
     def LEL(self, row):
