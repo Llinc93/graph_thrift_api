@@ -31,13 +31,13 @@ report = {}
 
 # CS文件位置、导入用的neo4j的CSV文件位置(无需修改)、CSV文件字段定义、关系类型、说明
 
-ent_node_header = ['ID:ID(ENT-ID)', 'NAME', 'UNISCID', 'STATUS', ':LABEL']
+ent_node_header = ['ID:ID(ENT-ID)', 'NAME', 'UNISCID', ':LABEL']
 person_node_header = ['ID:ID(P-ID)', 'NAME', ':LABEL']
 
 inv_relationship_header = ['ID:START_ID(P-ID)', 'RATE', 'ID:END_ID(ENT-ID)', ':TYPE']
 ent_inv_relationship_header = ['ID:START_ID(ENT-ID)', 'RATE', 'ID:END_ID(ENT-ID)', ':TYPE']
 bra_relationship_header = ['ID:END_ID(ENT-ID)', 'ID:START_ID(ENT-ID)', ':TYPE']
-pos_relationship_header = ['ID:START_ID(P-ID)', 'POSITION', 'ID:END_ID(ENT-ID)', ':TYPE']
+pos_relationship_header = ['ID:END_ID(ENT-ID)', 'POSITION', 'ID:START_ID(P-ID)', ':TYPE']
 
 '''
 FZL_MC,FZL_SQH,FZL_SQZLQR,FZL_STATUS,FZL_FMSJR,LCID
@@ -83,24 +83,24 @@ email_node_header = ['ID:ID(EMAIL-ID)', 'NAME', ':LABEL']
 email_relationship_header = ['ID:START_ID(ENT-ID)', 'ID:END_ID(EMAIL-ID)', ':TYPE']
 
 files = [
-    ('/opt/csv/企业投资.csv', r'/home/neo4j/import/ent_inv_relationship.csv', ent_inv_relationship_header, 'IPEE', '企业投资'),
-    ('/opt/csv/自然人投资.csv', r'/home/neo4j/import/inv_relationship.csv', inv_relationship_header, 'IPEE', '股东投资'),
-    ('/opt/csv/基本信息企业节点.csv', r'/home/neo4j/import/ent_node.csv', ent_node_header, 'GS', '企业节点'),
-    ('/opt/csv/人员节点.csv', r'/home/neo4j/import/person_node.csv', person_node_header, 'GR', '人员节点'),
-    ('/opt/csv/企业分支.csv', r'/home/neo4j/import/bra_relationship.csv', bra_relationship_header, 'BEE', '分支机构'),
-    ('/opt/csv/主要管理人员.csv', r'/opt/neo4j/import/pos_relationship.csv', pos_relationship_header, 'SPE', '人员任职'),
-    ('/opt/csv/专利_20200221.csv', r'/home/neo4j/import/fzl_node.csv', fzl_node_header, 'PP', '专利节点'),
-    ('/opt/csv/专利_20200221.csv', r'/home/neo4j/import/fzl_relationship.csv', fzl_relationship_header, 'OPEP', '专利关系'),
-    ('/opt/csv/法律文书.csv', r'/home/neo4j/import/ffl_node.csv', ffl_node_header, 'LL', '诉讼节点'),
-    ('/opt/csv/法律文书.csv', r'/home/neo4j/import/ffl_relationship.csv', ffl_relationship_header, 'LEL', '诉讼关系'),
-    ('/opt/csv/招投标.csv', r'/home/neo4j/import/fze_node.csv', fze_node_header, 'GB', '招投标节点'),
-    ('/opt/csv/招投标.csv', r'/home/neo4j/import/fze_relationship.csv', fze_relationship_header, 'WEB', '招投标关系'),
-    ('/opt/csv/相同办公地_年报.csv', r'/home/neo4j/import/addr_node.csv', addr_node_header, 'DD', '办公地节点'),
-    ('/opt/csv/相同办公地_年报.csv', r'/home/neo4j/import/addr_relationship.csv', addr_relationship_header, 'WEB', '办公地关系'),
-    ('/opt/csv/相同联系方式_年报.csv', r'/home/neo4j/import/tel_node.csv', tel_node_header, 'TT', '电话节点'),
-    ('/opt/csv/相同联系方式_年报.csv', r'/home/neo4j/import/tel_relationship.csv', tel_relationship_header, 'LEE1', '相同联系方式'),
-    ('/opt/csv/相同联系方式_年报.csv', r'/home/neo4j/import/email_node.csv', email_node_header, 'EE', '邮箱节点'),
-    ('/opt/csv/相同联系方式_年报.csv', r'/home/neo4j/import/email_relationship.csv', email_relationship_header, 'LEE2', '相同联系方式'),
+    ('/home/neo4j_test/import/企业投资.csv', r'/home/neo4j_test/import/ent_inv_relationship.csv', ent_inv_relationship_header, 'IPEE', '企业投资'),
+    ('/home/neo4j_test/import/自然人投资.csv', r'/home/neo4j_test/import/inv_relationship.csv', inv_relationship_header, 'IPEE', '股东投资'),
+    ('/home/neo4j_test/import/基本信息企业节点.csv', r'/home/neo4j_test/import/ent_node.csv', ent_node_header, 'GS', '企业节点'),
+    ('/home/neo4j_test/import/人员节点.csv', r'/home/neo4j_test/import/person_node.csv', person_node_header, 'GR', '人员节点'),
+    ('/home/neo4j_test/import/企业分支.csv', r'/home/neo4j_test/import/bra_relationship.csv', bra_relationship_header, 'BEE', '分支机构'),
+    ('/home/neo4j_test/import/主要管理人员.csv', r'/home/neo4j_test/import/pos_relationship.csv', pos_relationship_header, 'SPE', '人员任职'),
+    ('/home/neo4j_test/import/专利_20200221.csv', r'/home/neo4j_test/import/fzl_node.csv', fzl_node_header, 'PP', '专利节点'),
+    ('/home/neo4j_test/import/专利_20200221.csv', r'/home/neo4j_test/import/fzl_relationship.csv', fzl_relationship_header, 'OPEP', '专利关系'),
+    ('/home/neo4j_test/import/法律文书.csv', r'/home/neo4j_test/import/ffl_node.csv', ffl_node_header, 'LL', '诉讼节点'),
+    ('/home/neo4j_test/import/法律文书.csv', r'/home/neo4j_test/import/ffl_relationship.csv', ffl_relationship_header, 'LEL', '诉讼关系'),
+    ('/home/neo4j_test/import/招投标.csv', r'/home/neo4j_test/import/fze_node.csv', fze_node_header, 'GB', '招投标节点'),
+    ('/home/neo4j_test/import/招投标.csv', r'/home/neo4j_test/import/fze_relationship.csv', fze_relationship_header, 'WEB', '招投标关系'),
+    ('/home/neo4j_test/import/相同办公地_年报.csv', r'/home/neo4j_test/import/addr_node.csv', addr_node_header, 'DD', '办公地节点'),
+    ('/home/neo4j_test/import/相同办公地_年报.csv', r'/home/neo4j_test/import/addr_relationship.csv', addr_relationship_header, 'RED', '相同办公地'),
+    ('/home/neo4j_test/import/相同联系方式_年报.csv', r'/home/neo4j_test/import/tel_node.csv', tel_node_header, 'TT', '电话节点'),
+    ('/home/neo4j_test/import/相同联系方式_年报.csv', r'/home/neo4j_test/import/tel_relationship.csv', tel_relationship_header, 'LEE1', '相同联系方式'),
+    ('/home/neo4j_test/import/相同联系方式_年报.csv', r'/home/neo4j_test/import/email_node.csv', email_node_header, 'EE', '邮箱节点'),
+    ('/home/neo4j_test/import/相同联系方式_年报.csv', r'/home/neo4j_test/import/email_relationship.csv', email_relationship_header, 'LEE2', '相同联系方式'),
 ]
 
 
@@ -196,9 +196,9 @@ def run():
 if __name__ == '__main__':
     run()
     # 将csv文件导入neoj
-    rm_cmd = f'rm -rf /opt/neo4j/data/databases/graph.db'
+    rm_cmd = f'rm -rf /home/neo4j_test/data/databases/graph.db'
     #rm_code, rm_ret = subprocess.getstatusoutput(rm_cmd)
-    import_cmd = "docker exec -it neo4j_graph /bin/bash -c 'bin/neo4j-admin import " \
+    import_cmd = "docker exec -it neo4j_test /bin/bash -c 'bin/neo4j-admin import " \
                  "--nodes=import/person_node.csv " \
                  "--nodes=import/ent_node.csv " \
                  "--nodes=import/fzl_node.csv " \
