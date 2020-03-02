@@ -78,7 +78,7 @@ class Filter(object):
     def LL(self, row):
         flag = True
         text = ''
-        action = [row[0], row[2], row[3]]
+        action = [row[0], row[1], row[2]]
         if '' in action:
             flag = False
         else:
