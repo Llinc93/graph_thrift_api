@@ -74,14 +74,14 @@ class MyFaceHandler(Interface.Iface):
             raise ValueError
 
         nodes, links, filter, direct = parse.get_term_v3(attIds.split(';'))
-        data, flag = neo4j_client.get_ent_graph_g_v3(entname=keyword, level=level, node_type=nodeType, terms=(nodes, links, direct))
+        data, flag = neo4j_client.get_ent_graph_g_v3(entname=keyword, level=int(level), node_type=nodeType, terms=(nodes, links, direct))
 
         if not flag:
             if not data:
                 return json.dumps({'nodes': [], 'success': 0, 'links': []}, ensure_ascii=False)
             return json.dumps({'nodes': [data], 'success': 0, 'links': []}, ensure_ascii=False)
 
-        nodes, links = parse.parse_v3(data, filter, level, keyword)
+        nodes, links = parse.parse_v3(data, filter, int(level), keyword)
         return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
     except:
         traceback.print_exc()
