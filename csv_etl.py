@@ -5,17 +5,17 @@ import hashlib
 class Filter(object):
 
     files = [
-        ('/opt/csv/企业投资.csv', r'/home/neo4j/import/企业投资.csv', 'IPEE', '企业投资'),
-        ('/opt/csv/自然人投资.csv', r'/home/neo4j/import/自然人投资.csv', 'IPEE', '股东投资'),
-        ('/opt/csv/基本信息企业节点.csv', r'/home/neo4j/import/基本信息企业节点.csv', 'GS', '企业节点'),
-        ('/opt/csv/人员节点.csv', r'/home/neo4j/import/人员节点.csv', 'GR', '人员节点'),
-        ('/opt/csv/企业分支.csv', r'/home/neo4j/import/企业分支.csv', 'BEE', '分支机构'),
-        ('/opt/csv/主要管理人员.csv', r'/home/neo4j/import/主要管理人员.csv', 'SPE', '人员任职'),
-        ('/opt/csv/专利_20200221.csv', r'/home/neo4j/import/专利_20200221.csv', 'PP', '专利节点'),
-        ('/opt/csv/法律文书.csv', r'/home/neo4j/import/法律文书.csv', 'LL', '诉讼节点'),
-        ('/opt/csv/招投标.csv', r'/home/neo4j/import/招投标.csv', 'GB', '招投标节点'),
-        ('/opt/csv/相同办公地_年报.csv', r'/home/neo4j/import/相同办公地_年报.csv', 'DD', '办公地节点'),
-        ('/opt/csv/相同联系方式_年报.csv', r'/home/neo4j/import/相同联系方式_年报.csv', 'TT', '电话节点'),
+        ('/opt/csv/企业投资.csv', r'/home/neo4j/import/企业投资.csv', 'IPEE'),
+        ('/opt/csv/自然人投资.csv', r'/home/neo4j/import/自然人投资.csv', 'IPEE'),
+        ('/opt/csv/基本信息企业节点.csv', r'/home/neo4j/import/基本信息企业节点.csv', 'GS'),
+        ('/opt/csv/人员节点.csv', r'/home/neo4j/import/人员节点.csv', 'GR'),
+        ('/opt/csv/企业分支.csv', r'/home/neo4j/import/企业分支.csv', 'BEE'),
+        ('/opt/csv/主要管理人员.csv', r'/home/neo4j/import/主要管理人员.csv', 'SPE'),
+        ('/opt/csv/专利_20200221.csv', r'/home/neo4j/import/专利_20200221.csv', 'PP'),
+        ('/opt/csv/法律文书.csv', r'/home/neo4j/import/法律文书.csv', 'LL'),
+        ('/opt/csv/招投标.csv', r'/home/neo4j/import/招投标.csv', 'GB'),
+        ('/opt/csv/相同办公地_年报.csv', r'/home/neo4j/import/相同办公地_年报.csv', 'DD'),
+        ('/opt/csv/相同联系方式_年报.csv', r'/home/neo4j/import/相同联系方式_年报.csv', 'TT'),
     ]
 
     def IPEE(self, row):
