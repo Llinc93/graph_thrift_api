@@ -118,7 +118,7 @@ class Filter(object):
     def run(self):
         for read, write, label in self.files:
             read_f = open(read, 'r', encoding='utf8')
-            write_f = open(write, 'r', encoding='utf8')
+            write_f = open(write, 'w', encoding='utf8')
             writer = csv.writer(write_f)
             raw = 0
             number = 0
@@ -136,6 +136,8 @@ class Filter(object):
                     writer.writerow(line)
                     number += 1
                     data.add(md5)
+            print(f'{read}\t数量: {raw}')
+            print(f'{write}\t数量: {number}')
         return None
 
 
