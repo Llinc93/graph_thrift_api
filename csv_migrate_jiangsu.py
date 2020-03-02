@@ -197,7 +197,7 @@ if __name__ == '__main__':
     run()
     # 将csv文件导入neoj
     rm_cmd = f'rm -rf /home/neo4j_test/data/databases/graph.db'
-    #rm_code, rm_ret = subprocess.getstatusoutput(rm_cmd)
+    rm_code, rm_ret = subprocess.getstatusoutput(rm_cmd)
     import_cmd = "docker exec -it neo4j_test /bin/bash -c 'bin/neo4j-admin import " \
                  "--nodes=import/person_node.csv " \
                  "--nodes=import/ent_node.csv " \
@@ -218,8 +218,8 @@ if __name__ == '__main__':
                  "--relationships=import/tel_relationship.csv " \
                  "--relationships=import/email_relationship.csv " \
                  "--ignore-missing-nodes --ignore-duplicate-nodes --high-io=true'"
-    #os.system(import_cmd)
-    #os.system('docker restart neo4j_graph')
+    os.system(import_cmd)
+    os.system('docker restart neo4j_test')
 
 
     # 返回表中数据统计
