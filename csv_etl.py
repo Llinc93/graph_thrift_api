@@ -126,7 +126,10 @@ class Filter(object):
             for line in csv.reader(read_f):
                 raw += 1
                 # step1 过滤
-                flag, text = getattr(self, label)(line)
+                try:
+                    flag, text = getattr(self, label)(line)
+                except:
+                    continue
                 if not flag:
                     continue
 
