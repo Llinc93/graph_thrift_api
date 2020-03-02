@@ -10,7 +10,7 @@ class Filter(object):
         ('/opt/csv/基本信息企业节点.csv', r'/home/neo4j/import/基本信息企业节点.csv', 'GS', '企业节点'),
         ('/opt/csv/人员节点.csv', r'/home/neo4j/import/人员节点.csv', 'GR', '人员节点'),
         ('/opt/csv/企业分支.csv', r'/home/neo4j/import/企业分支.csv', 'BEE', '分支机构'),
-        ('/opt/csv/主要管理人员.csv', r'/opt/neo4j/import/主要管理人员.csv', 'SPE', '人员任职'),
+        ('/opt/csv/主要管理人员.csv', r'/home/neo4j/import/主要管理人员.csv', 'SPE', '人员任职'),
         ('/opt/csv/专利_20200221.csv', r'/home/neo4j/import/专利_20200221.csv', 'PP', '专利节点'),
         ('/opt/csv/法律文书.csv', r'/home/neo4j/import/法律文书.csv', 'LL', '诉讼节点'),
         ('/opt/csv/招投标.csv', r'/home/neo4j/import/招投标.csv', 'GB', '招投标节点'),
