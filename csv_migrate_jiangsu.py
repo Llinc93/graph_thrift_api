@@ -26,6 +26,82 @@ LCID、POSITION、PID
 
 '''
 
+'''
+数据库中的字段与CSV的header的对应关系
+example:
+    xx节点/关系
+        ID：ID       NAME        ---  标注字段
+        LCID         NAME        ---  数据库字段
+
+基本信息企业节点.csv 
+    企业节点节点：
+        ID:ID(ENT-ID)   NAME              UNISCID       
+        LCID            ENTNAME           UNISCID    
+    
+人员节点.csv
+    人员节点：
+        ID:ID(P-ID)     NAME 
+        PID             NAME
+    
+自然人投资.csv
+    自然人投资关系：
+        ID:START_ID(P-ID)    RATE    ID:END_ID(ENT-ID)
+        PID_INV              RATE    LCID
+
+企业投资.csv
+    企业投资关系：
+        ID:START_ID(ENT-ID)    RATE    ID:END_ID(ENT-ID)
+        LCID_INV               RATE    LCID
+
+企业分支.csv
+    分支关系：
+        ID:END_ID(ENT-ID)    ID:START_ID(ENT-ID)
+        B_LCID               P_LCID
+
+主要管理人员.csv 
+    任职关系：
+        ID:END_ID(ENT-ID)    POSITION    ID:START_ID(P-ID)
+        LCID                 POSITION    PID
+
+专利_20200221.csv
+    专利节点：
+        ID:ID(FZL-ID)    NAME       SQH             :LABEL
+        FZL_SQH          FZL_MC     FZL_SQH  
+
+        FZL_MC          FZL_SQH     FZL_SQZLQR,FZL_STATUS,FZL_FMSJR,LCID
+    
+    专利关系：
+        ID:START_ID(ENT-ID)    ID:END_ID(FZL-ID)
+        FZL_SQH                 LCID
+   
+法律文书.csv
+    专利节点：
+        pass
+    
+    专利关系：
+        pass
+        
+招投标.csv
+    
+    
+相同办公地_年报.csv
+    办公地节点:
+        pass
+    
+    相同办公地:
+        pas
+    
+相同办公地_so
+    电话节点
+    
+    邮箱节点
+    
+    共同联系方式
+
+'''
+
+
+
 report = {}
 # csv_path = r'/opt/neo4j_v2/import'
 
@@ -44,7 +120,7 @@ FZL_MC,FZL_SQH,FZL_SQZLQR,FZL_STATUS,FZL_FMSJR,LCID
 一种电梯导轨,CN201220001643.4,苏州塞维拉上吴电梯轨道系统有限公司,1,蔡连生;邹征;蔡斌斌;王四新,4d202bf24e13d784b5d05f8a38195cd5
 近纳诱捕鲶鱼音波装置,CN201220324073.2,徐州一统渔具有限公司,1,尹克华,b7f87cf2854f481d88ab83c72343b688
 '''
-fzl_node_header = ['ID:ID(FZL-ID)', 'NAME', 'SQH', ':LABEL']
+fzl_node_header = ['ID:ID(FZL-ID)', 'NAME', 'FZL_SQH', ':LABEL']
 fzl_relationship_header = ['ID:START_ID(ENT-ID)', 'ID:END_ID(FZL-ID)', ':TYPE']
 
 '''
@@ -52,7 +128,7 @@ FFL_TITLE,LCID,FFL_CASENUM,FFL_STATUS
 王祥子虚开增值税专用发票、用于骗取出口退税、抵扣税款发票一审刑事判决书,盐城市艳阳棉业有限公司,0b4bf97634753010e8e5e8cc36ead307,（2014）沪二中刑初字第48号,1
 苏州建恒国际货运代理有限公司与王香不当得利纠纷一审民事判决书,苏州建恒国际货运代理有限公司,84dcb2ecf8276ed598651c7775c28584,（2014）虎民初字第1521号,1
 '''
-ffl_node_header = ['ID:ID(FFL-ID)', 'NAME', 'CASENUM', ':LABEL']
+ffl_node_header = ['ID:ID(FFL-ID)', 'NAME', 'FFL_CASENUM', ':LABEL']
 ffl_relationship_header = ['ID:START_ID(ENT-ID)', 'ID:END_ID(FFL-ID)', ':TYPE']
 
 '''
@@ -60,7 +136,7 @@ FZE_TITLE,FZE_ENTNAME_GLLZD,FZE_ZBBH,FZE_STATUS,LCID
 苏州市市容市政管理局作业车辆智能管理及终端视频监管项目中标公告,江苏移动信息系统集成有限公司,,1,0da905337f2ac64bdd4a069d74f50946
 上海正弘建设工程顾问有限公司关于连通水系两岸（肖家村至西环路）环境整治工程中标候选人公示,江苏科晟园林景观建设集团有限公司,,1,408dd7b1135077a76169e56d0c112b0a
 '''
-fze_node_header = ['ID:ID(FZE-ID)', 'NAME', 'ZBBH', ':LABEL']
+fze_node_header = ['ID:ID(FZE-ID)', 'NAME', 'FZE_ZBBH', ':LABEL']
 fze_relationship_header = ['ID:START_ID(ENT-ID)', 'ID:END_ID(FZE-ID)', ':TYPE']
 
 '''
@@ -148,7 +224,7 @@ class WriteCSV(object):
         return row
 
     def WEB(self, row):
-        return [row[2], self.get_id(row[0]), 'WEB']
+        return [row[-1], self.get_id(row[0]), 'WEB']
 
     def RED(self, row):
         return [row[2], self.get_id(row[0]), 'RED']
@@ -181,7 +257,7 @@ def run():
                 try:
                     new_row = getattr(w_csv, label)(row)
                 except:
-                    print(row)
+                    # print(row)
                     continue
                 writer.writerow([k if k else 'null' for k in new_row])
             index += 1

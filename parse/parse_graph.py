@@ -10,6 +10,19 @@ class Parse():
     MAX_LINK = 10
     MAX_NODE = 8
 
+    RELATION_MAP = {
+        'IPEE': '投资',
+        'SPE': '任职',
+        'BEE': '分支机构',
+        'WEB': '招投标',
+        'RED': '相同办公地',
+        'LEE': '共同联系方式',
+        'OPEP': '共有专利',
+        'LEL': '诉讼',
+        'IHPEEN': '历史投资',
+        'SHPEN': '历史任职',
+    }
+
     # d表示方向, 1:in 2:out 3:in and out
     CONDITION_MAP = {
         'R101': {'n': 'GS', 'r': 'IPEE', 'd': 2},   # 企业对外投资
@@ -145,48 +158,6 @@ class Parse():
 
         return nodes, links, filter, direct
 
-    def get_GS(self, node):
-        data = {
-            'industry_class': node['INDUSTRY'] if node['INDUSTRY'] != 'null' else '',
-            'bussiness_age': node['OPFROM'][0:4] if node['OPFROM'] != 'null' else '',
-            'province': node['PROVINCE'] if node['PROVINCE'] != 'null' else '',
-            'registered_capital': node['REGCAP'] if node['REGCAP'] != 'null' else '',
-            'regcapcur': node['RECCAPCUR'] if node['RECCAPCUR'] != 'null' else '',
-            'business_status': node['ENTSTATUS'] if node['ENTSTATUS'] != 'null' else '',
-            'extendnumber': 0,
-        }
-        return data
-
-    def get_IPEE(self, link):
-        holding_mode = ''
-        conratio = float(link['RATE'])
-        if conratio == 'null':
-            conratio = ''
-        elif conratio == 1:
-            holding_mode = '全资'
-        elif conratio >= 0.5:
-            holding_mode = '绝对控股'
-        else:
-            holding_mode = '控股'
-        return {'holding_mode': holding_mode, 'conratio': conratio}
-
-    def get_SPE(self, link):
-        return {'position': link['POSITION'] if link['POSITION'] != 'null' else ''}
-
-    def get_LEE(self):
-        pass
-
-    def get_IHPEEN(self):
-        pass
-
-    def get_SHPEN(self):
-        pass
-
-    def get_node_attribute(self, node_type, node):
-        return getattr(self, 'get_{}'.format(node_type))(node) if node_type in self.NODE_TYPE else {'extendnumber': 0}
-
-    def get_link_attribute(self, link_type, link):
-        return getattr(self, 'get_{}'.format(link_type))(link) if link_type in self.LINK_TYPE else {}
 
     def get_ent_actual_controller(self, graph, min_rate):
         '''
@@ -402,16 +373,15 @@ class Parse():
         nodes_set = set()
         links_set = set()
         for path in graph:
-            s = time.time()
             if filter:
                 path = self.filter_graph(path, filter, level, entname)
-            print(f'过滤所耗时间: {time.time() - s}')
             for node in path['n']:
                 if node['ID'] not in nodes_set:
                     nodes.append(node)
                     nodes_set.add(node['ID'])
             for link in path['r']:
                 if link['ID'] not in links_set:
+                    link['name'] = self.RELATION_MAP[link['type']]
                     links.append(link)
                     links_set.add(link['ID'])
         return nodes, links

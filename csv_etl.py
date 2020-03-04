@@ -11,7 +11,7 @@ class Filter(object):
         ('/opt/csv/人员节点.csv', r'/home/neo4j_test/import/人员节点.csv', 'GR'),
         ('/opt/csv/企业分支.csv', r'/home/neo4j_test/import/企业分支.csv', 'BEE'),
         ('/opt/csv/主要管理人员.csv', r'/home/neo4j_test/import/主要管理人员.csv', 'SPE'),
-        ('/opt/csv/专利_20200221.csv', r'/home/neo4j_test/import/专利_20200221.csv', 'PP'),
+        ('/opt/csv/专利_20200228.csv', r'/home/neo4j_test/import/专利_20200221.csv', 'PP'),
         ('/opt/csv/法律文书.csv', r'/home/neo4j_test/import/法律文书.csv', 'LL'),
         ('/opt/csv/招投标.csv', r'/home/neo4j_test/import/招投标.csv', 'GB'),
         ('/opt/csv/相同办公地_年报.csv', r'/home/neo4j_test/import/相同办公地_年报.csv', 'DD'),
@@ -189,6 +189,8 @@ class Filter(object):
                     writer.writerow(line)
                     number += 1
                     data.add(md5)
+            read_f.close()
+            write_f.close()
             print(f'{read}\t数量: {raw}')
             print(f'{write}\t数量: {number}')
         return None

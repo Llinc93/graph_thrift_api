@@ -3,6 +3,7 @@
 thrift服务端
 """
 import traceback, os, sys, json, time, redis
+from
 from itertools import permutations
 if sys.platform.startswith('win'):
     sys.path.append( os.getcwd() + '\com\\thrift\interface\server')
@@ -28,7 +29,7 @@ class MyFaceHandler(Interface.Iface):
 
   def getEntActualContoller(self, entName, uscCode, min_ratio=0):
     """
-    企业实际控制人信息
+    企业实际控股人信息
     entName 企业名称
 
     Parameters:
@@ -108,7 +109,7 @@ class MyFaceHandler(Interface.Iface):
         # 序列之间的两两组合(Cn2),查询结果取并集
         nodes = {}
         links = {}
-        entNames = entName.split(';')
+        entNames = sorted(entName.split(';'))
         for ent_names in permutations(entNames, 2):
             if ent_names[-1] != entNames[0] or ent_names[0] == ent_names[-1]:
                 continue
