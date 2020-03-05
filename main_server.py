@@ -120,7 +120,7 @@ class MyFaceHandler(Interface.Iface):
                 if node['ID'] not in nodes:
                     nodes[node['ID']] = node
             for link in tmp_links:
-                if link not in links:
+                if link['ID'] not in links:
                     links[link['ID']] = link
         return json.dumps({'nodes': [node for node in nodes.values()], 'success': 0, 'links': [link for link in links.values()]}, ensure_ascii=False)
     except:

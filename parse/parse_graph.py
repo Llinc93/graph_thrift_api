@@ -158,7 +158,6 @@ class Parse():
 
         return nodes, links, filter, direct
 
-
     def get_ent_actual_controller(self, graph, min_rate):
         '''
         根据neo4j的结果，计算受益所有人
@@ -212,13 +211,10 @@ class Parse():
                     res_nodes[nodes[0]['ID']] = {'id': nodes[0]['ID'], 'name': nodes[0]['NAME'], 'number': 0, 'lastnode': 0, 'type': nodes[0]['label'], 'attr': 2, 'path': []}
 
             if nodes[len(links)]['ID'] not in res_nodes.keys():
-                #print(111, nodes[len(links)])
                 res_nodes[nodes[len(links)]['ID']] = {'id': nodes[len(links)]['ID'], 'name': nodes[len(links)]['NAME'], 'number': 0, 'lastnode': 0, 'type': nodes[len(links)]['label'], 'attr': 1, 'path': []}
 
         # 去除综合占比小于最小投资比例的节点并计算实际控制人
         actions = copy.deepcopy(res_nodes)
-        tmp_res_links = []
-        flag = False
         for key, value in actions.items():
             if value['attr'] == 1 and value['number'] < min_rate and value['type'] == 'GR':
                 res_nodes.pop(key)
@@ -226,7 +222,6 @@ class Parse():
 
             if value['attr'] == 1 and value['type'] == 'GR' and value['number'] >= 0.25:
                 res_nodes[key]['lastnode'] = 1
-                flag = True
 
             # 将关系加入关系列表
             for i in res_nodes[key].pop('path'):
@@ -237,7 +232,6 @@ class Parse():
                         links_set.add(r)
 
         # 寻找第10层企业
-        # if not flag:
         for key, value in res_nodes.items():
             if value['type'] == 'GS' and value['attr'] == 1 and value['layer'] == 10:
                 res_nodes[key]['lastnode'] = 1
@@ -362,6 +356,46 @@ class Parse():
 
         return {'n': tmp_nodes, 'r': tmp_links}
 
+    def get_node_attrib(self, node):
+        '''
+        构造attrib
+        :param node:
+        :return:
+        '''
+        action = {'id': node['ID'], 'name': node['NAME'], 'type': node['type']}
+        if node['label'] in ['PP', 'LL', 'DD', 'EE', 'TT', 'GR', 'GB']:
+            action['attibuteMap'] = {'extendNumber': node['extendnumber']}
+        else:
+            action['attibuteMap'] = {
+                'extendNumber': node['extendnumber'],
+                'industry_class': node['INDUSTRY'],
+                'business_age': node['ESDATE'][:4],
+                'province': node['PROVINCE'],
+                'registered_capital': node['REGCAP'],
+                'regcapcur': node['RECCAPCUR'],
+                'business_status': node['ENTSTATUS'],
+            }
+        return action
+
+    def get_link_attrib(self, link):
+        action = {'id': link['ID'], 'name': self.RELATION_MAP[link['type']], 'from': link['pid'], 'to': link['id'], 'type': link['label']}
+        if link['label'] == 'IPEE':
+            action['attibuteMap'] = {
+                'conratio': link['RATE'],
+                'holding_mode': link[''],
+            }
+        elif link['label'] == 'SPE':
+            action['attibuteMap'] = {'position': link['POSITION']}
+        elif link['label'] == 'LEE':
+            action['attibuteMap'] = {'domain'}
+        elif link['label'] == 'IHPEEN':
+            pass
+        elif link['label'] == 'SHPEN':
+            pass
+        else:
+            action['attibuteMap'] = {}
+        return action
+
     def parse_v3(self, graph, filter, level, entname):
         '''
         解析neo4j返回的结果
@@ -377,11 +411,12 @@ class Parse():
                 path = self.filter_graph(path, filter, level, entname)
             for node in path['n']:
                 if node['ID'] not in nodes_set:
+                    node = self.get_node_attrib(node)
                     nodes.append(node)
                     nodes_set.add(node['ID'])
             for link in path['r']:
                 if link['ID'] not in links_set:
-                    link['name'] = self.RELATION_MAP[link['type']]
+                    link = self.get_link_attrib(link)
                     links.append(link)
                     links_set.add(link['ID'])
         return nodes, links

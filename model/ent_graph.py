@@ -69,6 +69,7 @@ class Neo4jClient(object):
         企业族谱
             match p = (n) -[r* 1 .. 3]- (m:GS {NAME: '江苏荣马城市建设有限公司'})
             where n:GS or n:GR
+            foreach(n in nodes(p) | set n.extendnumber=size((n) -[]-> ()))
             foreach(r in relationships(p) | set r.start_id=properties(startNode(r))['ID'])
             foreach(r in relationships(p) | set r.end_id=properties(endNode(r))['ID'])
             foreach(r in relationships(p) | set r.labe=type(r)) foreach(n in nodes(p) | set n.label=labels(n)[0])
@@ -111,7 +112,7 @@ class Neo4jClient(object):
             label = ' where ' + label_term
         else:
             label = ' '
-        tail = " foreach(r in relationships(p) | set r.pid=properties(startNode(r))['ID']) foreach(r in relationships(p) | set r.id=properties(endNode(r))['ID']) foreach(r in relationships(p) | set r.label=type(r)) foreach(r in relationships(p) | set r.ID=id(r)) foreach(n in nodes(p) | set n.label=labels(n)[0]) return [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
+        tail = " foreach(r in relationships(p) | set r.pid=properties(startNode(r))['ID']) foreach(n in nodes(p) | set n.extendnumber=size((n) -[]-> ())) foreach(r in relationships(p) | set r.id=properties(endNode(r))['ID']) foreach(r in relationships(p) | set r.label=type(r)) foreach(r in relationships(p) | set r.ID=id(r)) foreach(n in nodes(p) | set n.label=labels(n)[0]) return [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
         command = start + relationship + end + label + tail
         # print(command % (level, node_type, entname))
         rs = self.graph.run(command % (level, node_type, entname))
@@ -167,7 +168,7 @@ class Neo4jClient(object):
         else:
             label = ' '
 
-        tail = " foreach(r in relationships(p) | set r.pid=properties(startNode(r))['ID']) foreach(r in relationships(p) | set r.id=properties(endNode(r))['ID']) foreach(r in relationships(p) | set r.label=type(r)) foreach(r in relationships(p) | set r.ID=id(r)) foreach(n in nodes(p) | set n.label=labels(n)[0]) return [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
+        tail = " foreach(r in relationships(p) | set r.pid=properties(startNode(r))['ID']) foreach(n in nodes(p) | set n.extendnumber=size((n) -[]-> ())) foreach(r in relationships(p) | set r.id=properties(endNode(r))['ID']) foreach(r in relationships(p) | set r.label=type(r)) foreach(r in relationships(p) | set r.ID=id(r)) foreach(n in nodes(p) | set n.label=labels(n)[0]) return [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
         command = start + relationship + end + label + tail
 
         print(command % (entnames[0], level, entnames[1]))
