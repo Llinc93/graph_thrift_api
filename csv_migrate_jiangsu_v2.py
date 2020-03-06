@@ -28,7 +28,7 @@ LCID、POSITION、PID
 
 report = {}
 
-GS_header = ['ID:ID(ENT-ID)', 'NAME', 'UNISCID', ':LABEL']
+GS_header = ['ID:ID(ENT-ID)', 'NAME', 'UNISCID', 'ESDATE', 'INDUSTRY', 'PROVINCE', 'REGCAP', 'RECCAPCUR', 'ENTSTATUS', ':LABEL']
 GR_header = ['ID:ID(P-ID)', 'NAME', ':LABEL']
 
 IPEER_header = ['ID:START_ID(P-ID)', 'RATE', 'ID:END_ID(ENT-ID)', ':TYPE']
@@ -49,8 +49,8 @@ FFL_TITLE,LCID,FFL_CASENUM,FFL_STATUS
 王祥子虚开增值税专用发票、用于骗取出口退税、抵扣税款发票一审刑事判决书,盐城市艳阳棉业有限公司,0b4bf97634753010e8e5e8cc36ead307,（2014）沪二中刑初字第48号,1
 苏州建恒国际货运代理有限公司与王香不当得利纠纷一审民事判决书,苏州建恒国际货运代理有限公司,84dcb2ecf8276ed598651c7775c28584,（2014）虎民初字第1521号,1
 '''
-LL_header = ['ID:ID(FFL-ID)', 'NAME', 'FFL_CASENUM', ':LABEL']
-LEL_header = ['ID:START_ID(ENT-ID)', 'ID:END_ID(FFL-ID)', ':TYPE']
+LL_header = ['ID:ID(FFL-ID)', 'NAME', ':LABEL']
+LEL_header = ['ID:END_ID(FFL-ID)', 'ID:START_ID(ENT-ID)', ':TYPE']
 
 '''
 FZE_TITLE,FZE_ENTNAME_GLLZD,FZE_ZBBH,FZE_STATUS,LCID
@@ -61,7 +61,7 @@ GB_header = ['ID:ID(FZE-ID)', 'NAME', 'FZE_ZBBH', ':LABEL']
 WEB_header = ['ID:START_ID(ENT-ID)', 'ID:END_ID(FZE-ID)', ':TYPE']
 
 '''
-ADDR,ENTNAME_GLLZD,LCID
+ADDR
 南京市秦淮区白鹭洲公园白鹭村1号,南京源承八九号文化艺术品投资合伙企业,1f063cd939edf1758b0542d850853a8f
 洪泽县东风路84号,洪泽县四明眼镜有限公司,cb43f17129a7466593e1f1e76eea5a50
 '''
@@ -74,10 +74,10 @@ TEL,ENTNAME_GLLZD,LCID,EMAIL
 18021926600,洪泽县四明眼镜有限公司,cb43f17129a7466593e1f1e76eea5a50,511611378@qq.com
 '''
 TT_header = ['ID:ID(TEL-ID)', 'NAME', ':LABEL']
-LEE1_header = ['ID:START_ID(ENT-ID)', 'ID:END_ID(TEL-ID)', ':TYPE']
+LEE1_header = ['ID:START_ID(ENT-ID)', 'ID:END_ID(TEL-ID)', 'DOMAIN', ':TYPE']
 
 EE_header = ['ID:ID(EMAIL-ID)', 'NAME', ':LABEL']
-LEE2_header = ['ID:START_ID(ENT-ID)', 'ID:END_ID(EMAIL-ID)', ':TYPE']
+LEE2_header = ['ID:START_ID(ENT-ID)', 'ID:END_ID(EMAIL-ID)', 'DOMAIN', ':TYPE']
 
 files = [
     ('/home/neo4j_test/import/企业节点.csv', r'/home/neo4j_test/import/gs.csv', GS_header, 'GS', '企业节点'),
@@ -116,58 +116,55 @@ class WriteCSV(object):
         row.append('GR')
         return row
 
-    def GB(self, row):
-        return [self.get_id(row[0]), row[0], row[2], 'GB']
-
-    def DD(self, row):
-        return [self.get_id(row[0]), row[0], 'DD']
-
-    def EE(self, row):
-        return [row[3], row[3], 'EE']
-
-    def TT(self, row):
-        return [row[0], row[0], 'TT']
-
-    def PP(self, row):
-        return [row[1], row[0], row[1], 'PP']
-
-    def LL(self, row):
-        return [self.get_id(row[0]), row[0], row[3], 'LL']
-
-    def IPEE(self, row):
+    def IPEES(self, row):
         return [row[0], row[1] if row[1] else 0, row[2], 'IPEE']
 
-    def IPEE1(self, row):
+    def IPEER(self, row):
         return [row[0], row[1] if row[1] else 0, row[2], 'IPEE']
-
-    def IPEE2(self, row):
-        return [row[0], row[1] if row[1] else 0, row[2], 'IPEE']
-
-    def SPE(self, row):
-        row.append('SPE')
-        return row
 
     def BEE(self, row):
         row.append('BEE')
         return row
 
-    def WEB(self, row):
-        return [row[-1], self.get_id(row[0]), 'WEB']
+    def SPE(self, row):
+        row.append('SPE')
+        return row
 
-    def RED(self, row):
-        return [row[2], self.get_id(row[0]), 'RED']
-
-    def LEE1(self, row):
-        return [row[2], row[0], 'LEE']
-
-    def LEE2(self, row):
-        return [row[2], row[3], 'LEE']
+    def PP(self, row):
+        return [row[1], row[0], row[1], 'PP']
 
     def OPEP(self, row):
-        return [row[5], row[1], 'OPEP']
+        return [row[1], row[0], 'OPEP']
+
+    def LL(self, row):
+        return [self.get_id(row[0]), row[0], 'LL']
 
     def LEL(self, row):
-        return [row[2], self.get_id(row[0]), 'LEL']
+        return [self.get_id(row[0]), row[1], 'LEL']
+
+    def GB(self, row):
+        return [self.get_id(row[0]), row[0], 'GB']
+
+    def WEB(self, row):
+        return [row[1], self.get_id(row[0]), 'WEB']
+
+    def DD(self, row):
+        return [self.get_id(row[0]), row[0], 'DD']
+
+    def RED(self, row):
+        return [row[1], self.get_id(row[0]), 'RED']
+
+    def TT(self, row):
+        return [row[0], row[0], 'TT']
+
+    def LEE1(self, row):
+        return [row[1], row[0], row[2],'LEE']
+
+    def EE(self, row):
+        return [row[0], row[0], 'EE']
+
+    def LEE2(self, row):
+        return [row[1], row[0], row[2], 'LEE']
 
 
 def run():
