@@ -362,7 +362,7 @@ class Parse():
         :param node:
         :return:
         '''
-        action = {'id': node['ID'], 'name': node['NAME'], 'type': node['type']}
+        action = {'id': node['ID'], 'name': node['NAME'], 'type': node['label']}
         if node['label'] in ['PP', 'LL', 'DD', 'EE', 'TT', 'GR', 'GB']:
             action['attibuteMap'] = {'extendNumber': node['extendnumber']}
         else:
@@ -378,7 +378,7 @@ class Parse():
         return action
 
     def get_link_attrib(self, link):
-        action = {'id': link['ID'], 'name': self.RELATION_MAP[link['type']], 'from': link['pid'], 'to': link['id'], 'type': link['label']}
+        action = {'id': link['ID'], 'name': self.RELATION_MAP[link['label']], 'from': link['pid'], 'to': link['id'], 'type': link['label']}
         if link['label'] == 'IPEE':
             action['attibuteMap'] = {
                 'conratio': link['RATE'],
@@ -413,12 +413,12 @@ class Parse():
                 if node['ID'] not in nodes_set:
                     node = self.get_node_attrib(node)
                     nodes.append(node)
-                    nodes_set.add(node['ID'])
+                    nodes_set.add(node['id'])
             for link in path['r']:
                 if link['ID'] not in links_set:
                     link = self.get_link_attrib(link)
                     links.append(link)
-                    links_set.add(link['ID'])
+                    links_set.add(link['id'])
         return nodes, links
 
 

@@ -31,8 +31,8 @@ report = {}
 GS_header = ['ID:ID(ENT-ID)', 'NAME', 'UNISCID', 'ESDATE', 'INDUSTRY', 'PROVINCE', 'REGCAP', 'RECCAPCUR', 'ENTSTATUS', ':LABEL']
 GR_header = ['ID:ID(P-ID)', 'NAME', ':LABEL']
 
-IPEER_header = ['ID:START_ID(P-ID)', 'RATE', 'ID:END_ID(ENT-ID)', ':TYPE']
-IPEES_header = ['ID:START_ID(ENT-ID)', 'RATE', 'ID:END_ID(ENT-ID)', ':TYPE']
+IPEER_header = ['ID:START_ID(P-ID)', 'RATE', 'RATE_TYPE', 'ID:END_ID(ENT-ID)', ':TYPE']
+IPEES_header = ['ID:START_ID(ENT-ID)', 'RATE', 'RATE_TYPE', 'ID:END_ID(ENT-ID)', ':TYPE']
 BEE_header = ['ID:END_ID(ENT-ID)', 'ID:START_ID(ENT-ID)', ':TYPE']
 SPE_header = ['ID:END_ID(ENT-ID)', 'POSITION', 'ID:START_ID(P-ID)', ':TYPE']
 
@@ -57,7 +57,7 @@ FZE_TITLE,FZE_ENTNAME_GLLZD,FZE_ZBBH,FZE_STATUS,LCID
 苏州市市容市政管理局作业车辆智能管理及终端视频监管项目中标公告,江苏移动信息系统集成有限公司,,1,0da905337f2ac64bdd4a069d74f50946
 上海正弘建设工程顾问有限公司关于连通水系两岸（肖家村至西环路）环境整治工程中标候选人公示,江苏科晟园林景观建设集团有限公司,,1,408dd7b1135077a76169e56d0c112b0a
 '''
-GB_header = ['ID:ID(FZE-ID)', 'NAME', 'FZE_ZBBH', ':LABEL']
+GB_header = ['ID:ID(FZE-ID)', 'NAME', ':LABEL']
 WEB_header = ['ID:START_ID(ENT-ID)', 'ID:END_ID(FZE-ID)', ':TYPE']
 
 '''
@@ -84,7 +84,7 @@ files = [
     ('/home/neo4j_test/import/人员节点-投资.csv', r'/home/neo4j_test/import/gri.csv', GR_header, 'GR', '人员节点'),
     ('/home/neo4j_test/import/人员节点-高管.csv', r'/home/neo4j_test/import/grs.csv', GR_header, 'GR', '人员节点'),
     ('/home/neo4j_test/import/企业投资.csv', r'/home/neo4j_test/import/ipees.csv', IPEES_header, 'IPEES', '投资'),
-    ('/home/neo4j_test/import/自然人投资.csv', r'/home/neo4j_test/import/ipee2.csv', IPEER_header, 'IPEER', '投资'),
+    ('/home/neo4j_test/import/自然人投资.csv', r'/home/neo4j_test/import/ipeer.csv', IPEER_header, 'IPEER', '投资'),
     ('/home/neo4j_test/import/企业分支.csv', r'/home/neo4j_test/import/bee.csv', BEE_header, 'BEE', '人员任职'),
     ('/home/neo4j_test/import/主要管理人员.csv', r'/home/neo4j_test/import/spe.csv', SPE_header, 'SPE', '专利节点'),
     ('/home/neo4j_test/import/专利节点', r'/home/neo4j_test/import/pp.csv', PP_header, 'PP', '专利关系'),
@@ -117,10 +117,10 @@ class WriteCSV(object):
         return row
 
     def IPEES(self, row):
-        return [row[0], row[1] if row[1] else 0, row[2], 'IPEE']
+        return [row[0], row[1] if row[1] else 0, row[2], row[-1], 'IPEE']
 
     def IPEER(self, row):
-        return [row[0], row[1] if row[1] else 0, row[2], 'IPEE']
+        return [row[0], row[1] if row[1] else 0, row[2], row[-1], 'IPEE']
 
     def BEE(self, row):
         row.append('BEE')
@@ -209,9 +209,9 @@ if __name__ == '__main__':
                  "--nodes=import/gb.csv " \
                  "--nodes=import/dd.csv " \
                  "--nodes=import/tt.csv " \
-                 "--nodes=import/rr.csv " \
+                 "--nodes=import/ee.csv " \
                  "--relationships=import/ipees.csv " \
-                 "--relationships=import/ipeer.csv"
+                 "--relationships=import/ipeer.csv " \
                  "--relationships=import/bee.csv " \
                  "--relationships=import/spe.csv "\
                  "--relationships=import/opep.csv " \
