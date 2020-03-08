@@ -382,12 +382,12 @@ class Parse():
         if link['label'] == 'IPEE':
             action['attibuteMap'] = {
                 'conratio': link['RATE'],
-                'holding_mode': link[''],
+                'holding_mode': link['RATE_TYPE'],
             }
         elif link['label'] == 'SPE':
             action['attibuteMap'] = {'position': link['POSITION']}
         elif link['label'] == 'LEE':
-            action['attibuteMap'] = {'domain'}
+            action['attibuteMap'] = {'domain': link['DOMAIN']}
         elif link['label'] == 'IHPEEN':
             pass
         elif link['label'] == 'SHPEN':

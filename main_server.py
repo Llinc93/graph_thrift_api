@@ -117,11 +117,11 @@ class MyFaceHandler(Interface.Iface):
 
             tmp_nodes, tmp_links = parse.parse_v3(data, filter, int(level), ent_names[-1])
             for node in tmp_nodes:
-                if node['ID'] not in nodes:
-                    nodes[node['ID']] = node
+                if node['id'] not in nodes:
+                    nodes[node['id']] = node
             for link in tmp_links:
-                if link['ID'] not in links:
-                    links[link['ID']] = link
+                if link['id'] not in links:
+                    links[link['id']] = link
         return json.dumps({'nodes': [node for node in nodes.values()], 'success': 0, 'links': [link for link in links.values()]}, ensure_ascii=False)
     except:
         traceback.print_exc()
@@ -135,10 +135,10 @@ if __name__ == '__main__':
     tfactory = TTransport.TBufferedTransportFactory()
     pfactory = TCompactProtocol.TCompactProtocolFactory()
     # pfactory = TBinaryProtocol.TBinaryProtocolFactory()
-    # server = TProcessPoolServer.TProcessPoolServer(processor, transport, tfactory, pfactory)
-    # server.setNumWorkers(os.cpu_count())
-    # server.serve()
-
+    server = TProcessPoolServer.TProcessPoolServer(processor, transport, tfactory, pfactory)
+    server.setNumWorkers(os.cpu_count())
+    server.serve()
+                                                                        
     rpc_server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
     rpc_server.serve()
     print('close done')
