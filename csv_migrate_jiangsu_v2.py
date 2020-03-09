@@ -87,7 +87,7 @@ files = [
     ('/home/neo4j_test/import/自然人投资.csv', r'/home/neo4j_test/import/ipeer.csv', IPEER_header, 'IPEER', '投资'),
     ('/home/neo4j_test/import/企业分支.csv', r'/home/neo4j_test/import/bee.csv', BEE_header, 'BEE', '人员任职'),
     ('/home/neo4j_test/import/主要管理人员.csv', r'/home/neo4j_test/import/spe.csv', SPE_header, 'SPE', '专利节点'),
-    ('/home/neo4j_test/import/专利节点', r'/home/neo4j_test/import/pp.csv', PP_header, 'PP', '专利关系'),
+    ('/home/neo4j_test/import/专利节点.csv', r'/home/neo4j_test/import/pp.csv', PP_header, 'PP', '专利关系'),
     ('/home/neo4j_test/import/专利关系.csv', r'/home/neo4j_test/import/opep.csv', OPEP_header, 'OPEP', '专利关系'),
     ('/home/neo4j_test/import/诉讼节点.csv', r'/home/neo4j_test/import/ll.csv', LL_header, 'LL', '诉讼节点'),
     ('/home/neo4j_test/import/诉讼关系.csv', r'/home/neo4j_test/import/lel.csv', LEL_header, 'LEL', '诉讼关系'),
@@ -203,7 +203,7 @@ if __name__ == '__main__':
     import_cmd = "docker exec -it neo4j_test /bin/bash -c 'bin/neo4j-admin import " \
                  "--nodes=import/gs.csv " \
                  "--nodes=import/gri.csv " \
-                 "--nodes=import/grs.csv" \
+                 "--nodes=import/grs.csv " \
                  "--nodes=import/pp.csv " \
                  "--nodes=import/ll.csv " \
                  "--nodes=import/gb.csv " \
@@ -213,7 +213,7 @@ if __name__ == '__main__':
                  "--relationships=import/ipees.csv " \
                  "--relationships=import/ipeer.csv " \
                  "--relationships=import/bee.csv " \
-                 "--relationships=import/spe.csv "\
+                 "--relationships=import/spe.csv " \
                  "--relationships=import/opep.csv " \
                  "--relationships=import/lel.csv " \
                  "--relationships=import/web.csv " \
