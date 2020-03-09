@@ -64,7 +64,7 @@ class Filter(object):
         flag = True
         text = ''
         action = [row[0], row[2]]
-        if '' in action:
+        if '' in action or len(row) != 4:
             flag = False
         else:
             text = ','.join(action)
@@ -79,7 +79,7 @@ class Filter(object):
         flag = True
         text = ''
         action = [row[0], row[2]]
-        if '' in action:
+        if '' in action or len(row) != 4:
             flag = False
         else:
             text = ','.join(action)
@@ -232,7 +232,8 @@ class Filter(object):
     def EE(self, row):
         flag = True
         text = ''
-        if '' in row or '0' in row or '-' in row or '无' in row or '--' in row or '无无' in row or '0000' in row or '1' in row or len(row) != 1:
+        if '.' not in row[0] or len(row) != 1 or '@' not in row[0]:
+        # if row[0] in ['', '-', '0', '无', '--', '无无', '0000', '/', '1'] or len(row) != 1:
             flag = False
         else:
             text = ','.join(row)
