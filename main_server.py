@@ -2,7 +2,7 @@
 """
 thrift服务端
 """
-import traceback, os, sys, json, time, redis
+import traceback, os, sys, json
 from
 from itertools import permutations
 if sys.platform.startswith('win'):
@@ -88,6 +88,45 @@ class MyFaceHandler(Interface.Iface):
         traceback.print_exc()
         return json.dumps({'nodes': [], 'success': 102, 'links': []}, ensure_ascii=False)
 
+  # def getEntsRelevanceSeekGraphG(self, entName, attIds, level):
+  #   """
+  #   企业关联探寻
+  #   entName 企业名称
+  #   attIds 过滤关系
+  #   level 层级，最大6层
+  #
+  #   Parameters:
+  #    - entName
+  #    - attIds
+  #    - level
+  #   """
+  #   try:
+  #       if int(level) <= 0 or int(level) > 6:
+  #           raise ValueError
+  #
+  #       nodes, links, filter, direct = parse.get_term_v3(attIds.split(';'))
+  #
+  #       # 序列之间的两两组合(Cn2),查询结果取并集
+  #       nodes = {}
+  #       links = {}
+  #       entNames = sorted(entName.split(';'))
+  #       for ent_names in permutations(entNames, 2):
+  #           if ent_names[-1] != entNames[0] or ent_names[0] == ent_names[-1]:
+  #               continue
+  #           data = neo4j_client.get_ents_relevance_seek_graph_g_v3(entnames=ent_names, level=int(level), terms=(nodes, links, direct))
+  #
+  #           tmp_nodes, tmp_links = parse.parse_v3(data, filter, int(level), ent_names[-1])
+  #           for node in tmp_nodes:
+  #               if node['id'] not in nodes:
+  #                   nodes[node['id']] = node
+  #           for link in tmp_links:
+  #               if link['id'] not in links:
+  #                   links[link['id']] = link
+  #       return json.dumps({'nodes': [node for node in nodes.values()], 'success': 0, 'links': [link for link in links.values()]}, ensure_ascii=False)
+  #   except:
+  #       traceback.print_exc()
+  #       return json.dumps({'nodes': [], 'success': 103, 'links': []}, ensure_ascii=False)
+
   def getEntsRelevanceSeekGraphG(self, entName, attIds, level):
     """
     企业关联探寻
@@ -106,22 +145,7 @@ class MyFaceHandler(Interface.Iface):
 
         nodes, links, filter, direct = parse.get_term_v3(attIds.split(';'))
 
-        # 序列之间的两两组合(Cn2),查询结果取并集
-        nodes = {}
-        links = {}
-        entNames = sorted(entName.split(';'))
-        for ent_names in permutations(entNames, 2):
-            if ent_names[-1] != entNames[0] or ent_names[0] == ent_names[-1]:
-                continue
-            data = neo4j_client.get_ents_relevance_seek_graph_g_v3(entnames=ent_names, level=int(level), terms=(nodes, links, direct))
-
-            tmp_nodes, tmp_links = parse.parse_v3(data, filter, int(level), ent_names[-1])
-            for node in tmp_nodes:
-                if node['id'] not in nodes:
-                    nodes[node['id']] = node
-            for link in tmp_links:
-                if link['id'] not in links:
-                    links[link['id']] = link
+        nodes, links = parse.parallel_query(entName, level, nodes, links, filter, direct)
         return json.dumps({'nodes': [node for node in nodes.values()], 'success': 0, 'links': [link for link in links.values()]}, ensure_ascii=False)
     except:
         traceback.print_exc()

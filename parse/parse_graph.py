@@ -1,5 +1,8 @@
 import copy, time
+from itertools import permutations
 from collections import defaultdict
+
+from parse.my_thread import MyThread
 
 
 class Parse():
@@ -421,77 +424,42 @@ class Parse():
                     links_set.add(link['id'])
         return nodes, links
 
+    def parallel_query(self, entName, level, nodes, links, filter, direct):
+        threads = []
+
+        # 序列之间的两两组合(Cn2),查询结果取并集
+        entNames = sorted(entName.split(';'))
+        for ent_names in permutations(entNames, 2):
+            if ent_names[-1] != entNames[0] or ent_names[0] == ent_names[-1]:
+                continue
+            t = MyThread(ent_names, level, nodes, links, filter, direct)
+            # t = MyThread(ent_names, 1, 2, 3, 4, 5)
+            threads.append(t)
+
+        for i in threads:
+            i.start()
+
+        for i in threads:
+            i.join()
+
+        nodes = {}
+        links = {}
+        for i in threads:
+            tmp_nodes, tmp_links = i.result
+            for node in tmp_nodes:
+                if node['id'] not in nodes:
+                    nodes[node['id']] = node
+            for link in tmp_links:
+                if link['id'] not in links:
+                    links[link['id']] = link
+        return nodes, links
+
 
 parse = Parse()
 
 if __name__ == '__main__':
-    CONDITION_MAP = {
-        'R101': {'n': 'GS', 'r': 'IPEE', 'd': 2},   # 企业对外投资
-        'R102': {'n': 'GS', 'r': 'IPEE', 'd': 1},   # 企业股东
-        'R103': {'n': 'GR', 'r': 'IPEE', 'd': 2},   # 自然人对外投资
-        'R104': {'n': 'GR', 'r': 'IPEE', 'd': 1},   # 自然人股东
-        'R105': {'n': 'GR', 'r': 'SPE', 'd': 2},    # 管理人员其他公司任职
-        'R106': {'n': 'GR', 'r': 'SPE', 'd': 1},    # 公司管理人员
-        'R107': {'n': 'GR', 'r': 'BEE', 'd': 3},    # 分支机构
-        'R108': {'n': 'GR', 'r': 'BEE', 'd': 3},    # 总部
-        'R109': {'n': 'GB', 'r': 'WEB', 'd': 3},    # 企业关联中标
-        'R110': {'n': 'GB', 'r': 'WEB', 'd': 3},    # 中标关联企业
-        'R111': {'n': 'DD', 'r': 'RED', 'd': 3},    # 企业关联注册地
-        'R112': {'n': 'DD', 'r': 'RED', 'd': 3},    # 注册地关联企业
-        'R113': {'n': ['EE', 'TT'], 'r': 'LEE', 'd': 3},     # 企业关联邮箱 / 电话
-        'R114': {'n': ['EE', 'TT'], 'r': 'LEE', 'd': 3},     # 邮箱 / 电话关联企业
-        'R115': {'n': 'PP', 'r': 'OPEP', 'd': 3},     # 企业关联专利
-        'R116': {'n': 'PP', 'r': 'OPEP', 'd': 3},     # 专利关联企业
-        'R117': {'n': 'LL', 'r': 'LEL', 'd': 3},     # 企业关联诉讼
-        'R118': {'n': 'LL', 'r': 'LEL', 'd': 3},     # 诉讼关联企业
-        # 'R119': {'n': '', 'r': '', 'd': 3},     # 人员关联专利
-        # 'R120': {'n': '', 'r': '', 'd': 3},     # 专利关联人员
-        # 'R139': {'n': '', 'r': '', 'd': 3},     # 历史企业股东
-        # 'R140': {'n': '', 'r': '', 'd': 3},     # 历史企业对外投资
-        # 'R141': {'n': '', 'r': '', 'd': 3},     # 历史自然人股东
-        # 'R142': {'n': '', 'r': '', 'd': 3},     # 历史自然人对外投资
-        # 'R143': {'n': '', 'r': '', 'd': 3},     # 历史公司管理人员
-        # 'R144': {'n': '', 'r': '', 'd': 3},     # 历史管理人员其他公司任职
-    }
-    # 企业族谱接口
-    # att = 'R101;R102;R103;R104;R106'
-    # level = 2
-    # entname = '江苏荣马城市建设有限公司'
-    # ret = parse.get_term_v3(att.split(';'))
-    # print(ret)
-    # nodes, links, filter, direct = parse.get_term_v3(att.split(';'))
-    # from model.ent_graph import neo4j_client
-    # data, flag = neo4j_client.get_ent_graph_g_v3(entname=entname, level=level, node_type='GS', terms=(nodes, links, direct))
-    # if not flag:
-    #     print('null')
-    # nodes, links = parse.parse_v3(data, filter, level, entname)
-    # print(len(nodes), nodes)
-    # print()
-    # print(len(links), links)
+    import time
 
-    # 企业关联接口
-    att = 'R101;R102;R103;R104;R106'
-    level = 4
-    entname = '江苏荣马城市建设有限公司;江苏荣马实业有限公司'
-    node_type, link_type, filter, direct = parse.get_term_v3(att.split(';'))
-    print(node_type, link_type, filter, direct)
-    from model.ent_graph import neo4j_client
-    from itertools import permutations
-    nodes = {}
-    links = {}
-    entNames = entname.split(';')
-    for ent_names in permutations(entNames, 2):
-        if ent_names[0] != entNames[0]:
-            continue
-        data = neo4j_client.get_ents_relevance_seek_graph_g_v3(entnames=ent_names, level=level, terms=(node_type, link_type, direct))
-
-        tmp_nodes, tmp_links = parse.parse_v3(data, filter, level, entname)
-        for node in tmp_nodes:
-            if node['ID'] not in nodes:
-                nodes[node['ID']] = node
-        for link in tmp_links:
-            if link['ID'] not in links:
-                links[link['ID']] = link
-    print(len(nodes), [node for node in nodes.values()])
-    print()
-    print(len(links), [link for link in links.values()])
+    s = time.time()
+    parse.parallel_query('1;2;3;4;5')
+    print(time.time() - s)
