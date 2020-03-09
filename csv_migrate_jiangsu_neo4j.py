@@ -80,7 +80,7 @@ EE_header = ['ID:ID(EMAIL-ID)', 'NAME', ':LABEL']
 LEE2_header = ['ID:START_ID(ENT-ID)', 'ID:END_ID(EMAIL-ID)', 'DOMAIN', ':TYPE']
 
 files = [
-    ('/home/neo4j_test/import/企业节点.csv', r'/home/neo4j/import/gs.csv', GS_header, 'GS', '企业节点'),
+    ('/home/neo4j_test/import/基本信息企业节点.csv', r'/home/neo4j/import/gs.csv', GS_header, 'GS', '企业节点'),
     ('/home/neo4j_test/import/人员节点-投资.csv', r'/home/neo4j/import/gri.csv', GR_header, 'GR', '人员节点'),
     ('/home/neo4j_test/import/人员节点-高管.csv', r'/home/neo4j/import/grs.csv', GR_header, 'GR', '人员节点'),
     ('/home/neo4j_test/import/企业投资.csv', r'/home/neo4j/import/ipees.csv', IPEES_header, 'IPEES', '投资'),
