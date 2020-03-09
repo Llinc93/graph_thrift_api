@@ -117,10 +117,10 @@ class WriteCSV(object):
         return row
 
     def IPEES(self, row):
-        return [row[0], row[1] if row[1] else 0, row[2], row[-1], 'IPEES']
+        return [row[0], row[1] if row[1] else 0, row[-1], row[2], 'IPEES']
 
     def IPEER(self, row):
-        return [row[0], row[1] if row[1] else 0, row[2], row[-1], 'IPEER']
+        return [row[0], row[1] if row[1] else 0, row[-1], row[2], 'IPEER']
 
     def BEE(self, row):
         row.append('BEE')
