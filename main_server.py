@@ -74,12 +74,12 @@ class MyFaceHandler(Interface.Iface):
         if int(level) > 3 or int(level) <= 0:
             raise ValueError
 
-        nodes, links, filter, direct = parse.get_term_v3(attIds.split(';'))
+        # nodes, links, filter, direct = parse.get_term_v3(attIds.split(';'))
         # filter = parse.get_term_v4(attIds.split(';'))
         # data, flag = neo4j_client.get_ent_graph_g_v3(entname=keyword, level=int(level), node_type=nodeType, terms=(nodes, links, direct))
 
         relationshipFilter = parse.get_relationshipFilter(attIds)
-        data, flag = neo4j_client.get_ent_graph_g_v4(keyword, int(level), nodeType, filter)
+        data, flag = neo4j_client.get_ent_graph_g_v4(keyword, int(level), nodeType, relationshipFilter)
 
         if not flag:
             if not data:
