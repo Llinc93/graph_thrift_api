@@ -31,8 +31,8 @@ report = {}
 GS_header = ['ID:ID(ENT-ID)', 'NAME', 'UNISCID', 'ESDATE', 'INDUSTRY', 'PROVINCE', 'REGCAP', 'RECCAPCUR', 'ENTSTATUS', ':LABEL']
 GR_header = ['ID:ID(P-ID)', 'NAME', ':LABEL']
 
-IPEER_header = ['ID:START_ID(P-ID)', 'RATE', 'ID:END_ID(ENT-ID)', ':TYPE']
-IPEES_header = ['ID:START_ID(ENT-ID)', 'RATE', 'ID:END_ID(ENT-ID)', ':TYPE']
+IPEER_header = ['ID:START_ID(P-ID)', 'RATE', 'RATE_TYPE', 'ID:END_ID(ENT-ID)', ':TYPE']
+IPEES_header = ['ID:START_ID(ENT-ID)', 'RATE', 'RATE_TYPE', 'ID:END_ID(ENT-ID)', ':TYPE']
 BEE_header = ['ID:END_ID(ENT-ID)', 'ID:START_ID(ENT-ID)', ':TYPE']
 SPE_header = ['ID:END_ID(ENT-ID)', 'POSITION', 'ID:START_ID(P-ID)', ':TYPE']
 
@@ -57,7 +57,7 @@ FZE_TITLE,FZE_ENTNAME_GLLZD,FZE_ZBBH,FZE_STATUS,LCID
 苏州市市容市政管理局作业车辆智能管理及终端视频监管项目中标公告,江苏移动信息系统集成有限公司,,1,0da905337f2ac64bdd4a069d74f50946
 上海正弘建设工程顾问有限公司关于连通水系两岸（肖家村至西环路）环境整治工程中标候选人公示,江苏科晟园林景观建设集团有限公司,,1,408dd7b1135077a76169e56d0c112b0a
 '''
-GB_header = ['ID:ID(FZE-ID)', 'NAME', 'FZE_ZBBH', ':LABEL']
+GB_header = ['ID:ID(FZE-ID)', 'NAME', ':LABEL']
 WEB_header = ['ID:START_ID(ENT-ID)', 'ID:END_ID(FZE-ID)', ':TYPE']
 
 '''
@@ -80,25 +80,25 @@ EE_header = ['ID:ID(EMAIL-ID)', 'NAME', ':LABEL']
 LEE2_header = ['ID:START_ID(ENT-ID)', 'ID:END_ID(EMAIL-ID)', 'DOMAIN', ':TYPE']
 
 files = [
-    ('/home/neo4j_test/import/企业节点.csv', r'/home/neo4j_test/import/gs.csv', GS_header, 'GS', '企业节点'),
-    ('/home/neo4j_test/import/人员节点-投资.csv', r'/home/neo4j_test/import/gri.csv', GR_header, 'GR', '人员节点'),
-    ('/home/neo4j_test/import/人员节点-高管.csv', r'/home/neo4j_test/import/grs.csv', GR_header, 'GR', '人员节点'),
-    ('/home/neo4j_test/import/企业投资.csv', r'/home/neo4j_test/import/ipees.csv', IPEES_header, 'IPEES', '投资'),
-    ('/home/neo4j_test/import/自然人投资.csv', r'/home/neo4j_test/import/ipee2.csv', IPEER_header, 'IPEER', '投资'),
-    ('/home/neo4j_test/import/企业分支.csv', r'/home/neo4j_test/import/bee.csv', BEE_header, 'BEE', '人员任职'),
-    ('/home/neo4j_test/import/主要管理人员.csv', r'/home/neo4j_test/import/spe.csv', SPE_header, 'SPE', '专利节点'),
-    ('/home/neo4j_test/import/专利节点', r'/home/neo4j_test/import/pp.csv', PP_header, 'PP', '专利关系'),
-    ('/home/neo4j_test/import/专利关系.csv', r'/home/neo4j_test/import/opep.csv', OPEP_header, 'OPEP', '专利关系'),
-    ('/home/neo4j_test/import/诉讼节点.csv', r'/home/neo4j_test/import/ll.csv', LL_header, 'LL', '诉讼节点'),
-    ('/home/neo4j_test/import/诉讼关系.csv', r'/home/neo4j_test/import/lel.csv', LEL_header, 'LEL', '诉讼关系'),
-    ('/home/neo4j_test/import/招投标节点.csv', r'/home/neo4j_test/import/gb.csv', GB_header, 'GB', '招投标节点'),
-    ('/home/neo4j_test/import/招投标关系.csv', r'/home/neo4j_test/import/web.csv', WEB_header, 'WEB', '招投标关系'),
-    ('/home/neo4j_test/import/办公地节点.csv', r'/home/neo4j_test/import/dd.csv', DD_header, 'DD', '办公地节点'),
-    ('/home/neo4j_test/import/相同办公地.csv', r'/home/neo4j_test/import/red.csv', RED_header, 'RED', '相同办公地'),
-    ('/home/neo4j_test/import/电话节点.csv', r'/home/neo4j_test/import/tt.csv', TT_header, 'TT', '电话节点'),
-    ('/home/neo4j_test/import/相同联系方式-电话.csv', r'/home/neo4j_test/import/lee1.csv', LEE1_header, 'LEE1', '相同联系方式'),
-    ('/home/neo4j_test/import/邮箱节点.csv', r'/home/neo4j_test/import/ee.csv', EE_header, 'EE', '邮箱节点'),
-    ('/home/neo4j_test/import/相同联系方式-邮箱.csv', r'/home/neo4j_test/import/lee2.csv', LEE2_header, 'LEE2', '相同联系方式'),
+    ('/home/neo4j_test/import/企业节点.csv', r'/home/neo4j/import/gs.csv', GS_header, 'GS', '企业节点'),
+    ('/home/neo4j_test/import/人员节点-投资.csv', r'/home/neo4j/import/gri.csv', GR_header, 'GR', '人员节点'),
+    ('/home/neo4j_test/import/人员节点-高管.csv', r'/home/neo4j/import/grs.csv', GR_header, 'GR', '人员节点'),
+    ('/home/neo4j_test/import/企业投资.csv', r'/home/neo4j/import/ipees.csv', IPEES_header, 'IPEES', '投资'),
+    ('/home/neo4j_test/import/自然人投资.csv', r'/home/neo4j/import/ipeer.csv', IPEER_header, 'IPEER', '投资'),
+    ('/home/neo4j_test/import/企业分支.csv', r'/home/neo4j/import/bee.csv', BEE_header, 'BEE', '人员任职'),
+    ('/home/neo4j_test/import/主要管理人员.csv', r'/home/neo4j/import/spe.csv', SPE_header, 'SPE', '专利节点'),
+    ('/home/neo4j_test/import/专利节点', r'/home/neo4j/import/pp.csv', PP_header, 'PP', '专利关系'),
+    ('/home/neo4j_test/import/专利关系.csv', r'/home/neo4j/import/opep.csv', OPEP_header, 'OPEP', '专利关系'),
+    ('/home/neo4j_test/import/诉讼节点.csv', r'/home/neo4j/import/ll.csv', LL_header, 'LL', '诉讼节点'),
+    ('/home/neo4j_test/import/诉讼关系.csv', r'/home/neo4j/import/lel.csv', LEL_header, 'LEL', '诉讼关系'),
+    ('/home/neo4j_test/import/招投标节点.csv', r'/home/neo4j/import/gb.csv', GB_header, 'GB', '招投标节点'),
+    ('/home/neo4j_test/import/招投标关系.csv', r'/home/neo4j/import/web.csv', WEB_header, 'WEB', '招投标关系'),
+    ('/home/neo4j_test/import/办公地节点.csv', r'/home/neo4j/import/dd.csv', DD_header, 'DD', '办公地节点'),
+    ('/home/neo4j_test/import/相同办公地.csv', r'/home/neo4j/import/red.csv', RED_header, 'RED', '相同办公地'),
+    ('/home/neo4j_test/import/电话节点.csv', r'/home/neo4j/import/tt.csv', TT_header, 'TT', '电话节点'),
+    ('/home/neo4j_test/import/相同联系方式-电话.csv', r'/home/neo4j/import/lee1.csv', LEE1_header, 'LEE1', '相同联系方式'),
+    ('/home/neo4j_test/import/邮箱节点.csv', r'/home/neo4j/import/ee.csv', EE_header, 'EE', '邮箱节点'),
+    ('/home/neo4j_test/import/相同联系方式-邮箱.csv', r'/home/neo4j/import/lee2.csv', LEE2_header, 'LEE2', '相同联系方式'),
 ]
 
 
@@ -117,10 +117,10 @@ class WriteCSV(object):
         return row
 
     def IPEES(self, row):
-        return [row[0], row[1] if row[1] else 0, row[2], 'IPEES']
+        return [row[0], row[1] if row[1] else 0, row[2], row[-1], 'IPEES']
 
     def IPEER(self, row):
-        return [row[0], row[1] if row[1] else 0, row[2], 'IPEER']
+        return [row[0], row[1] if row[1] else 0, row[2], row[-1], 'IPEER']
 
     def BEE(self, row):
         row.append('BEE')
@@ -197,10 +197,10 @@ def run():
 if __name__ == '__main__':
     run()
     # 将csv文件导入neoj
-    rm_cmd = f'rm -rf /home/neo4j_test/data/databases/graph.db'
+    rm_cmd = f'rm -rf /home/neo4j/data/databases/graph.db'
     rm_code, rm_ret = subprocess.getstatusoutput(rm_cmd)
 
-    import_cmd = "docker exec -it neo4j_test /bin/bash -c 'bin/neo4j-admin import " \
+    import_cmd = "docker exec -it neo4j_graph /bin/bash -c 'bin/neo4j-admin import " \
                  "--nodes=import/gs.csv " \
                  "--nodes=import/gri.csv " \
                  "--nodes=import/grs.csv" \
@@ -209,9 +209,9 @@ if __name__ == '__main__':
                  "--nodes=import/gb.csv " \
                  "--nodes=import/dd.csv " \
                  "--nodes=import/tt.csv " \
-                 "--nodes=import/rr.csv " \
+                 "--nodes=import/ee.csv " \
                  "--relationships=import/ipees.csv " \
-                 "--relationships=import/ipeer.csv"
+                 "--relationships=import/ipeer.csv " \
                  "--relationships=import/bee.csv " \
                  "--relationships=import/spe.csv "\
                  "--relationships=import/opep.csv " \
@@ -222,7 +222,7 @@ if __name__ == '__main__':
                  "--relationships=import/lee2.csv " \
                  "--ignore-missing-nodes --ignore-duplicate-nodes --high-io=true'"
     os.system(import_cmd)
-    os.system('docker restart neo4j_test')
+    os.system('docker restart neo4j_graph')
 
 
     # 返回表中数据统计

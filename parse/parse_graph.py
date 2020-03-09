@@ -84,82 +84,168 @@ class Parse():
         # 'R144': {'n': '', 'r': '', 'd': 3},     # 历史管理人员其他公司任职
     }
 
-    def get_term_v3(self, attIds):
+    # def get_term_v3(self, attIds):
+    #     '''
+    #     根据传入的条件获取节点类型和关系类型，并获取过滤条件
+    #     1. 传入条件过滤
+    #     2. 判断方向
+    #     3. 获取过滤条件
+    #         1. 同一方向的单向, 均为1，或均为2
+    #         2. 不同方向的单向， 1和2
+    #         3. 全部不定向， 均为3
+    #         4. 单向、不定向混合， 1和3， 2和3
+    #     :param attIds:
+    #     :return:
+    #     '''
+    #     filter = []
+    #     # step1 传入条件过滤
+    #     # if 'R103' in attIds and 'R104' not in attIds:
+    #     #     attIds.remove('R103')
+    #     #     filter.append('R104')
+    #
+    #     # if 'R105' in attIds and 'R106' not in attIds:
+    #     #     attIds.remove('R105')
+    #     #     filter.append('R106')
+    #
+    #     # if 'R142' in attIds and 'R141' not in attIds:
+    #     #     attIds.remove('R142')
+    #     #     filter.append('R141')
+    #
+    #     # if 'R144' in attIds and 'R143' not in attIds:
+    #     #     attIds.remove('R144')
+    #     #     filter.append('R143')
+    #
+    #     # step2 判断方向，并获取节点和关系
+    #     d = {}
+    #     nodes = set()
+    #     links = set()
+    #     for attId in attIds:
+    #         n = self.CONDITION_MAP[attId]['n']
+    #         r = self.CONDITION_MAP[attId]['r']
+    #
+    #         if isinstance(n, list):
+    #             nodes = nodes.union(set(n))
+    #             label = f'{"_".join(n)}_{r}'
+    #         else:
+    #             nodes.add(n)
+    #             label = f'{n}_{r}'
+    #         links.add(r)
+    #
+    #         if label in d:
+    #             d[label]['value'].add(self.CONDITION_MAP[attId]['d'])
+    #         else:
+    #             d[label] = {'value': set([self.CONDITION_MAP[attId]['d']]), 'attid': attId}
+    #
+    #     # step3 根据方向，获取过滤条件
+    #     direct = ''
+    #     key_action = []
+    #     value_action = []
+    #     for key, value in d.items():
+    #         key_action.append(key)
+    #         value_action.append(sum(value['value']))
+    #
+    #     # 1. 同一方向的单向, 均为1，或均为2, 不需要过滤
+    #     if value_action.count(1) == len(value_action):
+    #         direct = 'in'
+    #     elif value_action.count(2) == len(value_action):
+    #         direct = 'out'
+    #     # 2. 全部不定向， 均为3， 不需要过滤
+    #     elif value_action.count(3) == len(value_action):
+    #         direct = 'full'
+    #     # 3. 不同方向的单向, 1和2, 没有不定向, A1和B3;单向、不定向混合， 1和3， 2和3
+    #     else:
+    #         direct = 'full'
+    #         for index in range(len(value_action)):
+    #             if value_action[index] != 3:
+    #                 filter.append(self.filter_map[d[key_action[index]]['attid']])
+    #
+    #     return nodes, links, filter, direct
+
+    def get_relationshipFilter(self, attIds):
         '''
-        根据传入的条件获取节点类型和关系类型，并获取过滤条件
-        1. 传入条件过滤
-        2. 判断方向
-        3. 获取过滤条件
-            1. 同一方向的单向, 均为1，或均为2
-            2. 不同方向的单向， 1和2
-            3. 全部不定向， 均为3
-            4. 单向、不定向混合， 1和3， 2和3
+        根据attIds确定relationshipFilter
+
+        'R101': 'IPEES>',   # 企业对外投资
+        'R102': '<IPEES',   # 企业股东
+        'R103': 'IPEER>',   # 自然人对外投资
+        'R104': '<IPEER',   # 自然人股东
+        'R105': 'SPE>',    # 管理人员其他公司任职
+        'R106': '<SPE',    # 公司管理人员
+        'R107': 'BEE',    # 分支机构
+        'R108': 'BRR',    # 总部
+        'R109': 'WEB',    # 企业关联中标
+        'R110': 'WEB',    # 中标关联企业
+        'R111': 'RED',    # 企业关联注册地
+        'R112': 'RED',    # 注册地关联企业
+        'R113': 'LEE',     # 企业关联邮箱 / 电话
+        'R114': 'LEE',     # 邮箱 / 电话关联企业
+        'R115': 'OPEP',     # 企业关联专利
+        'R116': 'OPEP',     # 专利关联企业
+        'R117': 'LEL',     # 诉讼关联企业
+        'R118': 'LEL'     # 诉讼关联企业
+        'R119': 'LEL',     # 人员关联专利
+        'R120': '',     # 专利关联人员
+        'R139': '',     # 历史企业股东
+        'R140': '',      # 历史企业对外投资
+        'R141': '',     # 历史自然人股东
+        'R142': ''},     # 历史自然人对外投资
+        'R143': '',     # 历史公司管理人员
+        'R144': '',     # 历史管理人员其他公司任职
         :param attIds:
         :return:
         '''
-        filter = []
-        # step1 传入条件过滤
-        # if 'R103' in attIds and 'R104' not in attIds:
-        #     attIds.remove('R103')
-        #     filter.append('R104')
+        relationshipFilter = []
+        attIds = attIds.split(';')
 
-        # if 'R105' in attIds and 'R106' not in attIds:
-        #     attIds.remove('R105')
-        #     filter.append('R106')
+        # 企业投资
+        if 'R101' in attIds and 'R102' in attIds:
+            relationshipFilter.append('IPEES')
+        elif 'R101' in attIds:
+            relationshipFilter.append('IPEES>')
+        elif 'R102' in attIds:
+            relationshipFilter.append('<IPEES')
 
-        # if 'R142' in attIds and 'R141' not in attIds:
-        #     attIds.remove('R142')
-        #     filter.append('R141')
+        # 自然人投资
+        if 'R103' in attIds and 'R104' in attIds:
+            relationshipFilter.append('IPEER')
+        elif 'R103' in attIds:
+            relationshipFilter.append('IPEER>')
+        elif 'R104' in attIds:
+            relationshipFilter.append('<IPEER')
 
-        # if 'R144' in attIds and 'R143' not in attIds:
-        #     attIds.remove('R144')
-        #     filter.append('R143')
+        # 管理人员
+        if 'R105' in attIds and 'R106' in attIds:
+            relationshipFilter.append('SPE')
+        elif 'R105' in attIds:
+            relationshipFilter.append('SPE>')
+        elif 'R106' in attIds:
+            relationshipFilter.append('<SPE')
 
-        # step2 判断方向，并获取节点和关系
-        d = {}
-        nodes = set()
-        links = set()
-        for attId in attIds:
-            n = self.CONDITION_MAP[attId]['n']
-            r = self.CONDITION_MAP[attId]['r']
+        # 分支
+        if 'R107' in attIds or 'R108' in attIds:
+            relationshipFilter.append('BEE')
 
-            if isinstance(n, list):
-                nodes = nodes.union(set(n))
-                label = f'{"_".join(n)}_{r}'
-            else:
-                nodes.add(n)
-                label = f'{n}_{r}'
-            links.add(r)
+        # 中标
+        if 'R109' in attIds or 'R110' in attIds:
+            relationshipFilter.append('WEB')
 
-            if label in d:
-                d[label]['value'].add(self.CONDITION_MAP[attId]['d'])
-            else:
-                d[label] = {'value': set([self.CONDITION_MAP[attId]['d']]), 'attid': attId}
+        # 办公地
+        if 'R111' in attIds or 'R112' in attIds:
+            relationshipFilter.append('RED')
 
-        # step3 根据方向，获取过滤条件
-        direct = ''
-        key_action = []
-        value_action = []
-        for key, value in d.items():
-            key_action.append(key)
-            value_action.append(sum(value['value']))
+        # 相同联系方式
+        if 'R113' in attIds or 'R114' in attIds:
+            relationshipFilter.append('LEE')
 
-        # 1. 同一方向的单向, 均为1，或均为2, 不需要过滤
-        if value_action.count(1) == len(value_action):
-            direct = 'in'
-        elif value_action.count(2) == len(value_action):
-            direct = 'out'
-        # 2. 全部不定向， 均为3， 不需要过滤
-        elif value_action.count(3) == len(value_action):
-            direct = 'full'
-        # 3. 不同方向的单向, 1和2, 没有不定向, A1和B3;单向、不定向混合， 1和3， 2和3
-        else:
-            direct = 'full'
-            for index in range(len(value_action)):
-                if value_action[index] != 3:
-                    filter.append(self.filter_map[d[key_action[index]]['attid']])
+        # 专利
+        if 'R115' in attIds or 'R116' in attIds:
+            relationshipFilter.append('OPEP')
 
-        return nodes, links, filter, direct
+        # 诉讼
+        if 'R117' in attIds or 'R118' in attIds:
+            relationshipFilter.append('LEL')
+
+        return '|'.join(relationshipFilter)
 
     def get_ent_actual_controller(self, graph, min_rate):
         '''
@@ -412,6 +498,29 @@ class Parse():
         for path in graph:
             if filter:
                 path = self.filter_graph(path, filter, level, entname)
+            for node in path['n']:
+                if node['ID'] not in nodes_set:
+                    node = self.get_node_attrib(node)
+                    nodes.append(node)
+                    nodes_set.add(node['id'])
+            for link in path['r']:
+                if link['ID'] not in links_set:
+                    link = self.get_link_attrib(link)
+                    links.append(link)
+                    links_set.add(link['id'])
+        return nodes, links
+
+    def parse_v4(self, graph):
+        '''
+        解析neo4j返回的结果
+        :param graph:
+        :return:
+        '''
+        nodes = []
+        links = []
+        nodes_set = set()
+        links_set = set()
+        for path in graph:
             for node in path['n']:
                 if node['ID'] not in nodes_set:
                     node = self.get_node_attrib(node)
