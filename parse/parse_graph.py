@@ -524,17 +524,17 @@ class Parse():
             link_dict[link['type']][link['to']] += 1
 
         for label, item in link_dict.items():
-            for key,value in item.items():
+            for key, value in item.items():
                 if value < 2:
                     filter[label].append(key)
 
         for node in nodes:
-            if node['type'] in ['', '', '', '', '', ''] and node['id'] in filter[link_map[node['type']]]:
+            if node['type'] in ['GB', 'PP', 'DD', 'TT', 'EE', 'LL'] and node['id'] in filter[link_map[node['type']]]:
                 continue
             tmp_nodes.append(node)
 
         for link in links:
-            if link['type'] in [['WEB', 'RED', 'LEE', 'OPEP', 'LEL']] and link['to'] in filter[link['type']]:
+            if link['type'] in ['WEB', 'RED', 'LEE', 'OPEP', 'LEL'] and link['to'] in filter[link['type']]:
                 continue
             tmp_links.append(link)
         return tmp_nodes, tmp_links
