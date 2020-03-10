@@ -149,13 +149,13 @@ class Neo4jClient(object):
         rs = self.graph.run(command % (node_type, entname, relationshipFilter, level))
         info = rs.data()
         if not info:
-            node_command = "match (n:%s {NAME: '%s'}) set n.label=labels(n)[0] return properties(n) as n"
-            rs = self.graph.run(node_command % (node_type, entname))
-            info = rs.data()
-            if not info:
-                info = []
-            else:
-                info = info[0]['n']
+            # node_command = "match (n:%s {NAME: '%s'}) set n.label=labels(n)[0] return properties(n) as n"
+            # rs = self.graph.run(node_command % (node_type, entname))
+            # info = rs.data()
+            # if not info:
+            #     info = []
+            # else:
+            #     info = info[0]['n']
             flag = False
         rs.close()
         return info, flag
@@ -205,11 +205,11 @@ class Neo4jClient(object):
         print(command % (entnames[0], level, entnames[1]))
         rs = self.graph.run(command % (entnames[0], level, entnames[1]))
         info = rs.data()
-        if not info:
-            node_command = "match (n:GS) where n.NAME='%s' or n.NAME='%s' set n.lab=labels(n)[0] return properties(n) as n"
-            rs = self.graph.run(node_command % (entnames[0], entnames[1]))
-            ret = rs.data()
-            info = [{'n': [item['n'] for item in ret], 'r': []}]
+        # if not info:
+        #     node_command = "match (n:GS) where n.NAME='%s' or n.NAME='%s' set n.lab=labels(n)[0] return properties(n) as n"
+        #     rs = self.graph.run(node_command % (entnames[0], entnames[1]))
+        #     ret = rs.data()
+        #     info = [{'n': [item['n'] for item in ret], 'r': []}]
         rs.close()
         return info
 

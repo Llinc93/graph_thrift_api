@@ -18,5 +18,6 @@ class MyThread(threading.Thread):
 
     def run(self):
         data = neo4j_client.get_ents_relevance_seek_graph_g_v3(entnames=self.ent_names, level=self.level, terms=(self.nodes, self.links, self.direct))
-        self.result = parse.parse_v3(data, self.filter, self.level, self.ent_names[-1])
+        if data:
+            self.result = parse.parse_v3(data, self.filter, self.level, self.ent_names[-1])
         return None

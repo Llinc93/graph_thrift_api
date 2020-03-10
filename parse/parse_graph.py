@@ -468,7 +468,7 @@ class Parse():
 
     def get_link_attrib(self, link):
         action = {'id': link['ID'], 'name': self.RELATION_MAP[link['label']], 'from': link['pid'], 'to': link['id'], 'type': link['label']}
-        if link['label'] == 'IPEE':
+        if link['label'] in ['IPEE', 'IPEER', 'IPEES']:
             action['attibuteMap'] = {
                 'conratio': link['RATE'],
                 'holding_mode': link['RATE_TYPE'],
@@ -485,30 +485,82 @@ class Parse():
             action['attibuteMap'] = {}
         return action
 
-    def parse_v3(self, graph, filter, level, entname):
+    def common_relationship_filter(self, nodes, links):
         '''
-        解析neo4j返回的结果
-        :param graph:
+        过滤单条共有关系过滤
+        :param links:
         :return:
         '''
-        nodes = []
-        links = []
-        nodes_set = set()
-        links_set = set()
-        for path in graph:
-            if filter:
-                path = self.filter_graph(path, filter, level, entname)
-            for node in path['n']:
-                if node['ID'] not in nodes_set:
-                    node = self.get_node_attrib(node)
-                    nodes.append(node)
-                    nodes_set.add(node['id'])
-            for link in path['r']:
-                if link['ID'] not in links_set:
-                    link = self.get_link_attrib(link)
-                    links.append(link)
-                    links_set.add(link['id'])
-        return nodes, links
+        tmp_nodes = []
+        tmp_links = []
+        filter = {
+            'WEB': [],
+            'RED': [],
+            'LEE': [],
+            'OPEP': [],
+            'LEL': [],
+        }
+        link_dict = {
+            'WEB': defaultdict(int),
+            'RED': defaultdict(int),
+            'LEE': defaultdict(int),
+            'OPEP': defaultdict(int),
+            'LEL': defaultdict(int),
+        }
+        link_map = {
+            'GB': 'WEB',
+            'DD': 'RED',
+            'EE': 'LEE',
+            'TT': 'LEE',
+            'PP': 'OPEP',
+            'LL': 'LEL',
+        }
+        for link in links:
+            if link not in ['WEB', 'RED', 'LEE', 'OPEP', 'LEL']:
+                continue
+            link_dict[link['type']][link['to']] += 1
+
+        for label, item in link_dict.items():
+            for key,value in item.items():
+                if value < 2:
+                    filter[label].append(key)
+
+        for node in nodes:
+            if node['type'] in ['', '', '', '', '', ''] and node['id'] in filter[link_map[node['type']]]:
+                continue
+            tmp_nodes.append(node)
+
+        for link in links:
+            if link['type'] in [['WEB', 'RED', 'LEE', 'OPEP', 'LEL']] and link['to'] in filter[link['type']]:
+                continue
+            tmp_links.append(link)
+        return tmp_nodes, tmp_links
+
+    # def parse_v3(self, graph, filter, level, entname):
+    #     '''
+    #     解析neo4j返回的结果
+    #     :param graph:
+    #     :return:
+    #     '''
+    #     nodes = []
+    #     links = []
+    #     nodes_set = set()
+    #     links_set = set()
+    #     for path in graph:
+    #         if filter:
+    #             path = self.filter_graph(path, filter, level, entname)
+    #         for node in path['n']:
+    #             if node['ID'] not in nodes_set:
+    #                 node = self.get_node_attrib(node)
+    #                 nodes.append(node)
+    #                 nodes_set.add(node['id'])
+    #         for link in path['r']:
+    #             if link['ID'] not in links_set:
+    #                 link = self.get_link_attrib(link)
+    #                 links.append(link)
+    #                 links_set.add(link['id'])
+    #     nodes, links = self.common_relationship_filter(nodes, links)
+    #     return nodes, links
 
     def parse_v4(self, graph):
         '''
@@ -531,6 +583,7 @@ class Parse():
                     link = self.get_link_attrib(link)
                     links.append(link)
                     links_set.add(link['id'])
+        nodes, links = self.common_relationship_filter(nodes, links)
         return nodes, links
 
     def parallel_query(self, entName, level, nodes, links, filter, direct):
@@ -554,6 +607,8 @@ class Parse():
         nodes = {}
         links = {}
         for i in threads:
+            if not i.result:
+                continue
             tmp_nodes, tmp_links = i.result
             for node in tmp_nodes:
                 if node['id'] not in nodes:
@@ -561,6 +616,7 @@ class Parse():
             for link in tmp_links:
                 if link['id'] not in links:
                     links[link['id']] = link
+        nodes, links = self.common_relationship_filter(nodes, links)
         return nodes, links
 
 
