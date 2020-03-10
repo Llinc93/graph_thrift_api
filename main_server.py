@@ -154,6 +154,8 @@ class MyFaceHandler(Interface.Iface):
             raise ValueError
 
         nodes, links, filter, direct = parse.get_term_v3(attIds.split(';'))
+        if not filter:
+            return json.dumps({'nodes': [], 'success': 0, 'links': []}, ensure_ascii=False)
 
         nodes, links = parse.parallel_query(entName, level, nodes, links, filter, direct)
         return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)

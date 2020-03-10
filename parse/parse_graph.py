@@ -122,8 +122,11 @@ class Parse():
         nodes = set()
         links = set()
         for attId in attIds:
-            n = self.CONDITION_MAP[attId]['n']
-            r = self.CONDITION_MAP[attId]['r']
+            attid = self.CONDITION_MAP.get(attId)
+            if not attid:
+                continue
+            n = attid['n']
+            r = attid['r']
 
             if isinstance(n, list):
                 nodes = nodes.union(set(n))
@@ -137,6 +140,9 @@ class Parse():
                 d[label]['value'].add(self.CONDITION_MAP[attId]['d'])
             else:
                 d[label] = {'value': set([self.CONDITION_MAP[attId]['d']]), 'attid': attId}
+
+        if not d:
+            return None, None, None, None
 
         # step3 根据方向，获取过滤条件
         direct = ''
@@ -540,7 +546,7 @@ class Parse():
 
             if link['type'] in ['IPEES', 'IPEER']:
                 link['type'] = 'IPEE'
-                
+
             tmp_links.append(link)
         return tmp_nodes, tmp_links
 
