@@ -1,5 +1,5 @@
 import copy, time
-from itertools import permutations
+from itertools import combinations
 from collections import defaultdict
 
 from parse.my_thread import MyThread
@@ -605,11 +605,8 @@ class Parse():
 
         # 序列之间的两两组合(Cn2),查询结果取并集
         entNames = sorted(entName.split(';'))
-        for ent_names in permutations(entNames, 2):
-            if ent_names[-1] != entNames[0] or ent_names[0] == ent_names[-1]:
-                continue
+        for ent_names in combinations(entNames, 2):
             t = MyThread(ent_names, level, nodes, links, filter, direct)
-            # t = MyThread(ent_names, 1, 2, 3, 4, 5)
             threads.append(t)
 
         for i in threads:
