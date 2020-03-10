@@ -78,6 +78,9 @@ class MyFaceHandler(Interface.Iface):
         # data, flag = neo4j_client.get_ent_graph_g_v3(entname=keyword, level=int(level), node_type=nodeType, terms=(nodes, links, direct))
 
         relationshipFilter = parse.get_relationshipFilter(attIds)
+        if not relationshipFilter:
+            return json.dumps({'nodes': [], 'success': 0, 'links': []}, ensure_ascii=False)
+
         data, flag = neo4j_client.get_ent_graph_g_v4(keyword, int(level), nodeType, relationshipFilter)
 
         # if not flag:
