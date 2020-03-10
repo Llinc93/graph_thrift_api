@@ -144,7 +144,7 @@ class Neo4jClient(object):
         :return:
         '''
         flag = True
-        command = "match (n:%s {NAME: '%s'}) call apoc.path.expand(n, '%s', '', 1, %s) yield path foreach(n in nodes(path) | set n.extendnumber=size((n) -[]-> ())) foreach(r in relationships(path) | set r.start_id=properties(startNode(r))['ID']) foreach(r in relationships(path) | set r.end_id=properties(endNode(r))['ID']) foreach(r in relationships(path) | set r.labe=type(r)) foreach(n in nodes(path) | set n.label=labels(n)[0]) return [n in nodes(path) | properties(n)], [r in relationships(path) | properties(r)]"
+        command = "match (n:%s {NAME: '%s'}) call apoc.path.expand(n, '%s', '', 1, %s) yield path foreach(n in nodes(path) | set n.extendnumber=size((n) -[]-> ())) foreach(r in relationships(path) | set r.start_id=properties(startNode(r))['ID']) foreach(r in relationships(path) | set r.end_id=properties(endNode(r))['ID']) foreach(r in relationships(path) | set r.labe=type(r)) foreach(n in nodes(path) | set n.label=labels(n)[0]) return [n in nodes(path) | properties(n)] as n, [r in relationships(path) | properties(r)] as r"
         print(command % (node_type, entname, relationshipFilter, level))
         rs = self.graph.run(command % (node_type, entname, relationshipFilter, level))
         info = rs.data()
