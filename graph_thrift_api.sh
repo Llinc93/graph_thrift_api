@@ -1,7 +1,6 @@
 #!/bin/bash
 #description:This my flask
 #chkconfig:2345 20 81
-api='main_server.py'
 apipath='/opt/graph_thrift_api/main_server.py'
 
 start(){
@@ -10,7 +9,7 @@ start(){
 }
 
 stop(){
-    ps -ef | grep "python3 $api" | grep -v 'grep' | awk '{print $2}' | xargs kill -9
+    ps -ef | grep "python3 $apipath" | grep -v 'grep' | awk '{print $2}' | xargs kill -9
     echo 'api stop OK'
 }
 
