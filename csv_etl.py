@@ -243,7 +243,7 @@ class Filter(object):
         flag = True
         text = ''
         action = [row[0], row[1]]
-        if '' in action or '0' in action or '-' in action or '无' in action or '--' in action or '无无' in action or '0000' in action or '1' in action or len(row) != 3:
+        if '.' not in row[0] or '@' not in row[0] or len(row) != 3:
             flag = False
         else:
             text = ','.join(action)
