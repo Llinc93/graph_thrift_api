@@ -3,8 +3,7 @@
 thrift服务端
 """
 import traceback, os, sys, json
-from
-from itertools import permutations
+
 if sys.platform.startswith('win'):
     sys.path.append( os.getcwd() + '\com\\thrift\interface\server')
     sys.path.append( os.getcwd() + '\com\\thrift')

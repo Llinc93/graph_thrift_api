@@ -537,31 +537,31 @@ class Parse():
             tmp_links.append(link)
         return tmp_nodes, tmp_links
 
-    # def parse_v3(self, graph, filter, level, entname):
-    #     '''
-    #     解析neo4j返回的结果
-    #     :param graph:
-    #     :return:
-    #     '''
-    #     nodes = []
-    #     links = []
-    #     nodes_set = set()
-    #     links_set = set()
-    #     for path in graph:
-    #         if filter:
-    #             path = self.filter_graph(path, filter, level, entname)
-    #         for node in path['n']:
-    #             if node['ID'] not in nodes_set:
-    #                 node = self.get_node_attrib(node)
-    #                 nodes.append(node)
-    #                 nodes_set.add(node['id'])
-    #         for link in path['r']:
-    #             if link['ID'] not in links_set:
-    #                 link = self.get_link_attrib(link)
-    #                 links.append(link)
-    #                 links_set.add(link['id'])
-    #     nodes, links = self.common_relationship_filter(nodes, links)
-    #     return nodes, links
+    def parse_v3(self, graph, filter, level, entname):
+        '''
+        解析neo4j返回的结果
+        :param graph:
+        :return:
+        '''
+        nodes = []
+        links = []
+        nodes_set = set()
+        links_set = set()
+        for path in graph:
+            if filter:
+                path = self.filter_graph(path, filter, level, entname)
+            for node in path['n']:
+                if node['ID'] not in nodes_set:
+                    node = self.get_node_attrib(node)
+                    nodes.append(node)
+                    nodes_set.add(node['id'])
+            for link in path['r']:
+                if link['ID'] not in links_set:
+                    link = self.get_link_attrib(link)
+                    links.append(link)
+                    links_set.add(link['id'])
+        # nodes, links = self.common_relationship_filter(nodes, links)
+        return nodes, links
 
     def parse_v4(self, graph):
         '''
