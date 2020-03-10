@@ -620,7 +620,7 @@ class Parse():
             for link in tmp_links:
                 if link['id'] not in links:
                     links[link['id']] = link
-        nodes, links = self.common_relationship_filter(nodes, links)
+        nodes, links = self.common_relationship_filter(nodes.values(), links.values())
         return nodes, links
 
 
