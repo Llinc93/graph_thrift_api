@@ -317,6 +317,7 @@ class Parse():
             # 将关系加入关系列表
             for i in res_nodes[key].pop('path'):
                 for item in i.values():
+                    item['type'] = 'IPEE' if item['type'] in ['IPEES', 'IPEER'] else item['type']
                     r = (item['id'], item['pid'], item['number'], item['type'])
                     if r not in links_set:
                         res_links.append(item)
