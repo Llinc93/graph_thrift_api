@@ -15,6 +15,8 @@ class Parse():
 
     RELATION_MAP = {
         'IPEE': '投资',
+        'IPEES': '投资',
+        'IPEER': '投资',
         'SPE': '任职',
         'BEE': '分支机构',
         'WEB': '招投标',
