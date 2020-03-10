@@ -537,6 +537,10 @@ class Parse():
         for link in links:
             if link['type'] in ['WEB', 'RED', 'LEE', 'OPEP', 'LEL'] and link['to'] in filter[link['type']]:
                 continue
+
+            if link['type'] in ['IPEES', 'IPEER']:
+                link['type'] = 'IPEE'
+                
             tmp_links.append(link)
         return tmp_nodes, tmp_links
 
