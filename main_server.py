@@ -156,7 +156,7 @@ class MyFaceHandler(Interface.Iface):
         nodes, links, filter, direct = parse.get_term_v3(attIds.split(';'))
 
         nodes, links = parse.parallel_query(entName, level, nodes, links, filter, direct)
-        return json.dumps({'nodes': [node for node in nodes.values()], 'success': 0, 'links': [link for link in links.values()]}, ensure_ascii=False)
+        return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
     except:
         traceback.print_exc()
         return json.dumps({'nodes': [], 'success': 103, 'links': []}, ensure_ascii=False)
