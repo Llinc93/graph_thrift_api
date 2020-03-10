@@ -233,7 +233,6 @@ class Filter(object):
         flag = True
         text = ''
         if '.' not in row[0] or len(row) != 1 or '@' not in row[0]:
-        # if row[0] in ['', '-', '0', '无', '--', '无无', '0000', '/', '1'] or len(row) != 1:
             flag = False
         else:
             text = ','.join(row)

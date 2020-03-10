@@ -1,7 +1,6 @@
 import threading, time
 
 from model.ent_graph import neo4j_client
-from parse.parse_graph import parse
 
 
 class MyThread(threading.Thread):
@@ -19,5 +18,5 @@ class MyThread(threading.Thread):
     def run(self):
         data = neo4j_client.get_ents_relevance_seek_graph_g_v3(entnames=self.ent_names, level=self.level, terms=(self.nodes, self.links, self.direct))
         if data:
-            self.result = parse.parse_v3(data, self.filter, self.level, self.ent_names[-1])
+            self.result = data
         return None

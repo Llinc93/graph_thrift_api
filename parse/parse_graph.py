@@ -610,7 +610,8 @@ class Parse():
         for i in threads:
             if not i.result:
                 continue
-            tmp_nodes, tmp_links = i.result
+
+            tmp_nodes, tmp_links = parse.parse_v3(i.result, filter, level, i.ent_names[-1])
             for node in tmp_nodes:
                 if node['id'] not in nodes:
                     nodes[node['id']] = node
