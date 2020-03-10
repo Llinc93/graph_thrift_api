@@ -219,26 +219,20 @@ neo4j_client = Neo4jClient()
 
 if __name__ == '__main__':
     import time
-    from parse.parse_graph import parse
-    start = time.time()
-    # 1
-    # command = "match p = (n) -[r:IPEE* .. 10]-> (m:GS {UNISCID: '91321182339145778P'}) return properties(n) as snode, labels(n) as snode_type, r as links"
-    command = "match p = (n) -[r:IPEE* .. 10]-> (m:GS {NAME: '晟睿电气科技（江苏）有限公司'}) foreach(n in nodes(p) | set n.label=labels(n)[0])  return distinct [n in nodes(p) | properties(n)] as n, [r in filter( link in relationships(p) where toFloat(link.RATE) > 0) | properties(r)] as r"
 
-    # 2
-    # command = "match p = (n) -[r:BEE | SPE* .. 3]- (m:GS {NAME: '镇江市广播电视服务公司经营部'}) where n:GS or n:GR return n.ID as ID, n.NAME as NAME, n.NAME_GLLZD as NAME_GLLZD, labels(n) as labels, properties(m) as ATTRIBUTEMAP, r as links"
-    # command = "match p = (n) -[r:BEE | SPE* .. 3]- (m:GS {NAME: '镇江市广播电视服务公司经营部'}) where n:GS or n:GR return properties(n) as snode, labels(n) as snode_type, properties(m) as enode, labels(m) as enode_type, r as links"
+    ent = ['江苏荣马城市建设有限公司', '江苏臻天机科技有限公司', '南京晨光集团有限公司', '江苏建科建设监理有限公司', '苏州勇德云服饰有限公司']
+    for i in ent:
+        s1 = time.time()
+        command1 = "match p = () -[:IPEES|:IPEER|:BEE|:SPE* 1 .. 6]- (n:GS {NAME: '%s'}) return p"
+        neo4j_client.graph.run(command1 % i)
+        ret1 = time.time() - s1
+        print(f'cypher:\t{i}\t', ret1)
 
-    # 3
-    # command = "match p = (n:GS {NAME: '镇江新区鸿业精密机械厂'}) -[r:BEE | IPEE | SPE* .. 6]- (m:GS {NAME: '镇江润豪建筑劳务有限公司'}) where n:GS or n:GR return properties(n) as snode, labels(n) as snode_type, properties(m) as enode, labels(m) as enode_type, r as links"
+        s2 = time.time()
+        command2 = "match (n:GS {NAME: '%s'}) call apoc.path.expand(n, 'IPEER|IPEES|BEE|SPE', '', 1, 6) yield path return path"
+        neo4j_client.graph.run(command2 % i)
+        ret2 = time.time() - s2
+        print(f'cypher:\t{i}\t', ret2)
 
-    rs = neo4j_client.graph.run(command)
-    info = rs.data()
-    # print('tmp', time.time() - start)
-    # print(info)
-
-
-    ret = parse.get_ent_actual_controller(info)
-    # ret = parse.parse(info)
-    print(ret)
-    # print('end:', time.time() - start)
+        print(ret1-ret2)
+        print()
