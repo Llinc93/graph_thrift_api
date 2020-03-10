@@ -16,9 +16,7 @@ stop(){
 
 restart(){
     stop
-    echo 'api stop OK'
     start
-    echo 'api start OK'
 }
 
 case $1 in
