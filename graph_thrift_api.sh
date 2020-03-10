@@ -2,9 +2,10 @@
 #description:This my flask
 #chkconfig:2345 20 81
 apipath='/opt/graph_thrift_api/main_server.py'
+path='/opt/graph_thrift_api'
 
 start(){
-    python3 $apipath &
+    cd $path;python3 $apipath &
     echo 'api start OK'
 }
 
