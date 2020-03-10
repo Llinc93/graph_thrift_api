@@ -9,8 +9,7 @@ start(){
 }
 
 stop(){
-    api_pid = `ps -aux | grep "$apipath" | grep -v 'grep' | awk '{print $2}'`
-    kill -9 $api_pid
+    ps -aux | grep "$apipath" | grep -v 'grep' | awk '{print $2}' | xargs kill -9
     echo 'api stop OK'
 }
 
