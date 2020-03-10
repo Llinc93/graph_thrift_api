@@ -519,7 +519,7 @@ class Parse():
             'LL': 'LEL',
         }
         for link in links:
-            if link not in ['WEB', 'RED', 'LEE', 'OPEP', 'LEL']:
+            if link['type'] not in ['WEB', 'RED', 'LEE', 'OPEP', 'LEL']:
                 continue
             link_dict[link['type']][link['to']] += 1
 
