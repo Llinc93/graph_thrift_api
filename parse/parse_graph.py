@@ -28,10 +28,10 @@ class Parse():
 
     # d表示方向, 1:in 2:out 3:in and out
     CONDITION_MAP = {
-        'R101': {'n': 'GS', 'r': 'IPEE', 'd': 2},   # 企业对外投资
-        'R102': {'n': 'GS', 'r': 'IPEE', 'd': 1},   # 企业股东
-        'R103': {'n': 'GR', 'r': 'IPEE', 'd': 2},   # 自然人对外投资
-        'R104': {'n': 'GR', 'r': 'IPEE', 'd': 1},   # 自然人股东
+        'R101': {'n': 'GS', 'r': 'IPEES', 'd': 2},   # 企业对外投资
+        'R102': {'n': 'GS', 'r': 'IPEES', 'd': 1},   # 企业股东
+        'R103': {'n': 'GR', 'r': 'IPEER', 'd': 2},   # 自然人对外投资
+        'R104': {'n': 'GR', 'r': 'IPEER', 'd': 1},   # 自然人股东
         'R105': {'n': 'GR', 'r': 'SPE', 'd': 2},    # 管理人员其他公司任职
         'R106': {'n': 'GR', 'r': 'SPE', 'd': 1},    # 公司管理人员
         'R107': {'n': 'GR', 'r': 'BEE', 'd': 3},    # 分支机构
@@ -84,82 +84,82 @@ class Parse():
         # 'R144': {'n': '', 'r': '', 'd': 3},     # 历史管理人员其他公司任职
     }
 
-    # def get_term_v3(self, attIds):
-    #     '''
-    #     根据传入的条件获取节点类型和关系类型，并获取过滤条件
-    #     1. 传入条件过滤
-    #     2. 判断方向
-    #     3. 获取过滤条件
-    #         1. 同一方向的单向, 均为1，或均为2
-    #         2. 不同方向的单向， 1和2
-    #         3. 全部不定向， 均为3
-    #         4. 单向、不定向混合， 1和3， 2和3
-    #     :param attIds:
-    #     :return:
-    #     '''
-    #     filter = []
-    #     # step1 传入条件过滤
-    #     # if 'R103' in attIds and 'R104' not in attIds:
-    #     #     attIds.remove('R103')
-    #     #     filter.append('R104')
-    #
-    #     # if 'R105' in attIds and 'R106' not in attIds:
-    #     #     attIds.remove('R105')
-    #     #     filter.append('R106')
-    #
-    #     # if 'R142' in attIds and 'R141' not in attIds:
-    #     #     attIds.remove('R142')
-    #     #     filter.append('R141')
-    #
-    #     # if 'R144' in attIds and 'R143' not in attIds:
-    #     #     attIds.remove('R144')
-    #     #     filter.append('R143')
-    #
-    #     # step2 判断方向，并获取节点和关系
-    #     d = {}
-    #     nodes = set()
-    #     links = set()
-    #     for attId in attIds:
-    #         n = self.CONDITION_MAP[attId]['n']
-    #         r = self.CONDITION_MAP[attId]['r']
-    #
-    #         if isinstance(n, list):
-    #             nodes = nodes.union(set(n))
-    #             label = f'{"_".join(n)}_{r}'
-    #         else:
-    #             nodes.add(n)
-    #             label = f'{n}_{r}'
-    #         links.add(r)
-    #
-    #         if label in d:
-    #             d[label]['value'].add(self.CONDITION_MAP[attId]['d'])
-    #         else:
-    #             d[label] = {'value': set([self.CONDITION_MAP[attId]['d']]), 'attid': attId}
-    #
-    #     # step3 根据方向，获取过滤条件
-    #     direct = ''
-    #     key_action = []
-    #     value_action = []
-    #     for key, value in d.items():
-    #         key_action.append(key)
-    #         value_action.append(sum(value['value']))
-    #
-    #     # 1. 同一方向的单向, 均为1，或均为2, 不需要过滤
-    #     if value_action.count(1) == len(value_action):
-    #         direct = 'in'
-    #     elif value_action.count(2) == len(value_action):
-    #         direct = 'out'
-    #     # 2. 全部不定向， 均为3， 不需要过滤
-    #     elif value_action.count(3) == len(value_action):
-    #         direct = 'full'
-    #     # 3. 不同方向的单向, 1和2, 没有不定向, A1和B3;单向、不定向混合， 1和3， 2和3
-    #     else:
-    #         direct = 'full'
-    #         for index in range(len(value_action)):
-    #             if value_action[index] != 3:
-    #                 filter.append(self.filter_map[d[key_action[index]]['attid']])
-    #
-    #     return nodes, links, filter, direct
+    def get_term_v3(self, attIds):
+        '''
+        根据传入的条件获取节点类型和关系类型，并获取过滤条件
+        1. 传入条件过滤
+        2. 判断方向
+        3. 获取过滤条件
+            1. 同一方向的单向, 均为1，或均为2
+            2. 不同方向的单向， 1和2
+            3. 全部不定向， 均为3
+            4. 单向、不定向混合， 1和3， 2和3
+        :param attIds:
+        :return:
+        '''
+        filter = []
+        # step1 传入条件过滤
+        # if 'R103' in attIds and 'R104' not in attIds:
+        #     attIds.remove('R103')
+        #     filter.append('R104')
+
+        # if 'R105' in attIds and 'R106' not in attIds:
+        #     attIds.remove('R105')
+        #     filter.append('R106')
+
+        # if 'R142' in attIds and 'R141' not in attIds:
+        #     attIds.remove('R142')
+        #     filter.append('R141')
+
+        # if 'R144' in attIds and 'R143' not in attIds:
+        #     attIds.remove('R144')
+        #     filter.append('R143')
+
+        # step2 判断方向，并获取节点和关系
+        d = {}
+        nodes = set()
+        links = set()
+        for attId in attIds:
+            n = self.CONDITION_MAP[attId]['n']
+            r = self.CONDITION_MAP[attId]['r']
+
+            if isinstance(n, list):
+                nodes = nodes.union(set(n))
+                label = f'{"_".join(n)}_{r}'
+            else:
+                nodes.add(n)
+                label = f'{n}_{r}'
+            links.add(r)
+
+            if label in d:
+                d[label]['value'].add(self.CONDITION_MAP[attId]['d'])
+            else:
+                d[label] = {'value': set([self.CONDITION_MAP[attId]['d']]), 'attid': attId}
+
+        # step3 根据方向，获取过滤条件
+        direct = ''
+        key_action = []
+        value_action = []
+        for key, value in d.items():
+            key_action.append(key)
+            value_action.append(sum(value['value']))
+
+        # 1. 同一方向的单向, 均为1，或均为2, 不需要过滤
+        if value_action.count(1) == len(value_action):
+            direct = 'in'
+        elif value_action.count(2) == len(value_action):
+            direct = 'out'
+        # 2. 全部不定向， 均为3， 不需要过滤
+        elif value_action.count(3) == len(value_action):
+            direct = 'full'
+        # 3. 不同方向的单向, 1和2, 没有不定向, A1和B3;单向、不定向混合， 1和3， 2和3
+        else:
+            direct = 'full'
+            for index in range(len(value_action)):
+                if value_action[index] != 3:
+                    filter.append(self.filter_map[d[key_action[index]]['attid']])
+
+        return nodes, links, filter, direct
 
     def get_relationshipFilter(self, attIds):
         '''
@@ -340,7 +340,7 @@ class Parse():
         :param next:
         :return:
         '''
-        if current['ID'] == link['id'] and next['ID'] == link['pid'] and link['label'] == 'IPEE' and current['label'] == 'GS' and next['label'] == 'GS':
+        if current['ID'] == link['id'] and next['ID'] == link['pid'] and link['label'] == 'IPEES' and current['label'] == 'GS' and next['label'] == 'GS':
             return False
         return True
 
@@ -352,7 +352,7 @@ class Parse():
         :param next:
         :return:
         '''
-        if current['ID'] == link['pid'] and next['ID'] == link['id'] and link['label'] == 'IPEE' and current['label'] == 'GS' and next['label'] == 'GS':
+        if current['ID'] == link['pid'] and next['ID'] == link['id'] and link['label'] == 'IPEES' and current['label'] == 'GS' and next['label'] == 'GS':
             return False
         return True
 
@@ -364,7 +364,7 @@ class Parse():
         :param next:
         :return:
         '''
-        if current['ID'] == link['id'] and next['ID'] == link['pid'] and link['label'] == 'IPEE' and current['label'] == 'GS' and next['label'] == 'GR':
+        if current['ID'] == link['id'] and next['ID'] == link['pid'] and link['label'] == 'IPEER' and current['label'] == 'GS' and next['label'] == 'GR':
             return False
         return True
 
@@ -376,7 +376,7 @@ class Parse():
         :param next:
         :return:
         '''
-        if current['ID'] == link['pid'] and next['ID'] == link['id'] and link['label'] == 'IPEE' and current['label'] == 'GR' and next['label'] == 'GS':
+        if current['ID'] == link['pid'] and next['ID'] == link['id'] and link['label'] == 'IPEER' and current['label'] == 'GR' and next['label'] == 'GS':
             return False
         return True
 
@@ -472,6 +472,7 @@ class Parse():
             action['attibuteMap'] = {
                 'conratio': link['RATE'],
                 'holding_mode': link['RATE_TYPE'],
+                'type': 'IPEE'
             }
         elif link['label'] == 'SPE':
             action['attibuteMap'] = {'position': link['POSITION']}
