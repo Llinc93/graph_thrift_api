@@ -8,9 +8,9 @@ class DataAnalysis(object):
     '''数据分析'''
 
     CSV_MAP = [
-        ('企业分支', 'BEE'),
-        ('企业投资.csv', 'IPEES'),
-        ('自然人投资.csv', 'IPEER'),
+        ('qiyefenzhi.csv', 'BEE'),
+        ('qiyetouzi.csv', 'IPEES'),
+        ('ziranrentouzi.csv', 'IPEER'),
     ]
 
     def __init__(self):
@@ -55,24 +55,14 @@ class DataAnalysis(object):
                 self.frequency_table[row[0]].add(row[1])
         return None
 
-    def analysis(self):
+    def analysis(self, flag=True):
         '''获取全部LCID'''
         for file, code in self.CSV_MAP:
             if hasattr(self, code.lower()):
-                read_f = open(file, 'r', encoding='utf8')
-                csv_f = csv.reader(read_f)
-                getattr(self, code.lower())(self, csv_f)
-                read_f.seek(0, 0)
-                self.file_handles.append((read_f, code))
+                with open(file, 'r', encoding='utf8') as read_f:
+                    csv_f = csv.reader(read_f)
+                    getattr(self, code.lower())(csv_f, flag)
         return None
-
-    def group(self):
-        '''以LCID为基础，聚合'''
-        for read_f, code in self.file_handles:
-            csv_f = csv.reader(read_f)
-            if hasattr(self, code):
-                getattr(self, code)(self, csv_f, False)
-            read_f.close()
 
     def summary(self):
         '''以LCID为基础，进行排列组合，最终获得所有的子图的节点数量'''
@@ -107,7 +97,7 @@ class DataAnalysis(object):
         s2 = time.time()
         print(f'分析耗时：{s2 - s1}秒')
 
-        self.group()
+        self.analysis(False)
         s3 = time.time()
         print(f'聚合耗时：{s3 - s2}秒')
 
