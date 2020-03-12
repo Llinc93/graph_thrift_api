@@ -465,7 +465,7 @@ class Parse():
             action['attibuteMap'] = {'extendNumber': extendnumbers[node['ID']]}
         else:
             action['attibuteMap'] = {
-                'extendNumber': node['extendnumber'],
+                'extendNumber': extendnumbers[node['ID']],
                 'industry_class': node['INDUSTRY'],
                 'business_age': node['ESDATE'][:4],
                 'province': node['PROVINCE'],
@@ -612,15 +612,15 @@ class Parse():
         links_set = set()
         extendnumbers = defaultdict()
         for path in graph:
-            links = path['r']
+            tmp_links = path['r']
             nodes = path['n']
 
-            if len(links) > level:
-                links = links[1:]
+            if len(tmp_links) > level:
+                tmp_links = tmp_links[1:]
                 extendnumbers[nodes[0]['ID']] += 1
                 nodes = nodes[1:]
 
-            for link in links:
+            for link in tmp_links:
                 if link['ID'] not in links_set:
                     link = self.get_link_attrib(link)
                     links.append(link)
