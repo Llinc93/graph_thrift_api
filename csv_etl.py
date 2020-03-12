@@ -133,7 +133,7 @@ class Filter(object):
         text = ''
         action = row
 
-        if self.filter and self.have_multi_relationship(row[0]):
+        if self.filter and action and self.have_multi_relationship(row[0]):
             return flag, ','.join(action)
 
         if '' in row or len(row) != 2:
@@ -147,7 +147,7 @@ class Filter(object):
         text = ''
         action = row
 
-        if self.filter and self.have_multi_relationship(row[0]):
+        if self.filter and action and self.have_multi_relationship(row[0]):
             return flag, ','.join(action)
 
         if '' in row or 'null' in row or len(row) != 2:
@@ -166,7 +166,7 @@ class Filter(object):
         text = ''
         action = row
 
-        if self.filter and self.have_multi_relationship(row[0]):
+        if self.filter and action and self.have_multi_relationship(row[0]):
             return flag, ','.join(action)
 
         if '' in row or len(row) != 1:
@@ -180,7 +180,7 @@ class Filter(object):
         text = ''
         action = row
 
-        if self.filter and self.have_multi_relationship(row[0]):
+        if self.filter and action and self.have_multi_relationship(row[0]):
             return flag, ','.join(action)
 
         if '' in row or 'null' in row or len(row) != 2:
@@ -199,7 +199,7 @@ class Filter(object):
         text = ''
         action = row
 
-        if self.filter and self.have_multi_relationship(row[0]):
+        if self.filter and action and self.have_multi_relationship(row[0]):
             return flag, ','.join(action)
 
         if '' in row or len(row) != 1:
@@ -213,7 +213,7 @@ class Filter(object):
         text = ''
         action = row
 
-        if self.filter and self.have_multi_relationship(row[0]):
+        if self.filter and action and self.have_multi_relationship(row[0]):
             return flag, ','.join(action)
 
         if '' in row or 'null' in row or len(row) != 2:
@@ -232,7 +232,7 @@ class Filter(object):
         text = ''
         action = row
 
-        if self.filter and self.have_multi_relationship(row[0]):
+        if self.filter and action and self.have_multi_relationship(row[0]):
             return flag, ','.join(action)
 
         if '' in row or len(row) != 1:
@@ -246,7 +246,7 @@ class Filter(object):
         text = ''
         action = row
 
-        if self.filter and self.have_multi_relationship(row[0]):
+        if self.filter and action and self.have_multi_relationship(row[0]):
             return flag, ','.join(action)
 
         if '' in row or 'null' in row or len(row) != 2:
@@ -265,7 +265,7 @@ class Filter(object):
         text = ''
         action = row
 
-        if self.filter and self.have_multi_relationship(row[0]):
+        if self.filter and action and self.have_multi_relationship(row[0]):
             return flag, ','.join(action)
 
         if '' in row or '0' in row or '-' in row or '无' in row or '--' in row or '无无' in row or '0000' in row or '1' in row or len(row) != 1:
@@ -279,7 +279,7 @@ class Filter(object):
         text = ''
         action = [row[0], row[1]]
 
-        if self.filter and self.have_multi_relationship(row[0]):
+        if self.filter and action and self.have_multi_relationship(row[0]):
             return flag, ','.join(action)
 
         if '' in action or '0' in action or '-' in action or '无' in action or '--' in action or '无无' in action or '0000' in action or '1' in action or len(row) != 3:
@@ -293,7 +293,7 @@ class Filter(object):
         text = ''
         action = row
 
-        if self.filter and self.have_multi_relationship(row[0]):
+        if self.filter and action and self.have_multi_relationship(row[0]):
             return flag, ','.join(action)
 
         if '.' not in row[0] or len(row) != 1 or '@' not in row[0]:
@@ -307,7 +307,7 @@ class Filter(object):
         text = ''
         action = [row[0], row[1]]
 
-        if self.filter and self.have_multi_relationship(row[0]):
+        if self.filter and action and self.have_multi_relationship(row[0]):
             return flag, ','.join(action)
 
         if '.' not in row[0] or '@' not in row[0] or len(row) != 3:
