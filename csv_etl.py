@@ -325,13 +325,14 @@ class Filter(object):
         data = set()
         read_f = open(read, 'r', encoding='utf8')
         for row in csv.reader(read_f):
-            id = hashlib.md5(row[0].encode('utf8')).hexdigest()
+
             md5 = hashlib.md5(','.join(row).encode('utf8')).hexdigest()
 
             flag, text = getattr(self, label)(row)
             if not flag or md5 in data:
                 continue
-            self.filter[id] += 1
+            id_md5 = hashlib.md5(row[0].encode('utf8')).hexdigest()
+            self.filter[id_md5] += 1
 
         read_f.close()
         return None
