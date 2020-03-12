@@ -495,7 +495,7 @@ class Parse():
             action['attibuteMap'] = {}
         return action
 
-    def common_relationship_filter(self, nodes, links):
+    def common_relationship_filter(self, nodes, links, extendnumbers):
         '''
         过滤单条共有关系过滤
         :param links:
@@ -532,7 +532,7 @@ class Parse():
 
         for label, item in link_dict.items():
             for key, value in item.items():
-                if value < 2:
+                if value < 2 and extendnumbers.get(key, 0) == 0:
                     filter[label].append(key)
 
         for node in nodes:
@@ -576,29 +576,29 @@ class Parse():
         # nodes, links = self.common_relationship_filter(nodes, links)
         return nodes, links
 
-    def parse_v4(self, graph):
-        '''
-        解析neo4j返回的结果
-        :param graph:
-        :return:
-        '''
-        nodes = []
-        links = []
-        nodes_set = set()
-        links_set = set()
-        for path in graph:
-            for node in path['n']:
-                if node['ID'] not in nodes_set:
-                    node = self.get_node_attrib(node)
-                    nodes.append(node)
-                    nodes_set.add(node['id'])
-            for link in path['r']:
-                if link['ID'] not in links_set:
-                    link = self.get_link_attrib(link)
-                    links.append(link)
-                    links_set.add(link['id'])
-        nodes, links = self.common_relationship_filter(nodes, links)
-        return nodes, links
+    # def parse_v4(self, graph):
+    #     '''
+    #     解析neo4j返回的结果
+    #     :param graph:
+    #     :return:
+    #     '''
+    #     nodes = []
+    #     links = []
+    #     nodes_set = set()
+    #     links_set = set()
+    #     for path in graph:
+    #         for node in path['n']:
+    #             if node['ID'] not in nodes_set:
+    #                 node = self.get_node_attrib(node)
+    #                 nodes.append(node)
+    #                 nodes_set.add(node['id'])
+    #         for link in path['r']:
+    #             if link['ID'] not in links_set:
+    #                 link = self.get_link_attrib(link)
+    #                 links.append(link)
+    #                 links_set.add(link['id'])
+    #     nodes, links = self.common_relationship_filter(nodes, links)
+    #     return nodes, links
 
     def parse_v5(self, graph, level):
         '''
@@ -613,12 +613,12 @@ class Parse():
         extendnumbers = defaultdict()
         for path in graph:
             tmp_links = path['r']
-            nodes = path['n']
+            tmp_nodes = path['n']
 
             if len(tmp_links) > level:
                 tmp_links = tmp_links[1:]
-                extendnumbers[nodes[0]['ID']] += 1
-                nodes = nodes[1:]
+                tmp_nodes = tmp_nodes[1:]
+                extendnumbers[tmp_nodes[0]['ID']] += 1
 
             for link in tmp_links:
                 if link['ID'] not in links_set:
@@ -626,13 +626,13 @@ class Parse():
                     links.append(link)
                     links_set.add(link['id'])
 
-            for node in nodes:
+            for node in tmp_nodes:
                 if node['ID'] not in nodes_set:
                     node = self.get_node_attrib(node, extendnumbers)
                     nodes.append(node)
                     nodes_set.add(node['id'])
 
-        nodes, links = self.common_relationship_filter(nodes, links)
+        nodes, links = self.common_relationship_filter(nodes, links, extendnumbers)
         return nodes, links
 
     def parallel_query(self, entName, level, nodes, links, filter, direct):
@@ -656,13 +656,13 @@ class Parse():
             if not i.result:
                 continue
 
-            tmp_nodes, tmp_links = parse.parse_v5(i.result, filter, level, i.ent_names[-1])
+            tmp_nodes, tmp_links = parse.parse_v3(i.result, filter, level, i.ent_names[-1])
             for node in tmp_nodes:
                 if node['id'] not in nodes:
                     nodes[node['id']] = node
                 else:
                     nodes[node['id']]['extendnumber'] = 0
-                    
+
             for link in tmp_links:
                 if link['id'] not in links:
                     links[link['id']] = link
