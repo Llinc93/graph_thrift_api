@@ -146,7 +146,7 @@ class DataAnalysis(object):
                         if index % 1000 == 1:
                             write_f.write(f'{line.strip()}\n')
             self.test_csv.append((f'{file}_test.csv', code))
-            self.CSV_MAP = self.test_csv
+        self.CSV_MAP = self.test_csv
         return None
 
     def test(self):
