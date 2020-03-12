@@ -87,7 +87,7 @@ if __name__ == '__main__':
     #     print(time.time() - s)
     #     print()
     # s = time.time()
-    cli.getEntGraphG('江苏荣马城市建设有限公司', 'R101;R102;R103;R104;R106;R107', '2', 'GS')
+    cli.getEntGraphG('江苏荣马城市建设有限公司', 'R101;R102;R103;R104;R106;R107', '1', 'GS')
     # s = time.time()
     # cli.getEntsRelevanceSeekGraphG('江苏荣马城市建设有限公司;江苏荣马实业有限公司', 'R102;R101;R107;R108;R104;R103;R106;R105', '6')
     # e = time.time()

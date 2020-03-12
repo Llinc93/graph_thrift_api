@@ -610,15 +610,15 @@ class Parse():
         links = []
         nodes_set = set()
         links_set = set()
-        extendnumbers = defaultdict()
+        extendnumbers = defaultdict(int)
         for path in graph:
             tmp_links = path['r']
             tmp_nodes = path['n']
 
             if len(tmp_links) > level:
-                tmp_links = tmp_links[1:]
-                tmp_nodes = tmp_nodes[1:]
-                extendnumbers[tmp_nodes[0]['ID']] += 1
+                tmp_links = tmp_links[0: level]
+                extendnumbers[tmp_nodes[level]['ID']] += 1
+                tmp_nodes = tmp_nodes[0: level]
 
             for link in tmp_links:
                 if link['ID'] not in links_set:
