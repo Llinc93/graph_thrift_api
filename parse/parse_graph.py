@@ -656,10 +656,13 @@ class Parse():
             if not i.result:
                 continue
 
-            tmp_nodes, tmp_links = parse.parse_v3(i.result, filter, level, i.ent_names[-1])
+            tmp_nodes, tmp_links = parse.parse_v5(i.result, filter, level, i.ent_names[-1])
             for node in tmp_nodes:
                 if node['id'] not in nodes:
                     nodes[node['id']] = node
+                else:
+                    nodes[node['id']]['extendnumber'] = 0
+                    
             for link in tmp_links:
                 if link['id'] not in links:
                     links[link['id']] = link
