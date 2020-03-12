@@ -462,10 +462,10 @@ class Parse():
         '''
         action = {'id': node['ID'], 'name': node['NAME'], 'type': node['label']}
         if node['label'] in ['PP', 'LL', 'DD', 'EE', 'TT', 'GR', 'GB']:
-            action['attibuteMap'] = {'extendNumber': extendnumbers.get(node['ID'], 0)}
+            action['attibuteMap'] = {'extendNumber': len(extendnumbers.get(node['ID'], 0))}
         else:
             action['attibuteMap'] = {
-                'extendNumber': extendnumbers.get(node['ID'], 0),
+                'extendNumber': len(extendnumbers.get(node['ID'], 0)),
                 'industry_class': node['INDUSTRY'],
                 'business_age': node['ESDATE'][:4],
                 'province': node['PROVINCE'],
@@ -613,7 +613,7 @@ class Parse():
         extendnumbers = {}
 
         for path in graph:
-            if len(path['r']) > level:
+            if len(path['r']) > level and len(path['n']) > 2 and path['n'][0] != path['n'][-1]:
                 if path['n'][level]['ID'] in extendnumbers:
                     extendnumbers[path['n'][level]['ID']].add(path['r'][level]['ID'])
                 else:
