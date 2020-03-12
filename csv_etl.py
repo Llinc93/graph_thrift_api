@@ -1,5 +1,6 @@
 import csv
 import hashlib
+from collections import defaultdict
 
 
 class Filter(object):
@@ -12,19 +13,28 @@ class Filter(object):
         ('/home/csvdata/自然人投资_0309.csv', r'/home/neo4j_test/import/自然人投资.csv', 'IPEER'),
         ('/home/csvdata/企业分支.csv', r'/home/neo4j_test/import/企业分支.csv', 'BEE'),
         ('/home/csvdata/主要管理人员.csv', r'/home/neo4j_test/import/主要管理人员.csv', 'SPE'),
-        ('/home/csvdata/专利节点.csv', r'/home/neo4j_test/import/专利节点.csv', 'PP'),
+
         ('/home/csvdata/专利关系.csv', r'/home/neo4j_test/import/专利关系.csv', 'OPEP'),
-        ('/home/csvdata/诉讼节点.csv', r'/home/neo4j_test/import/诉讼节点.csv', 'LL'),
+        ('/home/csvdata/专利节点.csv', r'/home/neo4j_test/import/专利节点.csv', 'PP'),
+
         ('/home/csvdata/诉讼关系.csv', r'/home/neo4j_test/import/诉讼关系.csv', 'LEL'),
-        ('/home/csvdata/招投标节点.csv', r'/home/neo4j_test/import/招投标节点.csv', 'GB'),
+        ('/home/csvdata/诉讼节点.csv', r'/home/neo4j_test/import/诉讼节点.csv', 'LL'),
+
         ('/home/csvdata/招投标关系.csv', r'/home/neo4j_test/import/招投标关系.csv', 'WEB'),
-        ('/home/csvdata/办公地节点.csv', r'/home/neo4j_test/import/办公地节点.csv', 'DD'),
+        ('/home/csvdata/招投标节点.csv', r'/home/neo4j_test/import/招投标节点.csv', 'GB'),
+
         ('/home/csvdata/相同办公地.csv', r'/home/neo4j_test/import/相同办公地.csv', 'RED'),
-        ('/home/csvdata/电话节点.csv', r'/home/neo4j_test/import/电话节点.csv', 'TT'),
+        ('/home/csvdata/办公地节点.csv', r'/home/neo4j_test/import/办公地节点.csv', 'DD'),
+
         ('/home/csvdata/相同联系方式-电话0306.csv', r'/home/neo4j_test/import/相同联系方式-电话.csv', 'LEE1'),
-        ('/home/csvdata/邮箱节点.csv', r'/home/neo4j_test/import/邮箱节点.csv', 'EE'),
+        ('/home/csvdata/电话节点.csv', r'/home/neo4j_test/import/电话节点.csv', 'TT'),
+
         ('/home/csvdata/相同联系方式-邮箱0306.csv', r'/home/neo4j_test/import/相同联系方式-邮箱.csv', 'LEE2'),
+        ('/home/csvdata/邮箱节点.csv', r'/home/neo4j_test/import/邮箱节点.csv', 'EE'),
     ]
+
+    def __init__(self):
+        self.filter = defaultdict(int)
 
     def GS(self, row):
         '''
@@ -121,6 +131,11 @@ class Filter(object):
         '''
         flag = True
         text = ''
+        action = row
+
+        if self.filter and self.have_multi_relationship(row[0]):
+            return flag, ','.join(action)
+
         if '' in row or len(row) != 2:
             flag = False
         else:
@@ -130,6 +145,11 @@ class Filter(object):
     def OPEP(self, row):
         flag = True
         text = ''
+        action = row
+
+        if self.filter and self.have_multi_relationship(row[0]):
+            return flag, ','.join(action)
+
         if '' in row or 'null' in row or len(row) != 2:
             flag = False
         else:
@@ -144,6 +164,11 @@ class Filter(object):
         '''
         flag = True
         text = ''
+        action = row
+
+        if self.filter and self.have_multi_relationship(row[0]):
+            return flag, ','.join(action)
+
         if '' in row or len(row) != 1:
             flag = False
         else:
@@ -153,6 +178,11 @@ class Filter(object):
     def LEL(self, row):
         flag = True
         text = ''
+        action = row
+
+        if self.filter and self.have_multi_relationship(row[0]):
+            return flag, ','.join(action)
+
         if '' in row or 'null' in row or len(row) != 2:
             flag = False
         else:
@@ -167,6 +197,11 @@ class Filter(object):
         '''
         flag = True
         text = ''
+        action = row
+
+        if self.filter and self.have_multi_relationship(row[0]):
+            return flag, ','.join(action)
+
         if '' in row or len(row) != 1:
             flag = False
         else:
@@ -176,6 +211,11 @@ class Filter(object):
     def WEB(self, row):
         flag = True
         text = ''
+        action = row
+
+        if self.filter and self.have_multi_relationship(row[0]):
+            return flag, ','.join(action)
+
         if '' in row or 'null' in row or len(row) != 2:
             flag = False
         else:
@@ -190,6 +230,11 @@ class Filter(object):
         '''
         flag = True
         text = ''
+        action = row
+
+        if self.filter and self.have_multi_relationship(row[0]):
+            return flag, ','.join(action)
+
         if '' in row or len(row) != 1:
             flag = False
         else:
@@ -199,6 +244,11 @@ class Filter(object):
     def RED(self, row):
         flag = True
         text = ''
+        action = row
+
+        if self.filter and self.have_multi_relationship(row[0]):
+            return flag, ','.join(action)
+
         if '' in row or 'null' in row or len(row) != 2:
             flag = False
         else:
@@ -213,6 +263,11 @@ class Filter(object):
         '''
         flag = True
         text = ''
+        action = row
+
+        if self.filter and self.have_multi_relationship(row[0]):
+            return flag, ','.join(action)
+
         if '' in row or '0' in row or '-' in row or '无' in row or '--' in row or '无无' in row or '0000' in row or '1' in row or len(row) != 1:
             flag = False
         else:
@@ -223,6 +278,10 @@ class Filter(object):
         flag = True
         text = ''
         action = [row[0], row[1]]
+
+        if self.filter and self.have_multi_relationship(row[0]):
+            return flag, ','.join(action)
+
         if '' in action or '0' in action or '-' in action or '无' in action or '--' in action or '无无' in action or '0000' in action or '1' in action or len(row) != 3:
             flag = False
         else:
@@ -232,6 +291,11 @@ class Filter(object):
     def EE(self, row):
         flag = True
         text = ''
+        action = row
+
+        if self.filter and self.have_multi_relationship(row[0]):
+            return flag, ','.join(action)
+
         if '.' not in row[0] or len(row) != 1 or '@' not in row[0]:
             flag = False
         else:
@@ -242,14 +306,41 @@ class Filter(object):
         flag = True
         text = ''
         action = [row[0], row[1]]
+
+        if self.filter and self.have_multi_relationship(row[0]):
+            return flag, ','.join(action)
+
         if '.' not in row[0] or '@' not in row[0] or len(row) != 3:
             flag = False
         else:
             text = ','.join(action)
         return flag, text
 
+    def have_multi_relationship(self, s):
+        id = hashlib.md5(s.encode('utf8')).hexdigest()
+        return True if self.filter[id] > 1 else False
+
+    def get_filter(self, read, label):
+        self.filter = defaultdict(int)
+        data = set()
+        read_f = open(read, 'r', encoding='utf8')
+        for row in csv.reader(read_f):
+            id = hashlib.md5(row[0].encode('utf8')).hexdigest()
+            md5 = hashlib.md5(','.join(row).encode('utf8')).hexdigest()
+
+            flag, text = getattr(self, label)(row)
+            if not flag or md5 in data:
+                continue
+            self.filter[id] += 1
+
+        read_f.close()
+        return None
+
     def run(self):
         for read, write, label in self.files:
+            if label not in ['IPEES', 'IPEER', 'GR', 'GS', 'SPE', 'BEE']:
+                self.get_filter(read, label)
+
             read_f = open(read, 'r', encoding='utf8')
             write_f = open(write, 'w', encoding='utf8')
             writer = csv.writer(write_f)
