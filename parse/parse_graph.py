@@ -611,13 +611,17 @@ class Parse():
         nodes_set = set()
         links_set = set()
         extendnumbers = defaultdict(int)
+
+        for path in graph:
+            if len(path['r']) > level:
+                extendnumbers[path['n'][level]['ID']] += 1
+
         for path in graph:
             tmp_links = path['r']
             tmp_nodes = path['n']
 
             if len(tmp_links) > level:
                 tmp_links = tmp_links[0: level]
-                extendnumbers[tmp_nodes[level]['ID']] += 1
                 tmp_nodes = tmp_nodes[0: level]
 
             for link in tmp_links:
