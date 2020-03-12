@@ -81,7 +81,7 @@ class MyFaceHandler(Interface.Iface):
         if not relationshipFilter:
             return json.dumps({'nodes': [], 'success': 0, 'links': []}, ensure_ascii=False)
 
-        data, flag = neo4j_client.get_ent_graph_g_v4(keyword, int(level), nodeType, relationshipFilter)
+        data, flag = neo4j_client.get_ent_graph_g_v4(keyword, int(level) + 1, nodeType, relationshipFilter)
 
         # if not flag:
             # if not data:
@@ -92,7 +92,7 @@ class MyFaceHandler(Interface.Iface):
             return json.dumps({'nodes': [], 'success': 0, 'links': []}, ensure_ascii=False)
 
         # nodes, links = parse.parse_v3(data, filter, int(level), keyword)
-        nodes, links = parse.parse_v4(data)
+        nodes, links = parse.parse_v5(data, int(level))
         return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
     except:
         traceback.print_exc()

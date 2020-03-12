@@ -454,7 +454,7 @@ class Parse():
 
         return {'n': tmp_nodes, 'r': tmp_links}
 
-    def get_node_attrib(self, node):
+    def get_node_attrib(self, node, extendnumbers):
         '''
         构造attrib
         :param node:
@@ -462,7 +462,7 @@ class Parse():
         '''
         action = {'id': node['ID'], 'name': node['NAME'], 'type': node['label']}
         if node['label'] in ['PP', 'LL', 'DD', 'EE', 'TT', 'GR', 'GB']:
-            action['attibuteMap'] = {'extendNumber': node['extendnumber']}
+            action['attibuteMap'] = {'extendNumber': extendnumbers[node['ID']]}
         else:
             action['attibuteMap'] = {
                 'extendNumber': node['extendnumber'],
@@ -597,6 +597,41 @@ class Parse():
                     link = self.get_link_attrib(link)
                     links.append(link)
                     links_set.add(link['id'])
+        nodes, links = self.common_relationship_filter(nodes, links)
+        return nodes, links
+
+    def parse_v5(self, graph, level):
+        '''
+        解析neo4j返回的结果并计算extendNumber
+        :param graph:
+        :return:
+        '''
+        nodes = []
+        links = []
+        nodes_set = set()
+        links_set = set()
+        extendnumbers = defaultdict()
+        for path in graph:
+            links = path['r']
+            nodes = path['n']
+
+            if len(links) > level:
+                links = links[1:]
+                extendnumbers[nodes[0]['ID']] += 1
+                nodes = nodes[1:]
+
+            for link in links:
+                if link['ID'] not in links_set:
+                    link = self.get_link_attrib(link)
+                    links.append(link)
+                    links_set.add(link['id'])
+
+            for node in nodes:
+                if node['ID'] not in nodes_set:
+                    node = self.get_node_attrib(node, extendnumbers)
+                    nodes.append(node)
+                    nodes_set.add(node['id'])
+
         nodes, links = self.common_relationship_filter(nodes, links)
         return nodes, links
 
