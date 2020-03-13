@@ -495,7 +495,7 @@ class Parse():
             action['attibuteMap'] = {}
         return action
 
-    def common_relationship_filter(self, nodes, links, extendnumbers):
+    def common_relationship_filter(self, nodes, links, extendnumbers={}):
         '''
         过滤单条共有关系过滤
         :param links:
@@ -573,7 +573,7 @@ class Parse():
                     link = self.get_link_attrib(link)
                     links.append(link)
                     links_set.add(link['id'])
-        # nodes, links = self.common_relationship_filter(nodes, links)
+        nodes, links = self.common_relationship_filter(nodes, links)
         return nodes, links
 
     def parse_v5(self, graph, level):
@@ -615,7 +615,7 @@ class Parse():
                     nodes.append(node)
                     nodes_set.add(node['id'])
 
-        # nodes, links = self.common_relationship_filter(nodes, links, extendnumbers)
+        nodes, links = self.common_relationship_filter(nodes, links, extendnumbers)
         return nodes, links
 
     def parallel_query(self, entName, level, nodes, links, filter, direct):
@@ -649,7 +649,7 @@ class Parse():
             for link in tmp_links:
                 if link['id'] not in links:
                     links[link['id']] = link
-        # nodes, links = self.common_relationship_filter(nodes.values(), links.values())
+        nodes, links = self.common_relationship_filter(nodes.values(), links.values())
         return nodes, links
 
 

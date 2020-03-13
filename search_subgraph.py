@@ -24,9 +24,9 @@ from collections import defaultdict
 
 def print_cost_time(func):
     @functools.wraps(func)
-    def inner(self):
+    def inner(self, *args, **kwargs):
         start = time.time()
-        func(self)
+        func(self, *args, **kwargs)
         end = time.time()
         print(dir(func))
         print(f'{func.__doc__}耗时: {end - start}')
@@ -38,26 +38,26 @@ class SearchSubgraph(object):
     '''查找不连通子图'''
 
     FILES = [
-        ('/opt/csv/xx.csv', 'IPEE'),
-        ('/opt/csv/xx.csv', 'BEE'),
+        ('/opt/csv/20200220/qiyefenzhi.csv', 'BEE'),
+        ('/opt/csv/20200220/qiyetouzi.csv', 'IPEE'),
+        ('/opt/csv/20200220/ziranrentouzi.csv', 'IPEE')
     ]
+    TMP = '/opt/tmp/tmp'
     TARGET = '/opt/tmp/target'
     GRAPH = '/opt/tmp/graph'
     TARGET_CSV = '/opt/tmp/target/target_1.csv'
     NUMBER = 33
 
     def __init__(self):
-        self.tmp = set()
-        self.current = set()
+        self.previous = set()  # 前次迭代的连通节点
+        self.current = set()   # 当前迭代的联通节点
         self.currnt_file = self.TARGET_CSV
 
     def IPEE(self, row):
-        pass
-        return []
+        return [row[0], row[-1]]
 
     def BEE(self, row):
-        pass
-        return []
+        return row
 
     @print_cost_time
     def merge_csv(self):
@@ -78,13 +78,45 @@ class SearchSubgraph(object):
         print('文件合并完成！')
 
     @print_cost_time
-    def init(self):
+    def init(self, num):
         '''获取频率最高的ID'''
-        frequency_table = {}
+        self.previous |= self.current
+
+        frequency_table = defaultdict(int)
         with open(self.currnt_file, 'r', encoding='utf8') as f:
             for row in csv.reader(f):
+                frequency_table[row[0]] += 1
+                frequency_table[row[1]] += 1
+        self.current = {max(frequency_table.items(), key=lambda x: x[1])}
+
+        target_dir = os.path.join(self.TARGET, f'target_{num + 1}')
+        if not os.path.exists(target_dir):
+            os.makedirs(target_dir)
+
+        graph_dir = os.path.join(self.GRAPH, f'graph_{num}')
+        if not os.path.exists(graph_dir):
+            os.makedirs(graph_dir)
 
         return None
+
+    def task(self, num, pos, file):
+        '''
+        筛选
+        :param num:
+        :param pos:
+        :param file:
+        :return:
+        '''
+        target_file = os.path.join(self.TARGET, f'target_{num + 1}', f'{pos}.csv')    # 不连通节点文件
+        graph_file = os.path.join(self.GRAPH,  f'graph_{num}', f'{pos}.csv')          # 连通节点文件
+        with open(file, 'r', encoding='utf8') as f:
+            for row in csv.reader(f):
+
+    def merge_sub_file(self):
+        '''合并子文件'''
+        flag = True
+        pass
+        return flag
 
     @print_cost_time
     def run(self):
@@ -94,22 +126,41 @@ class SearchSubgraph(object):
         # step2 迭代
         flag = True
         num = 1
-        while flag:
-            # 获取筛选条件
-            self.init()
 
-            # 迭代
+        # 寻找子图(1次)
+        while flag:
             p = multiprocessing.Pool(self.NUMBER)
-            with open(os.path.join(self.TARGET, f'target_{num}.csv')) as f:
-                for index, line in csv.reader(f):
+
+            # 获取筛选条件
+            self.init(num)
+
+            # 切分文件
+            files = [f'{self.TMP}/{i}.csv' for i in range(self.NUMBER)]
+            fs = [open(k, 'w', encoding='utf8') for k in files]
+
+            with open(os.path.join(self.TARGET, f'target_{num}.csv'), 'r', encoding='utf8') as f:
+                for index, row in enumerate(csv.reader(f), 2):
                     pos = index % self.NUMBER
+                    csv.writer(fs[pos]).writerow(row)
+            for f in fs:
+                f.close()
+
+            # 每份文件都由子进程进行计算
+            for i in range(self.NUMBER):
+                p.apply_async(self.task, args=(num, pos, files[pos]))
+            p.close()
+            p.join()
+
+            # 合并文件
+            flag = self.merge_sub_file()
 
     @print_cost_time
-    def test(self):
+    def test(self, h):
         '''测试'''
+        print(h)
         time.sleep(2)
         return None
 
 
 if __name__ == '__main__':
-    SearchSubgraph().test()
+    SearchSubgraph().test(123)
