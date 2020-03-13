@@ -310,7 +310,7 @@ class Filter(object):
         write_f = open(tmp_file, 'w', encoding='utf8')
         writer = csv.writer(write_f)
         data = set()
-        if label in ['OPEP', 'LEL', 'WEB', 'RED', 'LEE']:
+        if label in ['OPEP', 'LEL', 'WEB', 'RED', 'LEE1', 'LEE2']:
             self.filter = defaultdict(int)
 
         if label in ['PP']:
@@ -338,7 +338,6 @@ class Filter(object):
                 self.filter[id_md5] += 1
         read_f.close()
         write_f.close()
-
 
         read_f2 = open(tmp_file, 'r', encoding='utf8')
         write_f2 = open(write, 'w', encoding='utf8')

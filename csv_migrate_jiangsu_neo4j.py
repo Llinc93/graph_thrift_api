@@ -178,13 +178,12 @@ def run():
             writer = csv.writer(wf)
             if index == 1:
                 writer.writerow(header)
-            else:
-                try:
-                    new_row = getattr(w_csv, label)(row)
-                except:
-                    # print(row)
-                    continue
-                writer.writerow([k if k else 'null' for k in new_row])
+            try:
+                new_row = getattr(w_csv, label)(row)
+            except:
+                # print(row)
+                continue
+            writer.writerow([k if k else 'null' for k in new_row])
             index += 1
         else:
             report[desc] = index

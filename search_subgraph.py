@@ -19,6 +19,7 @@ import csv
 import time
 import functools
 import multiprocessing
+from collections import defaultdict
 
 
 def print_cost_time(func):
@@ -43,6 +44,20 @@ class SearchSubgraph(object):
     TARGET = '/opt/tmp/target'
     GRAPH = '/opt/tmp/graph'
     TARGET_CSV = '/opt/tmp/target/target_1.csv'
+    NUMBER = 33
+
+    def __init__(self):
+        self.tmp = set()
+        self.current = set()
+        self.currnt_file = self.TARGET_CSV
+
+    def IPEE(self, row):
+        pass
+        return []
+
+    def BEE(self, row):
+        pass
+        return []
 
     @print_cost_time
     def merge_csv(self):
@@ -59,11 +74,35 @@ class SearchSubgraph(object):
             for row in reader:
                 if number == 1:
                     continue
-                writer.write(f'{getattr(self, label)(row)}\n')
+                writer.writerow(f'{getattr(self, label)(row)}\n')
         print('文件合并完成！')
 
+    @print_cost_time
+    def init(self):
+        '''获取频率最高的ID'''
+        frequency_table = {}
+        with open(self.currnt_file, 'r', encoding='utf8') as f:
+            for row in csv.reader(f):
+
+        return None
+
+    @print_cost_time
     def run(self):
-        pass
+        # step1 合并文件
+        self.merge_csv()
+
+        # step2 迭代
+        flag = True
+        num = 1
+        while flag:
+            # 获取筛选条件
+            self.init()
+
+            # 迭代
+            p = multiprocessing.Pool(self.NUMBER)
+            with open(os.path.join(self.TARGET, f'target_{num}.csv')) as f:
+                for index, line in csv.reader(f):
+                    pos = index % self.NUMBER
 
     @print_cost_time
     def test(self):

@@ -576,30 +576,6 @@ class Parse():
         # nodes, links = self.common_relationship_filter(nodes, links)
         return nodes, links
 
-    # def parse_v4(self, graph):
-    #     '''
-    #     解析neo4j返回的结果
-    #     :param graph:
-    #     :return:
-    #     '''
-    #     nodes = []
-    #     links = []
-    #     nodes_set = set()
-    #     links_set = set()
-    #     for path in graph:
-    #         for node in path['n']:
-    #             if node['ID'] not in nodes_set:
-    #                 node = self.get_node_attrib(node)
-    #                 nodes.append(node)
-    #                 nodes_set.add(node['id'])
-    #         for link in path['r']:
-    #             if link['ID'] not in links_set:
-    #                 link = self.get_link_attrib(link)
-    #                 links.append(link)
-    #                 links_set.add(link['id'])
-    #     nodes, links = self.common_relationship_filter(nodes, links)
-    #     return nodes, links
-
     def parse_v5(self, graph, level):
         '''
         解析neo4j返回的结果并计算extendNumber
@@ -639,7 +615,7 @@ class Parse():
                     nodes.append(node)
                     nodes_set.add(node['id'])
 
-        nodes, links = self.common_relationship_filter(nodes, links, extendnumbers)
+        # nodes, links = self.common_relationship_filter(nodes, links, extendnumbers)
         return nodes, links
 
     def parallel_query(self, entName, level, nodes, links, filter, direct):
@@ -673,7 +649,7 @@ class Parse():
             for link in tmp_links:
                 if link['id'] not in links:
                     links[link['id']] = link
-        nodes, links = self.common_relationship_filter(nodes.values(), links.values())
+        # nodes, links = self.common_relationship_filter(nodes.values(), links.values())
         return nodes, links
 
 
