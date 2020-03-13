@@ -311,7 +311,9 @@ class Filter(object):
         writer = csv.writer(write_f)
         data = set()
         self.filter = defaultdict(int)
+        raw = 0
         for line in csv.reader(read_f):
+            raw += 1
             # step1 过滤
             try:
                 flag, text = getattr(self, label)(line)
@@ -333,11 +335,16 @@ class Filter(object):
         read_f2 = open(tmp_file, 'r', encoding='utf8')
         write_f2 = open(write, 'w', encoding='utf8')
         writer2 = csv.writer(write_f2)
+        number = 0
         for line in csv.reader(read_f2):
             if self.have_multi_relationship(line[0]):
                 writer2.writerow(line)
+                number += 1
         read_f2.close()
         write_f2.close()
+        os.remove(tmp_file)
+        print(f'{read}\t数量: {raw}')
+        print(f'{write}\t数量: {number}')
 
     def run(self):
         for read, write, label in self.files:
