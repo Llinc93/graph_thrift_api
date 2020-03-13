@@ -310,7 +310,8 @@ class Filter(object):
         write_f = open(tmp_file, 'w', encoding='utf8')
         writer = csv.writer(write_f)
         data = set()
-        self.filter = defaultdict(int)
+        if label in ['OPEP', 'LEL', 'WEB', 'RED', 'LEE']
+            self.filter = defaultdict(int)
 
         if label in ['PP']:
             pos = -1
