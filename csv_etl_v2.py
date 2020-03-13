@@ -332,12 +332,16 @@ class Filter(object):
         read_f.close()
         write_f.close()
 
+        if label in ['PP']:
+            pos = -1
+        else:
+            pos = 0
         read_f2 = open(tmp_file, 'r', encoding='utf8')
         write_f2 = open(write, 'w', encoding='utf8')
         writer2 = csv.writer(write_f2)
         number = 0
         for line in csv.reader(read_f2):
-            if self.have_multi_relationship(line[0]):
+            if self.have_multi_relationship(line[pos]):
                 writer2.writerow(line)
                 number += 1
         read_f2.close()
