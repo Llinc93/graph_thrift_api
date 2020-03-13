@@ -311,6 +311,12 @@ class Filter(object):
         writer = csv.writer(write_f)
         data = set()
         self.filter = defaultdict(int)
+
+        if label in ['PP']:
+            pos = -1
+        else:
+            pos = 0
+
         raw = 0
         for line in csv.reader(read_f):
             raw += 1
@@ -327,15 +333,12 @@ class Filter(object):
             if md5 not in data:
                 writer.writerow(line)
                 data.add(md5)
-                id_md5 = hashlib.md5(line[0].encode('utf8')).hexdigest()
+                id_md5 = hashlib.md5(line[pos].encode('utf8')).hexdigest()
                 self.filter[id_md5] += 1
         read_f.close()
         write_f.close()
 
-        if label in ['PP']:
-            pos = -1
-        else:
-            pos = 0
+
         read_f2 = open(tmp_file, 'r', encoding='utf8')
         write_f2 = open(write, 'w', encoding='utf8')
         writer2 = csv.writer(write_f2)
