@@ -76,10 +76,6 @@ class SearchSubgraph(object):
     @print_cost_time
     def merge_csv(self):
         '''将多个文件合并为目标文件'''
-        # if os.path.exists(self.TARGET_CSV):
-        #     print('文件已存在')
-        #     return None
-
         write = open(self.TARGET_CSV, 'w', encoding='utf8')
         writer = csv.writer(write)
         for file, label in self.FILES:
@@ -110,6 +106,7 @@ class SearchSubgraph(object):
                     frequency_table[row[1]] += 1
             self.current = {max(frequency_table.items(), key=lambda x: x[1])[0]}
         else:
+            self.current = set()
             with open(self.current_file) as f:
                 for row in csv.reader(f):
                     self.current |= set(row)
@@ -178,10 +175,8 @@ class SearchSubgraph(object):
 
         tmp = self.current_file
         if tmp != self.TARGET_CSV:
-            # os.remove(tmp)
             subprocess.getstatusoutput(f'rm -rf {tmp}')
         self.current_file = target_csv
-        # os.remove(self.tmp_graph_file)
         subprocess.getstatusoutput(f'rm -rf {self.tmp_graph_file}')
         self.tmp_graph_file = graph_csv
         self.init_flag = False
@@ -228,10 +223,11 @@ class SearchSubgraph(object):
             flag = self.merge_sub_file()
 
             num += 1
+
         with open(f'{self.GRAPH}/1_g.csv', 'w', encoding='utf8') as f:
             for i in self.current:
                 f.write(f'{i}\n')
-        subprocess.getstatusoutput(f'mv {self.tmp_graph_file} {self.GRAPH}/1_g.csv')
+
         return None
 
     @print_cost_time
