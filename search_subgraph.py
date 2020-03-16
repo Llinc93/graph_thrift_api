@@ -19,6 +19,7 @@ import csv
 import time
 import shutil
 import functools
+import subprocess
 import multiprocessing
 from collections import defaultdict
 
@@ -27,11 +28,10 @@ def print_cost_time(func):
     @functools.wraps(func)
     def inner(self, *args, **kwargs):
         start = time.time()
-        func(self, *args, **kwargs)
+        ret = func(self, *args, **kwargs)
         end = time.time()
-        print(dir(func))
         print(f'{func.__doc__}耗时: {end - start}')
-        return None
+        return ret
     return inner
 
 
@@ -39,20 +39,30 @@ class SearchSubgraph(object):
     '''查找不连通子图'''
 
     FILES = [
-        ('/opt/csv/20200220/qiyefenzhi.csv', 'BEE'),
-        ('/opt/csv/20200220/qiyetouzi.csv', 'IPEE'),
-        ('/opt/csv/20200220/ziranrentouzi.csv', 'IPEE')
+        ('/opt/csv/20200220csv/qiyefenzhi.csv', 'BEE'),
+        ('/opt/csv/20200220csv/qiyetouzi.csv', 'IPEE'),
+        ('/opt/csv/20200220csv/ziranrentouzi.csv', 'IPEE')
     ]
-    TMP = '/opt/tmp/tmp'
-    TARGET = '/opt/tmp/target'
-    GRAPH = '/opt/tmp/graph'
-    TARGET_CSV = '/opt/tmp/target/target_1.csv'
+    TMP = '/opt/csv/20200220csv/tmp/tmp'
+    if not os.path.exists(TMP):
+        os.makedirs(TMP)
+
+    TARGET = '/opt/csv/20200220csv/tmp/target'
+    if not os.path.exists(TARGET):
+        os.makedirs(TARGET)
+
+    GRAPH = '/opt/csv/20200220csv/tmp/graph'
+    if not os.path.exists(GRAPH):
+        os.makedirs(GRAPH)
+
+    TARGET_CSV = '/opt/csv/20200220csv/tmp/target/target_1.csv'
     NUMBER = 33
 
     def __init__(self):
         self.previous = set()  # 前次迭代的连通节点
         self.current = set()   # 当前迭代的联通节点
         self.current_file = self.TARGET_CSV  # 当前迭代的目标文件
+        self.tmp_graph_file = None  # 上一次迭代的连通节点
         self.target_dir = None
         self.graph_dir = None
         self.init_flag = True
@@ -65,24 +75,25 @@ class SearchSubgraph(object):
 
     @print_cost_time
     def merge_csv(self):
-        '''
-        将多个文件合并为目标文件
-        :return:
-        '''
-        if os.path.exists(self.TARGET_CSV):
-            print('文件已存在')
-            return None
+        '''将多个文件合并为目标文件'''
+        # if os.path.exists(self.TARGET_CSV):
+        #     print('文件已存在')
+        #     return None
 
+        write = open(self.TARGET_CSV, 'w', encoding='utf8')
+        writer = csv.writer(write)
         for file, label in self.FILES:
             read = open(file, 'r', encoding='utf8')
-            write = open(self.TARGET_CSV, 'w', encoding='utf8')
             number = 1
             reader = csv.reader(read)
-            writer = csv.writer(write)
             for row in reader:
                 if number == 1:
+                    number += 1
                     continue
-                writer.writerow(f'{getattr(self, label)(row)}\n')
+                ret = getattr(self, label)(row)
+                writer.writerow(ret)
+            read.close()
+        write.close()
         print('文件合并完成！')
         return None
 
@@ -97,7 +108,7 @@ class SearchSubgraph(object):
                 for row in csv.reader(f):
                     frequency_table[row[0]] += 1
                     frequency_table[row[1]] += 1
-            self.current = {max(frequency_table.items(), key=lambda x: x[1])}
+            self.current = {max(frequency_table.items(), key=lambda x: x[1])[0]}
         else:
             with open(self.current_file) as f:
                 for row in csv.reader(f):
@@ -140,6 +151,7 @@ class SearchSubgraph(object):
         graph_f.close()
         return None
 
+    @print_cost_time
     def merge_sub_file(self):
         '''合并子文件'''
         flag = True
@@ -150,7 +162,7 @@ class SearchSubgraph(object):
 
         # 汇总连通节点
         for file in os.listdir(self.graph_dir):
-            with open(file, 'r', encoding='utf8') as graph_f:
+            with open(os.path.join(self.graph_dir, file), 'r', encoding='utf8') as graph_f:
                 for line in graph_f:
                     graph_write_f.write(f'{line.strip()}\n')
         for i in self.current:
@@ -160,20 +172,29 @@ class SearchSubgraph(object):
 
         # 汇总不连通节点
         for file in os.listdir(self.target_dir):
-            with open(file, 'r', encoding='utf8') as target_f:
+            with open(os.path.join(self.target_dir, file), 'r', encoding='utf8') as target_f:
                  for line in target_f:
                      target_write_f.write(f'{line.strip()}\n')
         shutil.rmtree(self.target_dir)
-        graph_write_f.close()
+        target_write_f.close()
 
         tmp = self.current_file
         if tmp != self.TARGET_CSV:
-            os.remove(tmp)
+            # os.remove(tmp)
+            subprocess.getstatusoutput(f'rm -rf {tmp}')
         self.current_file = target_csv
+        # os.remove(self.tmp_graph_file)
+        subprocess.getstatusoutput(f'rm -rf {self.tmp_graph_file}')
+        self.tmp_graph_file = graph_csv
+        self.init_flag = False
+
+        if not os.path.exists(graph_csv) or os.path.getsize(graph_csv) == 0:
+            flag = False
         return flag
 
     @print_cost_time
     def run(self):
+        '''运行'''
         # step1 合并文件
         self.merge_csv()
 
@@ -192,7 +213,7 @@ class SearchSubgraph(object):
             files = [f'{self.TMP}/{i}.csv' for i in range(self.NUMBER)]
             fs = [open(k, 'w', encoding='utf8') for k in files]
 
-            with open(os.path.join(self.current_file, f'target_{num}.csv'), 'r', encoding='utf8') as f:
+            with open(self.current_file, 'r', encoding='utf8') as f:
                 for index, row in enumerate(csv.reader(f), 2):
                     pos = index % self.NUMBER
                     csv.writer(fs[pos]).writerow(row)
@@ -201,21 +222,18 @@ class SearchSubgraph(object):
 
             # 每份文件都由子进程进行计算
             for i in range(self.NUMBER):
-                p.apply_async(self.task, args=(pos, files[pos]))
+                p.apply_async(self.task, args=(i, files[pos]))
             p.close()
             p.join()
 
             # 合并文件
             flag = self.merge_sub_file()
+
+            num += 1
+        subprocess.getstatusoutput(f'mv {self.tmp_graph_file} {self.GRAPH}/1_g.csv')
         return None
 
     @print_cost_time
-    def test(self, h):
-        '''测试'''
-        print(h)
-        time.sleep(2)
-        return None
-
     def small_text_test(self):
         '''小文件测试'''
         files = []
@@ -229,10 +247,12 @@ class SearchSubgraph(object):
             for line in read_f:
                 if index % 1000 == 1:
                     write_f.write(f'{line.strip()}\n')
+                index += 1
             read_f.close()
             write_f.close()
-        self.Files = files
+        self.FILES = files
         return None
+
 
 if __name__ == '__main__':
     obj = SearchSubgraph()
