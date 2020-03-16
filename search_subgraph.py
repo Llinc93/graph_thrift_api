@@ -216,6 +216,26 @@ class SearchSubgraph(object):
         time.sleep(2)
         return None
 
+    def small_text_test(self):
+        '''小文件测试'''
+        files = []
+        for file, label in self.FILES:
+            tmp_file = os.path.join(os.path.dirname(file), f'tmp_{os.path.basename(file)}')
+            files.append((tmp_file, label))
+
+            read_f = open(file, 'r', encoding='utf8')
+            write_f = open(tmp_file, 'w', encoding='utf8')
+            index = 1
+            for line in read_f:
+                if index % 1000 == 1:
+                    write_f.write(f'{line.strip()}\n')
+            read_f.close()
+            write_f.close()
+        self.Files = files
+        return None
 
 if __name__ == '__main__':
-    SearchSubgraph().test(123)
+    obj = SearchSubgraph()
+    obj.small_text_test()
+    obj.run()
+    # SearchSubgraph().test(123)
