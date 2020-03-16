@@ -165,8 +165,6 @@ class SearchSubgraph(object):
             with open(os.path.join(self.graph_dir, file), 'r', encoding='utf8') as graph_f:
                 for line in graph_f:
                     graph_write_f.write(f'{line.strip()}\n')
-        for i in self.current:
-            graph_write_f.write(f'{i}\n')
         shutil.rmtree(self.graph_dir)
         graph_write_f.close()
 
@@ -230,6 +228,9 @@ class SearchSubgraph(object):
             flag = self.merge_sub_file()
 
             num += 1
+        with open(f'{self.GRAPH}/1_g.csv', 'w', encoding='utf8') as f:
+            for i in self.current:
+                f.write(f'{i}\n')
         subprocess.getstatusoutput(f'mv {self.tmp_graph_file} {self.GRAPH}/1_g.csv')
         return None
 
