@@ -43,17 +43,17 @@ class SearchSubgraph(object):
         ('/opt/csv/20200220csv/qiyetouzi.csv', 'IPEE'),
         ('/opt/csv/20200220csv/ziranrentouzi.csv', 'IPEE')
     ]
-    TMP = '/opt/csv/20200220csv/tmp/tmp'
-    if not os.path.exists(TMP):
-        os.makedirs(TMP)
-
-    TARGET = '/opt/csv/20200220csv/tmp/target'
-    if not os.path.exists(TARGET):
-        os.makedirs(TARGET)
-
-    GRAPH = '/opt/csv/20200220csv/tmp/graph'
-    if not os.path.exists(GRAPH):
-        os.makedirs(GRAPH)
+    # TMP = '/opt/csv/20200220csv/tmp/tmp'
+    # if not os.path.exists(TMP):
+    #     os.makedirs(TMP)
+    #
+    # TARGET = '/opt/csv/20200220csv/tmp/target'
+    # if not os.path.exists(TARGET):
+    #     os.makedirs(TARGET)
+    #
+    # GRAPH = '/opt/csv/20200220csv/tmp/graph'
+    # if not os.path.exists(GRAPH):
+    #     os.makedirs(GRAPH)
 
     TARGET_CSV = '/opt/csv/20200220csv/tmp/target/target_1.csv'
     NUMBER = 33
@@ -66,6 +66,9 @@ class SearchSubgraph(object):
         self.target_dir = None
         self.graph_dir = None
         self.init_flag = True
+        self.TMP = None
+        self.TARGET = None
+        self.GRAPH = None
 
     def IPEE(self, row):
         return [row[0], row[-1]]
@@ -94,9 +97,9 @@ class SearchSubgraph(object):
         return None
 
     @print_cost_time
-    def init(self, num):
-        '''获取频率最高的ID'''
-        self.previous |= self.current
+    def sub_init(self, num):
+        '''自循环初始化（获取频率最高的ID）'''
+        self.current = set()
 
         if self.init_flag:
             frequency_table = defaultdict(int)
@@ -105,9 +108,11 @@ class SearchSubgraph(object):
                     frequency_table[row[0]] += 1
                     frequency_table[row[1]] += 1
             self.current = {max(frequency_table.items(), key=lambda x: x[1])[0]}
+            with open(os.path.join(self.GRAPH, f'graph_0.csv')) as f:
+                for row in self.current:
+                    f.write(f'{row}\n')
         else:
-            self.current = set()
-            with open(self.current_file) as f:
+            with open(self.tmp_graph_file) as f:
                 for row in csv.reader(f):
                     self.current |= set(row)
 
@@ -139,9 +144,11 @@ class SearchSubgraph(object):
                 for i in row:
                     if i in self.current:
                         flag = True
+                        break
                 if flag:
                     for i in row:
-                        graph_f.write(f'{i}\n')
+                        if i not in self.current:
+                            graph_f.write(f'{i}\n')
                 else:
                     target_f.write(f"{','.join(row)}\n")
         target_f.close()
@@ -168,8 +175,8 @@ class SearchSubgraph(object):
         # 汇总不连通节点
         for file in os.listdir(self.target_dir):
             with open(os.path.join(self.target_dir, file), 'r', encoding='utf8') as target_f:
-                 for line in target_f:
-                     target_write_f.write(f'{line.strip()}\n')
+                for line in target_f:
+                    target_write_f.write(f'{line.strip()}\n')
         shutil.rmtree(self.target_dir)
         target_write_f.close()
 
@@ -181,13 +188,14 @@ class SearchSubgraph(object):
         self.tmp_graph_file = graph_csv
         self.init_flag = False
 
+        self.previous |= self.current
         if not os.path.exists(graph_csv) or os.path.getsize(graph_csv) == 0:
             flag = False
         return flag
 
     @print_cost_time
     def run(self):
-        '''运行'''
+        '''运行,查找子图'''
         # step1 合并文件
         self.merge_csv()
 
@@ -200,7 +208,7 @@ class SearchSubgraph(object):
             p = multiprocessing.Pool(self.NUMBER)
 
             # 获取筛选条件
-            self.init(num)
+            self.sub_init(num)
 
             # 切分文件
             files = [f'{self.TMP}/{i}.csv' for i in range(self.NUMBER)]
@@ -215,7 +223,7 @@ class SearchSubgraph(object):
 
             # 每份文件都由子进程进行计算
             for i in range(self.NUMBER):
-                p.apply_async(self.task, args=(i, files[pos]))
+                p.apply_async(self.task, args=(i, files[i]))
             p.close()
             p.join()
 
@@ -225,9 +233,47 @@ class SearchSubgraph(object):
             num += 1
 
         with open(f'{self.GRAPH}/1_g.csv', 'w', encoding='utf8') as f:
-            for i in self.current:
+            for i in self.previous:
                 f.write(f'{i}\n')
 
+        return None
+
+    def init(self, index):
+        '''循环初始化(设置存储路径)'''
+        self.TMP = f'/opt/csv/20200220csv/tmp/{index}/tmp'
+        if not os.path.exists(self.TMP):
+            os.makedirs(self.TMP)
+
+        self.TARGET = f'/opt/csv/20200220csv/tmp/{index}/target'
+        if not os.path.exists(self.TARGET):
+            os.makedirs(self.TARGET)
+
+        self.GRAPH = f'/opt/csv/20200220csv/tmp/{index}/graph'
+        if not os.path.exists(self.GRAPH):
+            os.makedirs(self.GRAPH)
+
+        self.init_flag = True
+
+        self.previous = set()  # 前次迭代的连通节点
+        self.current = set()   # 当前迭代的联通节点
+        self.tmp_graph_file = None  # 上一次迭代的连通节点
+        self.target_dir = None
+        self.graph_dir = None
+        self.init_flag = True
+        subprocess.getstatusoutput(f'cp {self.current_file} {os.path.join(self.TARGET, "target_1.csv")}')
+        return None
+
+    def main(self):
+        '''获取所有的子图'''
+        index = 1
+        while True:
+            if index > 1:
+                self. init(index)
+            self.run()
+            if not os.path.exists(self.current_file) or os.path.getsize(self.current_file):
+                break
+
+        print('找找所有的图完成！')
         return None
 
     @print_cost_time
