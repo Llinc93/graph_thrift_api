@@ -178,6 +178,7 @@ def run():
             writer = csv.writer(wf)
             if index == 1:
                 writer.writerow(header)
+                continue
             try:
                 new_row = getattr(w_csv, label)(row)
             except:

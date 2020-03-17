@@ -43,17 +43,17 @@ class SearchSubgraph(object):
         ('/opt/csv/20200220csv/qiyetouzi.csv', 'IPEE'),
         ('/opt/csv/20200220csv/ziranrentouzi.csv', 'IPEE')
     ]
-    # TMP = '/opt/csv/20200220csv/tmp/tmp'
-    # if not os.path.exists(TMP):
-    #     os.makedirs(TMP)
-    #
-    # TARGET = '/opt/csv/20200220csv/tmp/target'
-    # if not os.path.exists(TARGET):
-    #     os.makedirs(TARGET)
-    #
-    # GRAPH = '/opt/csv/20200220csv/tmp/graph'
-    # if not os.path.exists(GRAPH):
-    #     os.makedirs(GRAPH)
+    TMP = '/opt/csv/20200220csv/tmp/tmp'
+    if not os.path.exists(TMP):
+        os.makedirs(TMP)
+
+    TARGET = '/opt/csv/20200220csv/tmp/target'
+    if not os.path.exists(TARGET):
+        os.makedirs(TARGET)
+
+    GRAPH = '/opt/csv/20200220csv/tmp/graph'
+    if not os.path.exists(GRAPH):
+        os.makedirs(GRAPH)
 
     TARGET_CSV = '/opt/csv/20200220csv/tmp/target/target_1.csv'
     NUMBER = 33
@@ -108,7 +108,7 @@ class SearchSubgraph(object):
                     frequency_table[row[0]] += 1
                     frequency_table[row[1]] += 1
             self.current = {max(frequency_table.items(), key=lambda x: x[1])[0]}
-            with open(os.path.join(self.GRAPH, f'graph_0.csv')) as f:
+            with open(os.path.join(self.GRAPH, f'graph_0.csv'), 'w', encoding='utf8') as f:
                 for row in self.current:
                     f.write(f'{row}\n')
         else:
@@ -268,7 +268,7 @@ class SearchSubgraph(object):
         index = 1
         while True:
             if index > 1:
-                self. init(index)
+                self.init(index)
             self.run()
             if not os.path.exists(self.current_file) or os.path.getsize(self.current_file):
                 break
