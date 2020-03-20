@@ -462,10 +462,10 @@ class Parse():
         '''
         action = {'id': node['ID'], 'name': node['NAME'], 'type': node['label']}
         if node['label'] in ['PP', 'LL', 'DD', 'EE', 'TT', 'GR', 'GB']:
-            action['attibuteMap'] = {'extendNumber': len(extendnumbers.get(node['ID'], 0))}
+            action['attibuteMap'] = {'extendNumber': len(extendnumbers.get(node['ID'], []))}
         else:
             action['attibuteMap'] = {
-                'extendNumber': len(extendnumbers.get(node['ID'], 0)),
+                'extendNumber': len(extendnumbers.get(node['ID'], [])),
                 'industry_class': node['INDUSTRY'],
                 'business_age': node['ESDATE'][:4],
                 'province': node['PROVINCE'],
