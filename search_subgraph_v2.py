@@ -167,42 +167,6 @@ class SearchSubgraph(object):
         self.tmp_graph_file = graph_csv
         return flag
 
-    def task(self, pos, file, interval):
-        '''
-        筛选
-        :param num:
-        :param pos:
-        :param file:
-        :return:
-        '''
-        number = 1
-        target_file = os.path.join(self.target_dir, f'{pos}.csv')  # 不连通节点文件
-        graph_file = os.path.join(self.graph_dir, f'{pos}.csv')  # 连通节点文件
-        target_f = open(target_file, 'w', encoding='utf8')
-        graph_f = open(graph_file, 'w', encoding='utf8')
-        with open(file, 'r', encoding='utf8') as f:
-            f.seek(pos * interval)
-            for row in csv.reader(f):
-                flag = False
-                for i in row:
-                    if i in self.current:
-                        flag = True
-                        break
-                if flag:
-                    for i in row:
-                        if i not in self.current:
-                            graph_f.write(f'{i}\n')
-                else:
-                    target_f.write(f"{','.join(row)}\n")
-
-                if number >= interval:
-                    break
-
-                number += 1
-        target_f.close()
-        graph_f.close()
-        return None
-
     @print_cost_time
     def run(self, graph_index):
         '''运行,查找子图'''
@@ -235,7 +199,7 @@ class SearchSubgraph(object):
             # for i in range(self.NUMBER):
             #     p.apply_async(task, args=(i, files[i], self.target_dir, self.graph_dir, self.current))
 
-            interval = (int(subprocess.getoutput(f'wc -l {self.current_file}').split()[0]) //self.NUMBER + 1) * 66
+            interval = int(subprocess.getoutput(f'wc -c {self.current_file}').split()[0]) // 66 //self.NUMBER + 1
             for i in range(self.NUMBER):
                 p.apply_async(task, args=(i, self.current_file, interval, self.target_dir, self.graph_dir, self.current))
             p.close()
