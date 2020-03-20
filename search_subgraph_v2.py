@@ -58,7 +58,7 @@ class SearchSubgraph(object):
         os.makedirs(GRAPH)
 
     TARGET_CSV = '/home/20200220csv/tmp/1/target/target_1.csv'
-    NUMBER = multiprocessing.cpu_count()
+    # NUMBER = multiprocessing.cpu_count()
 
     def __init__(self):
         self.previous = set()  # 前次迭代的连通节点
@@ -134,24 +134,6 @@ class SearchSubgraph(object):
         flag = True
         graph_csv = f'{self.graph_dir}.csv'
         target_csv = f'{self.target_dir}.csv'
-        graph_write_f = open(graph_csv, 'w', encoding='utf8')
-        target_write_f = open(target_csv, 'w', encoding='utf8')
-
-        # 汇总连通节点
-        for file in os.listdir(self.graph_dir):
-            with open(os.path.join(self.graph_dir, file), 'r', encoding='utf8') as graph_f:
-                for line in graph_f:
-                    graph_write_f.write(f'{line.strip()}\n')
-        graph_write_f.close()
-        shutil.rmtree(self.graph_dir)
-
-        # 汇总不连通节点
-        for file in os.listdir(self.target_dir):
-            with open(os.path.join(self.target_dir, file), 'r', encoding='utf8') as target_f:
-                for line in target_f:
-                    target_write_f.write(f'{line.strip()}\n')
-        target_write_f.close()
-        shutil.rmtree(self.target_dir)
 
         tmp = self.current_file
         if tmp != self.TARGET_CSV:
@@ -167,6 +149,38 @@ class SearchSubgraph(object):
         self.tmp_graph_file = graph_csv
         return flag
 
+    def task(self, file):
+        '''
+        筛选
+        :param num:
+        :param pos:
+        :param file:
+        :return:
+        '''
+        number = 1
+        target_file = f'{self.target_dir}.csv'  # 不连通节点文件
+        graph_file = f'{self.graph_dir}.csv'  # 连通节点文件
+        target_f = open(target_file, 'w', encoding='utf8')
+        graph_f = open(graph_file, 'w', encoding='utf8')
+        with open(file, 'r', encoding='utf8') as f:
+            for row in csv.reader(f):
+                flag = False
+                for i in row:
+                    if i in self.current:
+                        flag = True
+                        break
+                if flag:
+                    for i in row:
+                        if i not in self.current:
+                            graph_f.write(f'{i}\n')
+                else:
+                    target_f.write(f"{','.join(row)}\n")
+
+                number += 1
+        target_f.close()
+        graph_f.close()
+        return None
+
     @print_cost_time
     def run(self, graph_index):
         '''运行,查找子图'''
@@ -179,32 +193,11 @@ class SearchSubgraph(object):
 
         # 寻找子图(1次)
         while flag:
-            p = multiprocessing.Pool(self.NUMBER)
 
             # 获取筛选条件
             self.sub_init(num)
 
-            # 切分文件
-            # files = [f'{self.TMP}/{i}.csv' for i in range(self.NUMBER)]
-            # fs = [open(k, 'w', encoding='utf8') for k in files]
-
-            # with open(self.current_file, 'r', encoding='utf8') as f:
-            #     for index, row in enumerate(csv.reader(f), 2):
-            #         pos = index % self.NUMBER
-            #         csv.writer(fs[pos]).writerow(row)
-            # for f in fs:
-            #     f.close()
-
-            # 每份文件都由子进程进行计算
-            # for i in range(self.NUMBER):
-            #     p.apply_async(task, args=(i, files[i], self.target_dir, self.graph_dir, self.current))
-
-            interval = int(subprocess.getoutput(f'wc -c {self.current_file}').split()[0]) // 66 //self.NUMBER + 1
-            for i in range(self.NUMBER):
-                p.apply_async(task, args=(i, self.current_file, interval, self.target_dir, self.graph_dir, self.current))
-            p.close()
-            p.join()
-
+            self.task(self.current_file)
             # 合并文件
             flag = self.merge_sub_file()
 
