@@ -8,8 +8,9 @@ def ent_actual_controller(data, min_rate):
     nodes = []
     links = []
     special = []
+    appear = []
     while data['results']:
-        item = data['reults'].pop()
+        item = data['results'].pop()
         tmp_nodes = item['nodes']
         tmp_links = item['links']
 
@@ -18,6 +19,10 @@ def ent_actual_controller(data, min_rate):
             if node['v_type'] == 'GR' and node['attributes']['@rate'] < min_rate:
                 continue
 
+            if node['v_id'] in appear:
+                continue
+
+            appear.append(node['v_id'])
             attr = 1
             lastnode = 0
             if node['v_type'] == 'GR' and node['attributes']['@rate'] >= 0.25:
@@ -32,7 +37,7 @@ def ent_actual_controller(data, min_rate):
                 'id': node['v_id'],
                 'name': node['attributes']['name'],
                 'type': node['v_type'],
-                'number': node['attributes']['number'],
+                'number': node['attributes']['@rate'],
                 'attr': attr,
                 'lastnode': lastnode,
             }
@@ -111,6 +116,7 @@ def get_node(node):
 def ent_graph(data):
     nodes = []
     links = []
+    ids = []
     appear = defaultdict(int)
     if len(data['results']) == 1:
         return nodes, links
@@ -126,6 +132,9 @@ def ent_graph(data):
             appear[link['to_id']] += 1
 
         for node in tmp_nodes:
+            if node['v_id'] in ids:
+                continue
+            ids.append(node['v_id'])
             node['attributes']['@outdegree'] -= appear[node['v_id']]
             nodes.append(get_node(node))
 

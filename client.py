@@ -15,7 +15,7 @@ class PyClient():
         # self.host = '47.93.228.56'
         # self.post = 9918
         self.host = '127.0.0.1'
-        self.port = 9918
+        self.port = 19918
 
     def getEntActualContoller(self, username, uscCode, mix_rate):
         try:
@@ -78,14 +78,14 @@ class PyClient():
 
 
 if __name__ == '__main__':
-    ent = []
+    ent = ['江苏荣马城市建设有限公司', '江苏鑫茂能源有限公司', '无锡亚琴海办公商贸有限公司', '苏州勇德云服饰有限公司', '苏州博一永畅科技有限公司', '江苏臻天机科技有限公司', '南京晨光集团有限公司', '启东市明珠浴室']
     cli = PyClient()
     import time
-    # for i in ent:
-    #     s = time.time()
-    #     cli.getEntActualContoller(i, "", 0)
-    #     print(time.time() - s)
-    #     print()
+    for i in ent:
+        s = time.time()
+        cli.getEntActualContoller(i, "", 0)
+        print(time.time() - s)
+        print()
     # s = time.time()
     cli.getEntGraphG('江苏荣马城市建设有限公司', 'R101;R102;R103;R104;R106;R107', '1', 'GS')
     # s = time.time()

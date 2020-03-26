@@ -5,7 +5,7 @@ apipath='/opt/graph_thrift_api/main_server.py'
 path='/opt/graph_thrift_api'
 
 start(){
-    cd $path;python3 $apipath &
+    cd $path;nohup python3 $apipath >/dev/null 2>&1 &
     echo 'api start OK'
 }
 
