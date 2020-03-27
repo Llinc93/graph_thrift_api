@@ -71,7 +71,7 @@ def task(params):
             for link in tmp_links:
                 if link['to_id'] in null or link['from_id'] in null:
                     continue
-                    
+
                 if link['to_id'] in path:
                     path.add(link['from_id'])
                     links.append(link)
