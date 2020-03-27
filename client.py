@@ -81,14 +81,21 @@ if __name__ == '__main__':
     ent = ['江苏荣马城市建设有限公司', '江苏鑫茂能源有限公司', '无锡亚琴海办公商贸有限公司', '苏州勇德云服饰有限公司', '苏州博一永畅科技有限公司', '江苏臻天机科技有限公司', '南京晨光集团有限公司', '启东市明珠浴室']
     cli = PyClient()
     import time
+    index = 0
     for i in ent:
+        index += 1
+        if index != 2:
+            continue
+        # s = time.time()
+        # cli.getEntActualContoller(i, "", 0)
+        # print(time.time() - s)
+        
         s = time.time()
-        cli.getEntActualContoller(i, "", 0)
+        cli.getEntGraphG('江苏荣马城市建设有限公司', 'R101;R102;R103;R104;R106;R107;R108', '2', 'GS')
         print(time.time() - s)
         print()
+    relevance = ''
     # s = time.time()
-    cli.getEntGraphG('江苏荣马城市建设有限公司', 'R101;R102;R103;R104;R106;R107', '1', 'GS')
-    # s = time.time()
-    # cli.getEntsRelevanceSeekGraphG('江苏荣马城市建设有限公司;江苏荣马实业有限公司', 'R102;R101;R107;R108;R104;R103;R106;R105', '6')
+    # cli.getEntsRelevanceSeekGraphG(relevance, 'R102;R101;R107;R108;R104;R103;R106;R105', '6')
     # e = time.time()
     # print(e-s)
