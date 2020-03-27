@@ -79,25 +79,25 @@ def get_link(link):
         'attibuteMap': {}
     }
 
-    if link['e_type'] in ['IPEES', 'REV_IPEES', 'IPEER', 'REV_IPEER']:
+    if link_type in ['IPEES', 'IPEER']:
         action['type'] = 'IPEE'
         action['attibuteMap'] = {
             'conratio': link['attributes']['rate'],
             'holding_mode': link['attributes']['rate_type']
         }
-    elif link['e_type'] in ['LEEE', 'LEET']:
+    elif link_type in ['LEEE', 'LEET']:
         action['type'] = 'LEE'
         action['attibuteMap'] = {'domain': link['attributes']['domain']}
-    elif link['e_type'] == 'SPE':
+    elif link_type == 'SPE':
         action['type'] = 'SPE'
         action['attibuteMap'] = {'position': link['attributes']['position']}
-    elif link['e_type'] in ['IHPEENS', 'IHPEENR']:
+    elif link_type in ['IHPEENS', 'IHPEENR']:
         action['type'] = 'IHPEEN'
         action['attibuteMap'] = {
             'his_data': link['attributes']['his_date'],
             'holding_mode': link['attributes']['holding_mode'],
         }
-    elif link['e_type'] == 'SHPEN':
+    elif link_type == 'SHPEN':
         action['type'] = ''
         action['attibuteMap'] = {'hisdate': link['attributes']['hisdate']}
 
@@ -130,6 +130,7 @@ def ent_graph(data):
     appear = defaultdict(int)
     if len(data['results']) == 1:
         return nodes, links
+
     while data['results']:
         item = data['results'].pop()
         tmp_nodes = item['nodes']
@@ -147,7 +148,7 @@ def ent_graph(data):
             appear[link['to_id']] += 1
 
             key = ','.join(sorted([link['from_id'], link['to_id'], link['e_type'].split('REV_')[-1]]))
-            if key in rev_link and ('REV_' in rev_link[key]['e_type'] or link['e_type']) and rev_link[key]['e_type'].split('REV_')[-1] == link['e_type'].split('REV_')[-1]:
+            if key in rev_link and ('REV_' in rev_link[key]['e_type'] or 'REV_' in link['e_type']) and rev_link[key]['e_type'].split('REV_')[-1] == link['e_type'].split('REV_')[-1]:
                 if 'REV_' in rev_link[key]['e_type']:
                     rev_link[key] = link
             else:
@@ -161,10 +162,9 @@ def ent_graph(data):
                 node['attributes']['@outdegree'] -= appear[node['v_id']]
             nodes.append(get_node(node))
 
-        for link in rev_link.values():
-            link['id'] = hashlib.md5(
-                ','.join([link['to_id'], link['from_id'], link['e_type']]).encode('utf8')).hexdigest()
-            links.append(get_link(link))
+    for link in rev_link.values():
+        link['id'] = hashlib.md5(','.join([link['to_id'], link['from_id'], link['e_type']]).encode('utf8')).hexdigest()
+        links.append(get_link(link))
 
     return nodes, links
 
@@ -189,7 +189,7 @@ def ent_relevance_seek_graph(data):
             appear[link['to_id']] += 1
 
             key = ','.join(sorted([link['from_id'], link['to_id'], link['e_type'].split('REV_')[-1]]))
-            if key in rev_link and ('REV_' in rev_link[key]['e_type'] or link['e_type']) and rev_link[key][
+            if key in rev_link and ('REV_' in rev_link[key]['e_type'] or 'REV_' in link['e_type']) and rev_link[key][
                 'e_type'].split('REV_')[-1] == link['e_type'].split('REV_')[-1]:
                 if 'REV_' in rev_link[key]['e_type']:
                     rev_link[key] = link
@@ -203,9 +203,9 @@ def ent_relevance_seek_graph(data):
                 nodes.append(get_node(node))
                 ids.append(node['v_id'])
 
-        for link in rev_link.values():
-            link['id'] = hashlib.md5(
-                ','.join([link['to_id'], link['from_id'], link['e_type']]).encode('utf8')).hexdigest()
-            links.append(get_link(link))
+    for link in rev_link.values():
+        link['id'] = hashlib.md5(
+            ','.join([link['to_id'], link['from_id'], link['e_type']]).encode('utf8')).hexdigest()
+        links.append(get_link(link))
 
     return nodes, links
