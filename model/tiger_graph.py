@@ -51,7 +51,7 @@ def task(params):
     links = []
     null = []
     path = set()
-    if raw_data['results'][-1]['@@res_flag']:
+    if raw_data['results'].pop()['@@res_flag']:
         while raw_data['results']:
             item = raw_data['results'].pop()
             tmp_nodes = item['nodes']

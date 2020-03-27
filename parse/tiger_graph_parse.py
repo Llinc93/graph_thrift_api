@@ -109,7 +109,7 @@ def get_node(node):
         'id': node['v_id'],
         'name': node['attributes']['name'],
         'type': node['v_type'] if node['v_type'] != 'ADDR' else 'DD',
-        'attibuteMap': {'extendNumber': node['attributes']['@outdegree']},
+        'attibuteMap': {'extendNumber': node['attributes']['@outdegree'] if node['attributes']['@outdegree'] > 0 else 0},
     }
     if action['type'] == 'GS':
         action['attibuteMap']['industry_class'] = node['attributes']['industry']
@@ -124,6 +124,7 @@ def get_node(node):
 def ent_graph(data):
     nodes = []
     links = []
+    rev_link = {}
     ids = []
     null = []
     appear = defaultdict(int)
@@ -142,17 +143,28 @@ def ent_graph(data):
             if link['to_id'] in null or link['from_id'] in null:
                 continue
 
-            link['id'] = hashlib.md5(','.join([link['to_id'], link['from_id'], link['e_type']]).encode('utf8')).hexdigest()
-            links.append(get_link(link))
             appear[link['from_id']] += 1
             appear[link['to_id']] += 1
+
+            key = ','.join(sorted([link['from_id'], link['to_id'], link['e_type'].split('REV_')[-1]]))
+            if key in rev_link and ('REV_' in rev_link[key]['e_tvpe'] or link['e_type']) and rev_link[key]['e_tvpe'] == link['e_type'].split('REV_')[-1]:
+                if 'REV_' in rev_link[key]['e_type']:
+                    rev_link[key] = link
+            else:
+                rev_link[key] = link
 
         for node in tmp_nodes:
             if node['v_id'] in ids or node['v_id'] in null:
                 continue
             ids.append(node['v_id'])
-            node['attributes']['@outdegree'] -= appear[node['v_id']]
+            if node['attributes']['@outdegree'] > 0:
+                node['attributes']['@outdegree'] -= appear[node['v_id']]
             nodes.append(get_node(node))
+
+        for link in rev_link.values():
+            link['id'] = hashlib.md5(
+                ','.join([link['to_id'], link['from_id'], link['e_type']]).encode('utf8')).hexdigest()
+            links.append(get_link(link))
 
     return nodes, links
 
@@ -175,7 +187,8 @@ def ent_relevance_seek_graph(data):
 
         for node in tmp_nodes:
             if node['v_id'] not in ids:
-                node['attributes']['@outdegree'] -= appear[node['v_id']]
+                if node['attributes']['@outdegree'] > 0:
+                    node['attributes']['@outdegree'] -= appear[node['v_id']]
                 nodes.append(get_node(node))
                 ids.append(node['v_id'])
 

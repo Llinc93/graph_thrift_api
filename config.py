@@ -25,7 +25,7 @@ ATTIDS_MAP = {
     'R101': {'ipees': 'IPEES'},  # 企业对外投资
     'R102': {'rev_ipees': 'REV_IPEES'},  # 企业股东
     'R103': {'ipeer': 'IPEER'},  # 自然人对外投资
-    'R104': {'ipeer': 'REV_IPEER'},  # 自然人股东
+    'R104': {'rev_ipeer': 'REV_IPEER'},  # 自然人股东
     'R105': {'spe': 'SPE'},  # 管理人员其他公司任职
     'R106': {'rev_spe': 'REV_SPE'},  # 公司管理人员
     'R107': {'bee': 'BEE'},  # 分支机构
