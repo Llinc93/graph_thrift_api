@@ -67,5 +67,5 @@ LINK_NAME = {
 # TigerGraph
 EntActualController = 'http://172.27.2.5:9000/query/graph_api/EntActualContoller'
 EntGraphUrl = 'http://172.27.2.5:9000/query/graph_api/EntGraph'
-EntRelevanceSeekGraphUrl = 'http://172.27.2.5:9000/query/graph_api/EntRelevanceSeekGraph'
+EntRelevanceSeekGraphUrl = 'http://172.27.2.5:9000/query/graph_api/EntsRelevanceSeekGraph'
 

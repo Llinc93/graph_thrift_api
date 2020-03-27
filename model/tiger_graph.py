@@ -49,6 +49,7 @@ def task(params):
 
     nodes = []
     links = []
+    null = []
     path = set()
     if raw_data['results'][-1]['@@res_flag']:
         while raw_data['results']:
@@ -57,6 +58,10 @@ def task(params):
             tmp_links = item['links']
 
             for node in tmp_nodes:
+                if not node['attributes']['name']:
+                    null.append(node['v_id'])
+                    continue
+
                 if node['attributes']['name'] == params['ename']:
                     path.add(node['v_id'])
                     nodes.append(node)
@@ -64,6 +69,9 @@ def task(params):
                     nodes.append(node)
 
             for link in tmp_links:
+                if link['to_id'] in null or link['from_id'] in null:
+                    continue
+                    
                 if link['to_id'] in path:
                     path.add(link['from_id'])
                     links.append(link)
