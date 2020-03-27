@@ -147,7 +147,7 @@ def ent_graph(data):
             appear[link['to_id']] += 1
 
             key = ','.join(sorted([link['from_id'], link['to_id'], link['e_type'].split('REV_')[-1]]))
-            if key in rev_link and ('REV_' in rev_link[key]['e_tvpe'] or link['e_type']) and rev_link[key]['e_tvpe'] == link['e_type'].split('REV_')[-1]:
+            if key in rev_link and ('REV_' in rev_link[key]['e_type'] or link['e_type']) and rev_link[key]['e_type'].split('REV_')[-1] == link['e_type'].split('REV_')[-1]:
                 if 'REV_' in rev_link[key]['e_type']:
                     rev_link[key] = link
             else:
@@ -189,8 +189,8 @@ def ent_relevance_seek_graph(data):
             appear[link['to_id']] += 1
 
             key = ','.join(sorted([link['from_id'], link['to_id'], link['e_type'].split('REV_')[-1]]))
-            if key in rev_link and ('REV_' in rev_link[key]['e_tvpe'] or link['e_type']) and rev_link[key][
-                'e_tvpe'] == link['e_type'].split('REV_')[-1]:
+            if key in rev_link and ('REV_' in rev_link[key]['e_type'] or link['e_type']) and rev_link[key][
+                'e_type'].split('REV_')[-1] == link['e_type'].split('REV_')[-1]:
                 if 'REV_' in rev_link[key]['e_type']:
                     rev_link[key] = link
             else:
