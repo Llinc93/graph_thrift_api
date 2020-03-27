@@ -173,17 +173,28 @@ def ent_relevance_seek_graph(data):
     nodes = []
     links = []
     ids = []
+    rev_link = {}
     appear = defaultdict(int)
     while data:
         tmp_nodes, tmp_links = data.pop()
 
         for link in tmp_links:
-            link['id'] = hashlib.md5(','.join([link['to_id'], link['from_id'], link['e_type']]).encode('utf8')).hexdigest()
-            if link['id'] not in ids:
-                links.append(get_link(link))
-                ids.append(link['id'])
-                appear[link['from_id']] += 1
-                appear[link['to_id']] += 1
+            # link['id'] = hashlib.md5(','.join([link['to_id'], link['from_id'], link['e_type']]).encode('utf8')).hexdigest()
+            if link['id'] in ids:
+                continue
+
+            links.append(get_link(link))
+            ids.append(link['id'])
+            appear[link['from_id']] += 1
+            appear[link['to_id']] += 1
+
+            key = ','.join(sorted([link['from_id'], link['to_id'], link['e_type'].split('REV_')[-1]]))
+            if key in rev_link and ('REV_' in rev_link[key]['e_tvpe'] or link['e_type']) and rev_link[key][
+                'e_tvpe'] == link['e_type'].split('REV_')[-1]:
+                if 'REV_' in rev_link[key]['e_type']:
+                    rev_link[key] = link
+            else:
+                rev_link[key] = link
 
         for node in tmp_nodes:
             if node['v_id'] not in ids:
@@ -191,5 +202,10 @@ def ent_relevance_seek_graph(data):
                     node['attributes']['@outdegree'] -= appear[node['v_id']]
                 nodes.append(get_node(node))
                 ids.append(node['v_id'])
+
+        for link in rev_link.values():
+            link['id'] = hashlib.md5(
+                ','.join([link['to_id'], link['from_id'], link['e_type']]).encode('utf8')).hexdigest()
+            links.append(get_link(link))
 
     return nodes, links
