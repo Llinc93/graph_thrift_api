@@ -26,8 +26,7 @@ class MyFaceHandler(Interface.Iface):
   def __init__(self):
     pass
 
-  # def getFinalBeneficiaryName(self, entName, uscCode, min_ratio=0):
-  def getEntActualContoller_v1(self, entName, uscCode, min_ratio=0):
+  def getFinalBeneficiaryName(self, entName, uscCode, min_ratio=0):
       """
       企业实际控股人信息
       entName 企业名称
@@ -53,7 +52,7 @@ class MyFaceHandler(Interface.Iface):
           # print('error')
           return json.dumps({'data': '', 'success': 101}, ensure_ascii=False)
 
-  def getEntActualContoller_v1(self, entName, uscCode, min_ratio=0):
+  def getEntActualContoller(self, entName, uscCode, min_ratio=0):
     """
     企业实际控股人信息
     entName 企业名称
@@ -105,7 +104,7 @@ class MyFaceHandler(Interface.Iface):
         # print('error')
         return json.dumps({'data':'', 'success':101}, ensure_ascii=False)
 
-  def getEntGraphG_v1(self, keyword, attIds, level, nodeType):
+  def getEntGraphG(self, keyword, attIds, level, nodeType):
     """
     企业图谱查询
     keyword 关键字
@@ -139,7 +138,7 @@ class MyFaceHandler(Interface.Iface):
         traceback.print_exc()
         return json.dumps({'nodes': [], 'success': 102, 'links': []}, ensure_ascii=False)
 
-  def getEntGraphG(self, keyword, attIds, level, nodeType):
+  def getEntGraphG_ti(self, keyword, attIds, level, nodeType):
     """
     企业图谱查询
     keyword 关键字
@@ -169,7 +168,7 @@ class MyFaceHandler(Interface.Iface):
         traceback.print_exc()
         return json.dumps({'nodes': [], 'success': 102, 'links': []}, ensure_ascii=False)
 
-  def getEntsRelevanceSeekGraphG_v1(self, entName, attIds, level):
+  def getEntsRelevanceSeekGraphG(self, entName, attIds, level):
     """
     企业关联探寻
     entName 企业名称
@@ -196,7 +195,7 @@ class MyFaceHandler(Interface.Iface):
         return json.dumps({'nodes': [], 'success': 103, 'links': []}, ensure_ascii=False)
 
 
-  def getEntsRelevanceSeekGraphG(self, entName, attIds, level):
+  def getEntsRelevanceSeekGraphG_ti(self, entName, attIds, level):
     """
     企业关联探寻
     entName 企业名称

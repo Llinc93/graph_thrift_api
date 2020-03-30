@@ -27,6 +27,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  string getEntActualContoller(string entName, string uscCode, double MinRatio)')
     print('  string getEntGraphG(string keyword, string attIds, string level, string nodeType)')
     print('  string getEntsRelevanceSeekGraphG(string entName, string attIds, string level)')
+    print('  string getFinalBeneficiaryName(string entName, string uscCode, double MinRatio)')
     print('')
     sys.exit(0)
 
@@ -123,6 +124,12 @@ elif cmd == 'getEntsRelevanceSeekGraphG':
         print('getEntsRelevanceSeekGraphG requires 3 args')
         sys.exit(1)
     pp.pprint(client.getEntsRelevanceSeekGraphG(args[0], args[1], args[2],))
+
+elif cmd == 'getFinalBeneficiaryName':
+    if len(args) != 3:
+        print('getFinalBeneficiaryName requires 3 args')
+        sys.exit(1)
+    pp.pprint(client.getFinalBeneficiaryName(args[0], args[1], eval(args[2]),))
 
 else:
     print('Unrecognized method %s' % cmd)

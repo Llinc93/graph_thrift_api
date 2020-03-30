@@ -349,6 +349,7 @@ class Parse():
         '''
         pids = defaultdict(set)
         actions = {}
+        sub_ids = set()
         for path in graph:
             tmp_nodes = path['n']
             tmp_links = path['r']
@@ -360,7 +361,12 @@ class Parse():
                 if tmp_links and link['label'] == 'BEE':
                     link['RATE'] = 1
 
-                if (sub['ID'], parent['ID']) in actions and actions[(sub['ID'], parent['ID'])] is not None:
+                if parent:
+                    con = (sub['ID'], parent['ID'])
+                    sub_ids.add(sub['ID'])
+                else:
+                    con = (sub['ID'], None)
+                if con in actions:
                     continue
 
                 action = {
@@ -374,22 +380,27 @@ class Parse():
                     "type": sub['label'],
                     "attr": 2 if sub['ID'] == lcid else 1,
                 }
-                actions[(action['id'], action['pid'])] = action
+                actions[con] = action
                 pids[action['pid']] .add(action['id'])
 
         top = []
         for sid, pid in actions.keys():
-            if pid is None:
+            if pid is None and sid not in sub_ids:
                 top.append(actions[(sid, pid)])
-            else:
-                actions[(sid, pid)]['children'] = [actions[i, sid] for i in pids[sid]]
+            actions[(sid, pid)]['children'] = [actions[i, sid] for i in pids[sid]]
 
         def get_number(action):
             if action['id'] == lcid:
                 return action['number_c']
+
             number = 0
             for item in action['children']:
-                number += float(get_number(item)) * float(item['number_c'])
+                tmp = get_number(item)
+                if item['id'] != lcid:
+                    item['number'] = tmp
+                    number += float(tmp) * float(item['number_c'])
+                else:
+                    number =+ float(tmp)
             return number
 
         flag = False
