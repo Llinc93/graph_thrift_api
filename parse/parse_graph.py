@@ -356,11 +356,11 @@ class Parse():
             while len(tmp_nodes):
                 sub = tmp_nodes.pop()
                 parent = tmp_nodes[-1] if tmp_nodes else None
-                link = tmp_nodes.pop() if tmp_links else None
+                link = tmp_links.pop() if tmp_links else None
                 if tmp_links and link['label'] == 'BEE':
                     link['RATE'] = 1
 
-                if sub['ID'] in actions:
+                if (sub['ID'], parent['ID']) in actions and actions[(sub['ID'], parent['ID'])] is not None:
                     continue
 
                 action = {
@@ -374,28 +374,28 @@ class Parse():
                     "type": sub['label'],
                     "attr": 2 if sub['ID'] == lcid else 1,
                 }
-                actions[action['id']] = action
-                pids[action['pid']].add(action['id'])
+                actions[(action['id'], action['pid'])] = action
+                pids[action['pid']] .add(action['id'])
 
         top = []
-        for pid, ids in pids.items():
+        for sid, pid in actions.keys():
             if pid is None:
-                top = [actions[i] for i in ids]
+                top.append(actions[(sid, pid)])
             else:
-                actions[pid]['children'] = [actions[i] for i in ids]
+                actions[(sid, pid)]['children'] = [actions[i, sid] for i in pids[sid]]
 
-        def get_number(children):
-            if children == 1 and children[0]['id'] == lcid:
-                return children[0]['number_c']
+        def get_number(action):
+            if action['id'] == lcid:
+                return action['number_c']
             number = 0
-            for item in children:
-                number += get_number(item['children']) * item['number_c']
+            for item in action['children']:
+                number += float(get_number(item)) * float(item['number_c'])
             return number
 
         flag = False
         data = []
         for item in top:
-            item['number'] = get_number(item['children'])
+            item['number'] = get_number(item)
             if item['number'] < min_rate:
                 continue
 
