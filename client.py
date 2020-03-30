@@ -87,7 +87,7 @@ class PyClient():
             # 创建客户端
             client = Interface.Client(protocol)
             transport.open()
-            data = client.getEntActualContoller(username, uscCode, mix_rate)
+            data = client.getFinalBeneficiaryName(username, uscCode, mix_rate)
             print(data)
             transport.close()
             return data

@@ -400,7 +400,7 @@ class Parse():
                     item['number'] = tmp
                     number += float(tmp) * float(item['number_c'])
                 else:
-                    number =+ float(tmp)
+                    number += float(tmp)
             return number
 
         flag = False
