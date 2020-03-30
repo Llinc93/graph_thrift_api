@@ -341,6 +341,77 @@ class Parse():
             data.append(i)
         return data, res_links
 
+    def get_final_beneficiary_name(self, graph, min_rate, lcid):
+        '''
+        根据neo4j的结果，计算受益所有人
+        :param graph:
+        :return:
+        '''
+        pids = defaultdict(set)
+        actions = {}
+        for path in graph:
+            tmp_nodes = path['n']
+            tmp_links = path['r']
+
+            while len(tmp_nodes):
+                sub = tmp_nodes.pop()
+                parent = tmp_nodes[-1] if tmp_nodes else None
+                link = tmp_nodes.pop() if tmp_links else None
+                if tmp_links and link['label'] == 'BEE':
+                    link['RATE'] = 1
+
+                if sub['ID'] in actions:
+                    continue
+
+                action = {
+                    "number": 0,
+                    "number_c": link['RATE'] if link else 0,
+                    "children": None if sub['ID'] == lcid else [],
+                    "lastnode": 0 if parent else 1,
+                    "name": sub['NAME'],
+                    "pid": parent['ID'] if parent else None,
+                    "id": sub['ID'],
+                    "type": sub['label'],
+                    "attr": 2 if sub['ID'] == lcid else 1,
+                }
+                actions[action['id']] = action
+                pids[action['pid']].add(action['id'])
+
+        top = []
+        for pid, ids in pids.items():
+            if pid is None:
+                top = [actions[i] for i in ids]
+            else:
+                actions[pid]['children'] = [actions[i] for i in ids]
+
+        def get_number(children):
+            if children == 1 and children[0]['id'] == lcid:
+                return children[0]['number_c']
+            number = 0
+            for item in children:
+                number += get_number(item['children']) * item['number_c']
+            return number
+
+        flag = False
+        data = []
+        for item in top:
+            item['number'] = get_number(item['children'])
+            if item['number'] < min_rate:
+                continue
+
+            if item['number'] > 0.25 and item['type'] == 'GR':
+                flag = True
+            else:
+                item['lastnode'] = 0
+
+            data.append(item)
+
+        if not flag:
+            for item in data:
+                if item['type'] == 'GS':
+                    item['lastnode'] = 1
+        return data
+
     def R101(self, link, current, next):
         '''
         过滤企业对外投资

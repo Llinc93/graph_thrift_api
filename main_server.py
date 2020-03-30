@@ -26,6 +26,33 @@ class MyFaceHandler(Interface.Iface):
   def __init__(self):
     pass
 
+  # def getFinalBeneficiaryName(self, entName, uscCode, min_ratio=0):
+  def getEntActualContoller_v1(self, entName, uscCode, min_ratio=0):
+      """
+      企业实际控股人信息
+      entName 企业名称
+
+      Parameters:
+       - entName
+      """
+      try:
+          if not min_ratio:
+              min_ratio = 0
+          lcid = neo4j_client.get_lcid(entname=entName, usccode=uscCode)
+          if not lcid:
+              return json.dumps({'data': [], 'success': 0}, ensure_ascii=False)
+          level = neo4j_client.get_level(lcid=lcid)
+          data = neo4j_client.get_ent_actual_controller(entname=entName, usccode=uscCode, level=level)
+          if not data:
+              return json.dumps({'data': [], 'success': 0}, ensure_ascii=False)
+          data = parse.get_final_beneficiary_name(data, min_rate=min_ratio, lcid=lcid)
+
+          return json.dumps({'data': data, 'success': 0}, ensure_ascii=False)
+      except:
+          traceback.print_exc()
+          # print('error')
+          return json.dumps({'data': '', 'success': 101}, ensure_ascii=False)
+
   def getEntActualContoller_v1(self, entName, uscCode, min_ratio=0):
     """
     企业实际控股人信息
@@ -54,7 +81,7 @@ class MyFaceHandler(Interface.Iface):
         # print('error')
         return json.dumps({'data':'', 'success':101}, ensure_ascii=False)
 
-  def getEntActualContoller(self, entName, uscCode, min_ratio=0):
+  def getEntActualContoller_tiger(self, entName, uscCode, min_ratio=0):
     """
     企业实际控股人信息
     entName 企业名称

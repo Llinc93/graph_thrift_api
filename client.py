@@ -84,14 +84,14 @@ if __name__ == '__main__':
     index = 0
     for i in ent:
         index += 1
-        if index != 2:
+        if index != 1:
             continue
         # s = time.time()
         # cli.getEntActualContoller(i, "", 0)
         # print(time.time() - s)
-        
+
         s = time.time()
-        cli.getEntGraphG('江苏荣马城市建设有限公司', 'R101;R102;R103;R104;R106;R107;R108', '2', 'GS')
+        cli.getEntGraphG(i, 'R101;R102;R103;R104;R106;R107;R108', '2', 'GS')
         print(time.time() - s)
         print()
     relevance = ''
