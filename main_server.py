@@ -42,7 +42,7 @@ class MyFaceHandler(Interface.Iface):
           if not lcid:
               return json.dumps({'data': [], 'success': 0}, ensure_ascii=False)
           level = neo4j_client.get_level(lcid=lcid)
-          data = neo4j_client.get_ent_actual_controller(entname=entName, usccode=uscCode, level=level)
+          data = neo4j_client.get_final_beneficiary_name()(entname=entName, usccode=uscCode, level=level)
           if not data:
               return json.dumps({'data': [], 'success': 0}, ensure_ascii=False)
           data = parse.get_final_beneficiary_name(data, min_rate=min_ratio, lcid=lcid)
