@@ -30,11 +30,11 @@ class SearchSubgraphReverse(object):
     反向查找不连通子图
     '''
 
-    FILE = '/home/20200220csv/tmp/501/target/target_1.csv'
+    FILE = '/home/20200220csv/tmp/target_3.csv'
     ROOT = '/home/20200220csv/tmp'
     TMP = '/home/20200220csv/tmp/tmp_subgraph.csv'
 
-    TARGET = '/home/20200220csv/tmp/sub_graph_1_1.csv'
+    TARGET = '/home/20200220csv/tmp/sub_graph_%s_1.csv'
 
     NUMBER = 1
     SUM = 2
@@ -59,6 +59,7 @@ class SearchSubgraphReverse(object):
 
     @print_cost_time
     def search_graph(self):
+        self.get_frequency_table()
         records = filter(lambda x:self.frequency_table[x] == self.NUMBER, self.frequency_table.keys())
         count = 0
         for record in records:
@@ -71,8 +72,7 @@ class SearchSubgraphReverse(object):
         return f'{self.NUMBER}_1', count
 
     def run(self):
-        self.get_frequency_table()
-        while self.NUMBER <= 200:
+        while self.NUMBER <= 5:
             self.search_graph()
 
             # todo 生成file文件
@@ -81,7 +81,7 @@ class SearchSubgraphReverse(object):
             target_f = open(file, 'w', encoding='utf8')
             writer = csv.writer(target_f)
 
-            sub_graph = open(self.TARGET, 'w', encoding='utf8')
+            sub_graph = open(self.TARGET % self.NUMBER, 'w', encoding='utf8')
             sub_writer = csv.writer(sub_graph)
             for index, row in enumerate(self.file_content):
                 if index in self.filter_indexs:
@@ -91,14 +91,14 @@ class SearchSubgraphReverse(object):
 
             target_f.close()
             sub_graph.close()
-            self.File = file
+            self.FILE = file
             self.NUMBER += 1
+            self.frequency_table = defaultdict(int)
+            self.file_content = []
+            self.content_map = defaultdict(list)
+            self.filter_indexs = set()
 
-target_f.close()
-sub_graph.close()
-self.File = file
-self.NUMBER += 1
 
 if __name__ == '__main__':
     obj = SearchSubgraphReverse()
-    obj.search_1_1()
+    obj.run()
