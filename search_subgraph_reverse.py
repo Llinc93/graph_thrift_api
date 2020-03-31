@@ -17,9 +17,9 @@ def print_cost_time(func):
     @functools.wraps(func)
     def inner(self, *args, **kwargs):
         start = time.time()
-        graph_index, node_count, frequency = func(self, *args, **kwargs)
+        graph_index = func(self, *args, **kwargs)
         end = time.time()
-        print(f'子图: {graph_index}\t节点数量: {node_count}\t第一层频率: {frequency}\t耗时: {end - start}')
+        print(f'子图数量: {graph_index}\t耗时: {end - start}')
         return None
 
     return inner
@@ -59,17 +59,20 @@ class SearchSubgraphReverse(object):
                 index += 1
         return None
 
+    @print_cost_time
     def search_1_1(self):
         self.get_frequency_table()
 
         # 查找1-1子图
         records = filter(lambda x:self.frequency_table[x] == self.NUMBER, self.frequency_table.keys())
+        count = 0
         for record in records:
             indexs = self.content_map[record]
             for index in indexs:
                 row = self.file_content[index]
                 if self.frequency_table[row[0]] + self.frequency_table[row[1]] == self.SUM:
                     self.filter_indexs.add(index)
+                    count += 1
 
         # todo 生成file文件
         os.system(f'mv {self.FILE} {self.TMP}')
@@ -88,6 +91,7 @@ class SearchSubgraphReverse(object):
         target_f.close()
         sub_graph.close()
         self.File = file
+        return count
 
 
 if __name__ == '__main__':
