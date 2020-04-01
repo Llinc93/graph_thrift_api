@@ -20,7 +20,7 @@ def print_cost_time(func):
         number, graph_index = func(self, *args, **kwargs)
         end = time.time()
         print(f'子图: {number}\t数量: {graph_index}\t耗时: {end - start}')
-        return None
+        return graph_index
 
     return inner
 
@@ -72,8 +72,9 @@ class SearchSubgraphReverse(object):
         return f'{self.NUMBER}_1', count
 
     def run(self):
-        while self.NUMBER <= 5:
-            self.search_graph()
+        count = 1
+        while count > 0:
+            count = self.search_graph()
 
             # todo 生成file文件
             os.system(f'mv {self.FILE} {self.TMP}')

@@ -2,7 +2,8 @@ import copy, time
 from itertools import combinations
 from collections import defaultdict
 
-from parse.my_thread import MyThread
+from parse.my_thread import MyThread, MyThreadAPOC
+from model.ent_graph import neo4j_client
 
 
 class Parse():
@@ -536,7 +537,7 @@ class Parse():
 
         return {'n': tmp_nodes, 'r': tmp_links}
 
-    def get_node_attrib(self, node, extendnumbers):
+    def get_node_attrib(self, node, extendnumbers={}):
         '''
         构造attrib
         :param node:
@@ -700,13 +701,47 @@ class Parse():
         nodes, links = self.common_relationship_filter(nodes, links, extendnumbers)
         return nodes, links
 
-    def parallel_query(self, entName, level, nodes, links, filter, direct):
+    # def parallel_query(self, entName, level, nodes, links, filter, direct):
+    #     threads = []
+    #
+    #     # 序列之间的两两组合(Cn2),查询结果取并集
+    #     entNames = sorted(entName.split(';'))
+    #     for ent_names in combinations(entNames, 2):
+    #         t = MyThread(ent_names, level, nodes, links, filter, direct)
+    #         threads.append(t)
+    #
+    #     for i in threads:
+    #         i.start()
+    #
+    #     for i in threads:
+    #         i.join()
+    #
+    #     nodes = {}
+    #     links = {}
+    #     for i in threads:
+    #         if not i.result:
+    #             continue
+    #
+    #         tmp_nodes, tmp_links = parse.parse_v3(i.result, filter, level, i.ent_names[-1])
+    #         for node in tmp_nodes:
+    #             if node['id'] not in nodes:
+    #                 nodes[node['id']] = node
+    #             else:
+    #                 nodes[node['id']]['extendnumber'] = 0
+    #
+    #         for link in tmp_links:
+    #             if link['id'] not in links:
+    #                 links[link['id']] = link
+    #     nodes, links = self.common_relationship_filter(nodes.values(), links.values())
+    #     return nodes, links
+
+    def parallel_query(self, entName, level, relationshipFilter):
         threads = []
 
         # 序列之间的两两组合(Cn2),查询结果取并集
-        entNames = sorted(entName.split(';'))
-        for ent_names in combinations(entNames, 2):
-            t = MyThread(ent_names, level, nodes, links, filter, direct)
+        entNames = list(set(sorted(entName.split(';'))))
+        for i in range(len(entNames)):
+            t = MyThreadAPOC(i, entNames, level, relationshipFilter)
             threads.append(t)
 
         for i in threads:
@@ -715,25 +750,27 @@ class Parse():
         for i in threads:
             i.join()
 
-        nodes = {}
-        links = {}
+        nodes = set()
+        links = set()
+        extendnumber = defaultdict(int)
         for i in threads:
             if not i.result:
                 continue
 
-            tmp_nodes, tmp_links = parse.parse_v3(i.result, filter, level, i.ent_names[-1])
-            for node in tmp_nodes:
-                if node['id'] not in nodes:
-                    nodes[node['id']] = node
-                else:
-                    nodes[node['id']]['extendnumber'] = 0
+            for path in i.result:
+                for node in path['n']:
+                    nodes.add(self.get_node_attrib(node))
 
-            for link in tmp_links:
-                if link['id'] not in links:
-                    links[link['id']] = link
-        nodes, links = self.common_relationship_filter(nodes.values(), links.values())
-        return nodes, links
+                for link in path['r']:
+                    links.add(self.get_link_attrib(link))
+                    extendnumber[link['id']] += 1
+                    extendnumber[link['pid']] += 1
 
+        names = [i['name'] for i in nodes]
+        extendnumbers = neo4j_client.get_extendnumber(names, relationshipFilter)[0]['value']
+        for node in nodes:
+            node['attibuteMap']['extendNumber'] = extendnumbers[names.index(node['name'])][0] - extendnumber[node['id']]
+        return list(nodes), list(links)
 
 parse = Parse()
 

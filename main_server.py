@@ -168,6 +168,32 @@ class MyFaceHandler(Interface.Iface):
         traceback.print_exc()
         return json.dumps({'nodes': [], 'success': 102, 'links': []}, ensure_ascii=False)
 
+  # def getEntsRelevanceSeekGraphG(self, entName, attIds, level):
+  #   """
+  #   企业关联探寻
+  #   entName 企业名称
+  #   attIds 过滤关系
+  #   level 层级，最大6层
+  #
+  #   Parameters:
+  #    - entName
+  #    - attIds
+  #    - level
+  #   """
+  #   try:
+  #       if int(level) <= 0 or int(level) > 6:
+  #           raise ValueError
+  #
+  #       nodes, links, filter, direct = parse.get_term_v3(attIds.split(';'))
+  #       if not filter:
+  #           return json.dumps({'nodes': [], 'success': 0, 'links': []}, ensure_ascii=False)
+  #
+  #       nodes, links = parse.parallel_query(entName, level, nodes, links, filter, direct)
+  #       return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
+  #   except:
+  #       traceback.print_exc()
+  #       return json.dumps({'nodes': [], 'success': 103, 'links': []}, ensure_ascii=False)
+
   def getEntsRelevanceSeekGraphG(self, entName, attIds, level):
     """
     企业关联探寻
@@ -181,19 +207,15 @@ class MyFaceHandler(Interface.Iface):
      - level
     """
     try:
-        if int(level) <= 0 or int(level) > 6:
-            raise ValueError
-
-        nodes, links, filter, direct = parse.get_term_v3(attIds.split(';'))
-        if not filter:
+        relationshipFilter = parse.get_relationshipFilter(attIds)
+        if not relationshipFilter:
             return json.dumps({'nodes': [], 'success': 0, 'links': []}, ensure_ascii=False)
 
-        nodes, links = parse.parallel_query(entName, level, nodes, links, filter, direct)
+        nodes, links = parse.parallel_query(entName, int(level), relationshipFilter)
         return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
     except:
         traceback.print_exc()
         return json.dumps({'nodes': [], 'success': 103, 'links': []}, ensure_ascii=False)
-
 
   def getEntsRelevanceSeekGraphG_ti(self, entName, attIds, level):
     """
