@@ -750,8 +750,10 @@ class Parse():
         for i in threads:
             i.join()
 
-        nodes = set()
-        links = set()
+        nodes = []
+        links = []
+        nodes_set = set()
+        links_set = set()
         extendnumber = defaultdict(int)
         for i in threads:
             if not i.result:
@@ -759,13 +761,17 @@ class Parse():
 
             for path in i.result:
                 for node in path['n']:
-                    nodes.add(self.get_node_attrib(node))
+                    if node['ID'] not in nodes_set:
+                        nodes.append(self.get_node_attrib(node))
+                        nodes_set.add(node['ID'])
 
                 for link in path['r']:
-                    links.add(self.get_link_attrib(link))
-                    extendnumber[link['id']] += 1
-                    extendnumber[link['pid']] += 1
-
+                    if link['ID'] not in links_set:
+                        links.append(self.get_link_attrib(link))
+                        extendnumber[link['id']] += 1
+                        extendnumber[link['pid']] += 1
+                        links_set.add(link['ID'])
+                        
         names = [i['name'] for i in nodes]
         extendnumbers = neo4j_client.get_extendnumber(names, relationshipFilter)[0]['value']
         for node in nodes:

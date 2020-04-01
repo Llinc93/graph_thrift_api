@@ -44,6 +44,7 @@ class MyThreadAPOC(threading.Thread):
         return data
 
     def run(self):
-        data = neo4j_client.get_ent_graph_g_v4(entname=self.entname, level=self.level, node_type='GS', relationshipFilter=self.relationshipFilter)
-        self.result = self.filter_graph(data)
+        data, flag = neo4j_client.get_ent_graph_g_v4(entname=self.entname, level=self.level, node_type='GS', relationshipFilter=self.relationshipFilter)
+        if flag:
+            self.result = self.filter_graph(data)
         return None
