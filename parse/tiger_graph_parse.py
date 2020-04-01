@@ -67,6 +67,43 @@ def ent_actual_controller(data, min_rate):
 
     return nodes, links
 
+def get_final_beneficiary_name(data, min_ratio, entname):
+    '''
+    {
+        "number": 0,
+        "number_c": "0.15",
+        "children": null,
+        "lastnode": 0,
+        "name": "宁波市赛伯乐招宝创业投资管理有限公司",
+        "pid": "2f961e803631b5b48aed07451fe33601",
+        "id": "eac5a21c62286a1b3325d8b1baa1d349",
+        "type": "GS",
+        "attr": 2
+    },
+
+    :param data:
+    :param min_ratio:
+    :return:
+    '''
+    actions = []
+    pids = defaultdict(set)
+    nodes = {}
+    links = {}
+    
+    while data['results']:
+        path = data['result'].pop()
+
+        for link in path['links']:
+            pids[link['to_id']].add(link['from_id'])
+            links[(link['from_id'], link['to_id'])] = link
+
+        for node in path['nodes']:
+            nodes[node['v_id']] = node
+
+    for pid in pids:
+
+
+    return actions
 
 def get_link(link):
     link_type = link['e_type'].split('REV_')[-1]
@@ -179,7 +216,7 @@ def ent_relevance_seek_graph(data):
         tmp_nodes, tmp_links = data.pop()
 
         for link in tmp_links:
-            # link['id'] = hashlib.md5(','.join([link['to_id'], link['from_id'], link['e_type']]).encode('utf8')).hexdigest()
+            link['id'] = hashlib.md5(','.join([link['to_id'], link['from_id'], link['e_type']]).encode('utf8')).hexdigest()
             if link['id'] in ids:
                 continue
 
