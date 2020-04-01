@@ -771,11 +771,12 @@ class Parse():
                         extendnumber[link['id']] += 1
                         extendnumber[link['pid']] += 1
                         links_set.add(link['ID'])
-                        
+
         names = [i['name'] for i in nodes]
-        extendnumbers = neo4j_client.get_extendnumber(names, relationshipFilter)[0]['value']
+        ret = neo4j_client.get_extendnumber(names, relationshipFilter)
+        extendnumbers = [i['value'][0] for i in ret]
         for node in nodes:
-            node['attibuteMap']['extendNumber'] = extendnumbers[names.index(node['name'])][0] - extendnumber[node['id']]
+            node['attibuteMap']['extendNumber'] = extendnumbers[names.index(node['name'])] - extendnumber[node['id']]
         return list(nodes), list(links)
 
 parse = Parse()

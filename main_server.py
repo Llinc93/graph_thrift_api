@@ -80,29 +80,6 @@ class MyFaceHandler(Interface.Iface):
         # print('error')
         return json.dumps({'data':'', 'success':101}, ensure_ascii=False)
 
-  def getEntActualContoller_tiger(self, entName, uscCode, min_ratio=0):
-    """
-    企业实际控股人信息
-    entName 企业名称
-
-    Parameters:
-     - entName
-    """
-    try:
-        from model import tiger_graph
-        from parse import tiger_graph_parse
-
-        raw_data = tiger_graph.get_ent_actual_controller(name=entName, uniscid=uscCode)
-
-        if raw_data['error']:
-            raise ValueError
-
-        nodes, links = tiger_graph_parse.ent_actual_controller(raw_data, min_ratio)
-        return json.dumps({'data': {'nodes': nodes, 'links': links}, 'success': 0}, ensure_ascii=False)
-    except:
-        traceback.print_exc()
-        # print('error')
-        return json.dumps({'data':'', 'success':101}, ensure_ascii=False)
 
   def getEntGraphG(self, keyword, attIds, level, nodeType):
     """
@@ -138,35 +115,7 @@ class MyFaceHandler(Interface.Iface):
         traceback.print_exc()
         return json.dumps({'nodes': [], 'success': 102, 'links': []}, ensure_ascii=False)
 
-  def getEntGraphG_ti(self, keyword, attIds, level, nodeType):
-    """
-    企业图谱查询
-    keyword 关键字
-    attIds 过滤关系
-    level 层级，最大3层
-    nodeType 节点类型
 
-    Parameters:
-     - keyword
-     - attIds
-     - level
-     - nodeType
-    """
-    try:
-        from model import tiger_graph
-        from parse import tiger_graph_parse
-
-        raw_data = tiger_graph.get_ent_graph(name=keyword, node_type=nodeType, level=level, attIds=attIds)
-
-        if raw_data['error']:
-            raise ValueError
-
-        nodes, links = tiger_graph_parse.ent_graph(raw_data)
-
-        return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
-    except:
-        traceback.print_exc()
-        return json.dumps({'nodes': [], 'success': 102, 'links': []}, ensure_ascii=False)
 
   # def getEntsRelevanceSeekGraphG(self, entName, attIds, level):
   #   """
@@ -217,28 +166,6 @@ class MyFaceHandler(Interface.Iface):
         traceback.print_exc()
         return json.dumps({'nodes': [], 'success': 103, 'links': []}, ensure_ascii=False)
 
-  def getEntsRelevanceSeekGraphG_ti(self, entName, attIds, level):
-    """
-    企业关联探寻
-    entName 企业名称
-    attIds 过滤关系
-    level 层级，最大6层
-
-    Parameters:
-     - entName
-     - attIds
-     - level
-    """
-    try:
-        from model import tiger_graph
-        from parse import tiger_graph_parse
-
-        raw_data = tiger_graph.get_ent_relevance_seek_graph(names=entName, attIds=attIds, level=level)
-        nodes, links = tiger_graph_parse.ent_relevance_seek_graph(raw_data)
-        return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
-    except:
-        traceback.print_exc()
-        return json.dumps({'nodes': [], 'success': 103, 'links': []}, ensure_ascii=False)
 
 
 if __name__ == '__main__':
