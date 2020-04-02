@@ -97,15 +97,15 @@ def get_final_beneficiary_name(data, min_ratio, entname):
         for link in path['links']:
             pids[link['to_id']].add(link['from_id'])
             links[(link['from_id'], link['to_id'])] = link
-            nid[link['from_id']] += 1
-            nid[link['to_id']] += 1
+            nids[link['from_id']] += 1
+            nids[link['to_id']] += 1
 
         for node in path['nodes']:
             action = {
                 "number": node['attributes']['@rate'],
                 "number_c": 0,
                 "children": [],
-                "lastnode": 0,
+                "lastnode": 1 if node['attributes']['@top'] else 0,
                 "name": node['attributes']['name'],
                 "pid": None,
                 "id": node['v_id'],
@@ -127,8 +127,19 @@ def get_final_beneficiary_name(data, min_ratio, entname):
             snode['number_c'] = link['attributes']['rate']
             pnode['children'].append(snode)
 
+    flag = True
     for nid, count in nids.items():
-        if nid == 1:
+        if count == 1:
+            if nodes[nid]['number'] < min_ratio and nodes[nid]['type'] == 'GR':
+                continue
+            if nodes[nid]['number'] >= 0.25 and nodes[nid]['type'] == 'GR':
+                nodes[nid]['lastnode'] = 1
+                flag = False
+
+    for nid, count in nids.items():
+        if count == 1:
+            if not flag and nodes[nid]['type'] == "GS" and nodes[nid]['lastnode'] == 1:
+                nodes[nid]['lastnode'] = 0
             actions.append(nodes[nid])
 
     return actions
