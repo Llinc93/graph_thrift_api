@@ -746,9 +746,10 @@ class Parse():
 
         for i in threads:
             i.start()
-
-        for i in threads:
             i.join()
+
+        # for i in threads:
+        #     i.join()
 
         nodes = []
         links = []

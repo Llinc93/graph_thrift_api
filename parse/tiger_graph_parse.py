@@ -98,8 +98,8 @@ def get_final_beneficiary_name(data, min_ratio, entname):
         for link in path['links']:
             pids[link['to_id']].add(link['from_id'])
             links[(link['from_id'], link['to_id'])] = link
+            nids[link['to_id']] += 0
             nids[link['from_id']] += 1
-            nids[link['to_id']] += 1
 
         for node in path['nodes']:
             action = {
@@ -111,8 +111,10 @@ def get_final_beneficiary_name(data, min_ratio, entname):
                 "pid": None,
                 "id": node['v_id'],
                 "type": node['v_type'],
-                "attr": 1.
+                "attr": 1,
             }
+            if node['v_id'] in nodes and action['number'] <= nodes[node['v_id']]['number']:
+                continue
             nodes[node['v_id']] = action
 
     for pid, sub_ids in pids.items():
@@ -130,17 +132,16 @@ def get_final_beneficiary_name(data, min_ratio, entname):
             pnode['children'].append(snode)
 
     flag = True
-    print(nid)
     for nid, count in nids.items():
-        if count == 1:
-            if nodes[nid]['number'] < min_ratio and nodes[nid]['type'] == 'GR':
-                continue
-            if nodes[nid]['number'] >= 0.25 and nodes[nid]['type'] == 'GR':
+        if count == 0:
+            if nodes[nid]['number'] >= 0.25 and nodes[nid]['number'] >= min_ratio and nodes[nid]['type'] == 'GR':
                 nodes[nid]['lastnode'] = 1
                 flag = False
 
     for nid, count in nids.items():
-        if count == 1:
+        if count == 0:
+            if nodes[nid]['number'] < min_ratio and nodes[nid]['type'] == 'GR':
+                continue
             if not flag and nodes[nid]['type'] == "GS" and nodes[nid]['lastnode'] == 1:
                 nodes[nid]['lastnode'] = 0
             actions.append(nodes[nid])
