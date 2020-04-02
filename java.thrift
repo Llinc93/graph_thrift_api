@@ -18,6 +18,11 @@ struct EntsRelevanceSeekGraphGParams {
     3:string level
 }
 
+struct getFinalBeneficiaryName {
+    1: string entName,
+    2: string uscCode,
+    3: double MinRatio
+}
 
 service Interface {
 

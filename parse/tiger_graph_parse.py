@@ -1,4 +1,5 @@
 import hashlib
+from copy import deepcopy
 from collections import defaultdict
 
 import config
@@ -92,7 +93,7 @@ def get_final_beneficiary_name(data, min_ratio, entname):
     links = {}
 
     while data['results']:
-        path = data['result'].pop()
+        path = data['results'].pop()
 
         for link in path['links']:
             pids[link['to_id']].add(link['from_id'])
@@ -118,16 +119,18 @@ def get_final_beneficiary_name(data, min_ratio, entname):
         pnode = nodes[pid]
         for sid in sub_ids:
             link = links[(sid, pid)]
-            snode = nodes[sid]
+            snode = deepcopy(nodes[sid])
+            snode['children'] = nodes[sid]['children']
             if snode['name'] == entname:
                 snode['attr'] = 2
                 snode['children'] = None
-                continue
+                snode['number'] = 0
             snode['pid'] = pid
             snode['number_c'] = link['attributes']['rate']
             pnode['children'].append(snode)
 
     flag = True
+    print(nid)
     for nid, count in nids.items():
         if count == 1:
             if nodes[nid]['number'] < min_ratio and nodes[nid]['type'] == 'GR':
