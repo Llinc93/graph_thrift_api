@@ -85,23 +85,51 @@ def get_final_beneficiary_name(data, min_ratio, entname):
     :param min_ratio:
     :return:
     '''
+    nids = defaultdict(int)
     actions = []
     pids = defaultdict(set)
     nodes = {}
     links = {}
-    
+
     while data['results']:
         path = data['result'].pop()
 
         for link in path['links']:
             pids[link['to_id']].add(link['from_id'])
             links[(link['from_id'], link['to_id'])] = link
+            nid[link['from_id']] += 1
+            nid[link['to_id']] += 1
 
         for node in path['nodes']:
-            nodes[node['v_id']] = node
+            action = {
+                "number": node['attributes']['@rate'],
+                "number_c": 0,
+                "children": [],
+                "lastnode": 0,
+                "name": node['attributes']['name'],
+                "pid": None,
+                "id": node['v_id'],
+                "type": node['v_type'],
+                "attr": 1.
+            }
+            nodes[node['v_id']] = action
 
-    for pid in pids:
+    for pid, sub_ids in pids.items():
+        pnode = nodes[pid]
+        for sid in sub_ids:
+            link = links[(sid, pid)]
+            snode = nodes[sid]
+            if snode['name'] == entname:
+                snode['attr'] = 2
+                snode['children'] = None
+                continue
+            snode['pid'] = pid
+            snode['number_c'] = link['attributes']['rate']
+            pnode['children'].append(snode)
 
+    for nid, count in nids.items():
+        if nid == 1:
+            actions.append(nodes[nid])
 
     return actions
 
