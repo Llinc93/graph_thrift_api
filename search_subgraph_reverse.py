@@ -44,6 +44,7 @@ class SearchSubgraphReverse(object):
         self.file_content = []
         self.content_map = defaultdict(list)
         self.filter_indexs = set()
+        self.flag = True
 
     def get_frequency_table(self):
         with open(self.FILE, 'r', encoding='utf8') as f:
@@ -60,6 +61,9 @@ class SearchSubgraphReverse(object):
     @print_cost_time
     def search_graph(self):
         self.get_frequency_table()
+        if not list(filter(lambda x:self.frequency_table[x] == 1, self.frequency_table.keys())):
+            self.flag = False
+            return f'{self.NUMBER}_1', 0
         records = filter(lambda x:self.frequency_table[x] == self.NUMBER, self.frequency_table.keys())
         count = 0
         for record in records:
@@ -72,10 +76,15 @@ class SearchSubgraphReverse(object):
         return f'{self.NUMBER}_1', count
 
     def run(self):
-        count = 1
-        while count > 0:
+        while self.flag:
             count = self.search_graph()
-
+            if count == 0:
+                self.NUMBER += 1
+                self.frequency_table = defaultdict(int)
+                self.file_content = []
+                self.content_map = defaultdict(list)
+                self.filter_indexs = set()
+                continue
             # todo 生成file文件
             os.system(f'mv {self.FILE} {self.TMP}')
             file = os.path.join(self.ROOT, 'search_subgraph_reverse.csv')

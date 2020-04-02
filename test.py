@@ -212,3 +212,7 @@ response = [
 ]
 
 https://github.com/Llinc93/graph_thrift_api.git
+
+
+# 1. default(set) 和 set()
+# 2. 以len(set())判断

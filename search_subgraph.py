@@ -143,7 +143,7 @@ class SearchSubgraph(object):
                 for line in graph_f:
                     graph_write_f.write(f'{line.strip()}\n')
         graph_write_f.close()
-        shutil.rmtree(self.graph_dir)
+        #shutil.rmtree(self.graph_dir)
 
         # 汇总不连通节点
         for file in os.listdir(self.target_dir):
@@ -196,8 +196,8 @@ class SearchSubgraph(object):
                 f.close()
 
             # 每份文件都由子进程进行计算
-            # for i in range(self.NUMBER):
-            #     p.apply_async(task, args=(i, files[i], self.target_dir, self.graph_dir, self.current))
+            for i in range(self.NUMBER):
+                p.apply_async(task, args=(i, files[i], self.target_dir, self.graph_dir, self.current))
             
             for i in range(self.NUMBER):
                 p.apply_async(task, args=(i, self.current_file, i, self.target_dir, self.graph_dir, self.current))
@@ -214,7 +214,7 @@ class SearchSubgraph(object):
             for i in self.previous:
                 f.write(f'{i}\n')
 
-        return graph_index, node_count, self.fre_current
+        return graph_index, node_count, self.fre_current, num - 1
 
     def clean(self, graph_index):
         '''清理上次遗留的文件'''
@@ -238,6 +238,8 @@ class SearchSubgraph(object):
         if not os.path.exists(self.GRAPH):
             os.makedirs(self.GRAPH)
 
+        self.init_flag = True
+
         self.TARGET_CSV = os.path.join(self.TARGET, "target_1.csv")
         self.previous = set()  # 前次迭代的连通节点
         self.current = set()   # 当前迭代的联通节点
@@ -247,18 +249,19 @@ class SearchSubgraph(object):
         self.init_flag = True
 
         subprocess.getstatusoutput(f'cp {self.current_file} {self.TARGET_CSV}')
+        self.current_file = self.TARGET_CSV
         self.clean(index - 1)
         return None
 
     def main(self):
         '''获取所有的子图'''
-        index = 1
+        index = 7
         while True:
             self.init(index)
             self.run(index)
             # if not os.path.exists(self.current_file) or os.path.getsize(self.current_file) == 0:
             #     break
-            if index > 20000:
+            if index > 500:
                 break
             index += 1
         print('找找所有的图完成！')
@@ -318,5 +321,6 @@ def task(pos, file, target_dir, graph_dir, current):
 if __name__ == '__main__':
     obj = SearchSubgraph()
     #obj.small_text_test()
-    obj.run()
+    #obj.run()
+    obj.main()
     # SearchSubgraph().test(123)
