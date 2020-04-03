@@ -68,6 +68,7 @@ def ent_actual_controller(data, min_rate):
 
     return nodes, links
 
+
 def get_final_beneficiary_name(data, min_ratio, entname):
     '''
     {
@@ -147,6 +148,7 @@ def get_final_beneficiary_name(data, min_ratio, entname):
             actions.append(nodes[nid])
 
     return actions
+
 
 def get_link(link):
     link_type = link['e_type'].split('REV_')[-1]

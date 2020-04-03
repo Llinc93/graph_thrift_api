@@ -1,0 +1,3 @@
+CREATE QUERY EntGraph(STRING name, INT level, STRING node_type) FOR GRAPH graph_api{
+
+}

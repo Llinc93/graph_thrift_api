@@ -38,6 +38,7 @@ def task(current, file_content):
     file_content_new = []
     next_current = set()
     flag = False
+    count = 0
     for index in range(len(file_content)):
         row = file_content[index]
         sub_flag = False
@@ -51,8 +52,8 @@ def task(current, file_content):
                 flag = True
         else:
             file_content_new.append(row)
-    file_content_new
-    return next_current, file_content_new, flag
+            count += 1
+    return next_current, file_content_new, flag, count
 
 
 class SearchSubgraph(object):
@@ -84,28 +85,23 @@ class SearchSubgraph(object):
         self.graph_dir = None
         self.init_flag = True
         self.file_content = []
+        self.frequency_table = None
+        self.interval = 0
 
     def sub_init(self, num):
         '''自循环初始化（获取频率最高的ID）'''
-        frequency_table = defaultdict(int)
+        self.frequency_table = defaultdict(int)
         with open(self.TARGET_CSV, 'r', encoding='utf8') as f:
             for row in csv.reader(f):
-                frequency_table[row[0]] += 1
-                frequency_table[row[1]] += 1
+                self.frequency_table[row[0]] += 1
+                self.frequency_table[row[1]] += 1
                 self.file_content.append(row)
-        self.current = {max(frequency_table.items(), key=lambda x: x[1])[0]}
-        self.fre_current = frequency_table[list(self.current)[0]]
+        self.current = {max(self.frequency_table.items(), key=lambda x: x[1])[0]}
+        self.fre_current = self.frequency_table[list(self.current)[0]]
 
         self.init_flag = False
         return None
 
-    def get_frequency(self):
-        frequency_table = defaultdict(int)
-        for row in self.file_content:
-            frequency_table[row[0]] += 1
-            frequency_table[row[1]] += 1
-        self.current = {max(frequency_table.items(), key=lambda x: x[1])[0]}
-        self.fre_current = frequency_table[list(self.current)[0]]
 
     @print_cost_time
     def run(self, graph_index):
@@ -116,32 +112,36 @@ class SearchSubgraph(object):
 
         if self.init_flag:
             self.sub_init(graph_index)
+            self.interval = len(self.file_content) // self.NUMBER + 1
         else:
-            self.get_frequency()
+            self.current = {max(self.frequency_table.items(), key=lambda x: x[1])[0]}
+            self.fre_current = self.frequency_table[list(self.current)[0]]
 
         # 寻找子图(1次)
         while flag:
 
             ps = []
-            interval = len(self.file_content) // self.NUMBER + 1
 
             pool = multiprocessing.Pool(self.NUMBER)
             for i in range(self.NUMBER):
-                p = pool.apply_async(task, args=(self.current, self.file_content[i * interval: (i+1) * interval]))
+                p = pool.apply_async(task, args=(self.current, self.file_content[i * self.interval: (i+1) * self.interval]))
                 ps.append(p)
 
             pool.close()
             pool.join()
 
-            self.file_content = []
             self.previous |= self.current
             num += 1
+            for key in self.current:
+                if self.frequency_table.get(key):
+                    self.frequency_table.pop(key)
             self.current = set()
             flag = False
             for p in ps:
-                p_next, p_file_content, p_flag = p.get()
+                p_next, p_file_content, p_flag, p_count = p.get()
                 self.current |= p_next
-                self.file_content.extend(p_file_content)
+                self.file_content = p_file_content
+                self.interval = p_count // self.NUMBER + 1
                 if p_flag:
                     flag = True
 
@@ -179,7 +179,7 @@ class SearchSubgraph(object):
         self.target_dir = None
         self.graph_dir = None
 
-        self.clean(str(index - 1))
+        # self.clean(str(index - 1))
         return None
 
     def main(self):
