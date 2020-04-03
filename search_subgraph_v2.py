@@ -111,7 +111,7 @@ class SearchSubgraph(object):
         '''运行,查找子图'''
 
         flag = True
-        num = 1
+        num = 0
 
         # 寻找子图(1次)
         while flag:
@@ -128,6 +128,7 @@ class SearchSubgraph(object):
 
             self.file_content = []
             self.previous |= self.current
+            num += 1
             self.current = set()
             flag = False
             for p in ps:
@@ -137,14 +138,12 @@ class SearchSubgraph(object):
                 if p.flag:
                     flag = True
 
-            num += 1
-
-        node_count = len(self.current)
+        node_count = len(self.previous)
         with open(f'{self.GRAPH}/graph_nodes.csv', 'w', encoding='utf8') as f:
             for i in self.previous:
                 f.write(f'{i}\n')
 
-        return graph_index, node_count, self.fre_current, num - 1
+        return graph_index, node_count, self.fre_current, num
 
     def clean(self, graph_index):
         '''清理上次遗留的文件'''
@@ -167,14 +166,11 @@ class SearchSubgraph(object):
         if not os.path.exists(self.GRAPH):
             os.makedirs(self.GRAPH)
 
-        # self.init_flag = True
-
         self.TARGET_CSV = os.path.join(self.TARGET, "target_1.csv")
         self.current = set()   # 当前迭代的联通节点
         self.previous = set()
         self.target_dir = None
         self.graph_dir = None
-        self.init_flag = True
 
         self.clean(str(index - 1))
         return None
@@ -185,7 +181,7 @@ class SearchSubgraph(object):
         while True:
             self.init(index)
             self.run(index)
-            if index > 30000:
+            if index > 505:
                 break
             index += 1
         self.target_dir = os.path.join(self.TARGET, f'target_{index + 1}.csv')
