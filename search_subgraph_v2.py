@@ -106,6 +106,14 @@ class SearchSubgraph(object):
         self.init_flag = False
         return None
 
+    def get_frequency(self):
+        frequency_table = defaultdict(int)
+        for row in self.file_content:
+            frequency_table[row[0]] += 1
+            frequency_table[row[1]] += 1
+        self.current = {max(frequency_table.items(), key=lambda x: x[1])[0]}
+        self.fre_current = frequency_table[list(self.current)[0]]
+
     @print_cost_time
     def run(self, graph_index):
         '''运行,查找子图'''
@@ -113,10 +121,13 @@ class SearchSubgraph(object):
         flag = True
         num = 0
 
+        if self.init_flag:
+            self.sub_init(graph_index)
+        else:
+            self.get_frequency()
+
         # 寻找子图(1次)
         while flag:
-            if self.init_flag:
-                self.sub_init(graph_index)
 
             ps = []
             interval = len(self.file_content) // self.NUMBER + 1
@@ -184,7 +195,7 @@ class SearchSubgraph(object):
             if index > 505:
                 break
             index += 1
-        self.target_dir = os.path.join(self.TARGET, f'target_{index + 1}.csv')
+        self.target_dir = os.path.join(self.TARGET, f'target_{index}.csv')
         with open(self.target_dir, 'w', encoding='utf8') as t_f:
             for row in self.file_content:
                 t_f.write(f"{','.join(row)}\n")
