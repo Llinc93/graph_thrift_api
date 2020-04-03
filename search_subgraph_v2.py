@@ -27,9 +27,9 @@ def print_cost_time(func):
     @functools.wraps(func)
     def inner(self, *args, **kwargs):
         start = time.time()
-        graph_index, node_count, frequency = func(self, *args, **kwargs)
+        graph_index, node_count, frequency, level = func(self, *args, **kwargs)
         end = time.time()
-        print(f'子图: {graph_index}\t节点数量: {node_count}\t第一层频率: {frequency}\t耗时: {end - start}')
+        print(f'子图: {graph_index}\t节点数量: {node_count}\t第一层频率: {frequency}\t耗时: {end - start}\tlevel: {level}')
         return None
     return inner
 
@@ -39,12 +39,12 @@ class MyProcess(multiprocessing.Process):
     def __init__(self, current, file_content):
         super(MyProcess, self).__init__()
         self.current = current
+        self.next = set()
         self.file_content = file_content
-        self.flag = True
+        self.flag = False
 
     def run(self):
-        length = len(self.current)
-        filter_index = []
+        file_content_new = []
         for index in range(len(self.file_content)):
             row = self.file_content[index]
             flag = False
@@ -54,11 +54,11 @@ class MyProcess(multiprocessing.Process):
                     break
             if flag:
                 for i in row:
-                    self.current.add(i)
-                filter_index.append(index)
-        for index in filter_index:
-            self.file_content.pop(index)
-        self.flag = True if length != len(self.current) else False
+                    self.next.add(i)
+                    self.flag = True
+            else:
+                file_content_new.append(row)
+        self.file_content = file_content_new
         return None
 
 
@@ -83,6 +83,7 @@ class SearchSubgraph(object):
 
     def __init__(self):
         self.current = set()   # 当前迭代的联通节点
+        self.previous = set()
         self.fre_current = 0
         self.current_file = self.TARGET_CSV  # 当前迭代的目标文件
         self.tmp_graph_file = None  # 上一次迭代的连通节点
@@ -103,7 +104,6 @@ class SearchSubgraph(object):
         self.fre_current = frequency_table[list(self.current)[0]]
 
         self.init_flag = False
-        self.target_dir = os.path.join(self.TARGET, f'target_{num + 1}.csv')
         return None
 
     @print_cost_time
@@ -116,7 +116,7 @@ class SearchSubgraph(object):
         # 寻找子图(1次)
         while flag:
             if self.init_flag:
-                self.sub_init(num)
+                self.sub_init(graph_index)
 
             ps = []
             interval = len(self.file_content) // self.NUMBER + 1
@@ -127,24 +127,21 @@ class SearchSubgraph(object):
                 p.start()
 
             self.file_content = []
-
+            self.previous |= self.current
+            self.current = set()
             flag = False
             for p in ps:
                 p.join()
-                self.current |= p.current
-                self.file_content.append(p.file_content)
+                self.current |= p.next
+                self.file_content.extend(p.file_content)
                 if p.flag:
                     flag = True
 
             num += 1
 
-        with open(self.target_dir, 'w', encoding='utf8') as t_f:
-            for row in self.file_content:
-                t_f.write(f"{','.join(row)}\n")
-
         node_count = len(self.current)
         with open(f'{self.GRAPH}/graph_nodes.csv', 'w', encoding='utf8') as f:
-            for i in self.current:
+            for i in self.previous:
                 f.write(f'{i}\n')
 
         return graph_index, node_count, self.fre_current, num - 1
@@ -170,10 +167,11 @@ class SearchSubgraph(object):
         if not os.path.exists(self.GRAPH):
             os.makedirs(self.GRAPH)
 
-        self.init_flag = True
+        # self.init_flag = True
 
         self.TARGET_CSV = os.path.join(self.TARGET, "target_1.csv")
         self.current = set()   # 当前迭代的联通节点
+        self.previous = set()
         self.target_dir = None
         self.graph_dir = None
         self.init_flag = True
@@ -190,8 +188,13 @@ class SearchSubgraph(object):
             if index > 30000:
                 break
             index += 1
+        self.target_dir = os.path.join(self.TARGET, f'target_{index + 1}.csv')
+        with open(self.target_dir, 'w', encoding='utf8') as t_f:
+            for row in self.file_content:
+                t_f.write(f"{','.join(row)}\n")
         print('找找所有的图完成！')
         return None
+
 
 if __name__ == '__main__':
     obj = SearchSubgraph()
