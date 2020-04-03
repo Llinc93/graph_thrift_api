@@ -34,32 +34,25 @@ def print_cost_time(func):
     return inner
 
 
-class MyProcess(multiprocessing.Process):
-
-    def __init__(self, current, file_content):
-        super(MyProcess, self).__init__()
-        self.current = current
-        self.next = set()
-        self.file_content = file_content
-        self.flag = False
-
-    def run(self):
-        file_content_new = []
-        for index in range(len(self.file_content)):
-            row = self.file_content[index]
-            flag = False
+def task(current, file_content):
+    file_content_new = []
+    next_current = set()
+    flag = False
+    for index in range(len(file_content)):
+        row = file_content[index]
+        sub_flag = False
+        for i in row:
+            if i in current:
+                sub_flag = True
+                break
+        if sub_flag:
             for i in row:
-                if i in self.current:
-                    flag = True
-                    break
-            if flag:
-                for i in row:
-                    self.next.add(i)
-                    self.flag = True
-            else:
-                file_content_new.append(row)
-        self.file_content = file_content_new
-        return None
+                next_current.add(i)
+                flag = True
+        else:
+            file_content_new.append(row)
+    file_content_new
+    return next_current, file_content_new, flag
 
 
 class SearchSubgraph(object):
@@ -131,11 +124,14 @@ class SearchSubgraph(object):
 
             ps = []
             interval = len(self.file_content) // self.NUMBER + 1
-            for i in range(self.NUMBER):
-                ps.append(MyProcess(self.current, self.file_content[i * interval: (i+1) * interval]))
 
-            for p in ps:
-                p.start()
+            pool = multiprocessing.Pool(self.NUMBER)
+            for i in range(self.NUMBER):
+                p = pool.apply_async(task, args=(self.current, self.file_content[i * interval: (i+1) * interval]))
+                ps.append(p)
+
+            pool.close()
+            pool.join()
 
             self.file_content = []
             self.previous |= self.current
@@ -143,10 +139,10 @@ class SearchSubgraph(object):
             self.current = set()
             flag = False
             for p in ps:
-                p.join()
-                self.current |= p.next
-                self.file_content.extend(p.file_content)
-                if p.flag:
+                p_next, p_file_content, p_flag = p.get()
+                self.current |= p_next
+                self.file_content.extend(p_file_content)
+                if p_flag:
                     flag = True
 
         node_count = len(self.previous)
