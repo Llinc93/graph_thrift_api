@@ -25,7 +25,7 @@ class SearchSubgraph(object):
         self.pool = redis.ConnectionPool(host='localhost', port=6379, db=1, decode_responses=True)
         self.r = redis.Redis(connection_pool=self.pool)
         self.node_id = {}
-        self.file = []
+        self.file = [] 
 
     @print_cost_time
     def set_node(self, frequency_table):
