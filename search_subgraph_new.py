@@ -25,7 +25,7 @@ class SearchSubgraph(object):
         self.pool = redis.ConnectionPool(host='localhost', port=6379, db=1, decode_responses=True)
         self.r = redis.Redis(connection_pool=self.pool)
         self.node_id = {}
-        self.file = [] 
+        self.index_list = []
 
     @print_cost_time
     def set_node(self, frequency_table):
@@ -33,38 +33,46 @@ class SearchSubgraph(object):
         sub_id = 1
         for name, frequence in sorted(frequency_table.items(), key=lambda x:x[1], reverse=True):
             self.r.hmset(name, {'sub_id': sub_id, 'level': 0})
-            # self.node_id[name] = sub_id
+            self.index_list.append(name)
             sub_id += 1
         return None
 
     @print_cost_time
     def set_link(self, file_content):
+        '''构建关系表'''
         for row in file_content:
-            if self.node_id[row[0]] < self.node_id[row[1]]:
-                self.r.rpush(row[0], row[1])
-                self.file.append((row[0], row[1]))
+            id1 = self.r.hget(row[0], 'sub_id')
+            id2 = self.r.hget(row[1], 'sub_id')
+            if id1 < id2:
+                self.r.sadd(f'link_{row[0]}', row[0], row[1])
             else:
-                self.r.rpush(row[1], row[0])
-                self.file.append((row[1], row[0]))
+                self.r.sadd(f'link_{row[1]}', row[1], row[0])
         return None
 
     @print_cost_time
     def run(self, frequency_table, file_content):
         '''总共耗时'''
         self.set_node(frequency_table)
+        self.set_link(file_content)
 
-        # self.set_link(file_content)
+        for name in self.index_list:
+            next_nodes = self.r.smembers(f'link_{name}')
+            sids = []
+            nodes = []
+            for node in next_nodes:
+                sids.append(self.r.hget(node, 'sub_id'))
+                nodes.append(node)
+            min_sid = min(sids)
 
-        for row in file_content:
-            r1 = self.r.hget(row[0], 'sub_id')
-            r2 = self.r.hget(row[1], 'sub_id')
-
-            min_id = min(r1, r2)
-            if r1 != min_id:
-                self.r.hmset(name=row[0], mapping={'sub_id': min_id, 'level'})
-
+            for node, sid in zip(nodes, sids):
+                if sid == min_sid:
+                    continue
+                level = self.r.hget(node, 'level')
+                self.r.hset(node, 'sub_id', min_sid)
+                self.r.hset(node, 'level', level + 1)
 
         return
+
 
 if __name__ == '__main__':
     s = time.time()
@@ -80,3 +88,4 @@ if __name__ == '__main__':
     print(f'构建频率表耗时：{time.time() - s}')
     obj = SearchSubgraph()
     obj.run(frequency_table, file_content)
+    print(END)
