@@ -32,15 +32,20 @@ class SearchSubgraph(object):
     @print_cost_time
     def set_node(self, frequency_table, flag=True):
         '''第一步：建立接待你映射表并存储'''
+        f = open('frequency_table.txt', 'w', encoding='utf8')
+
         sub_id = 1
         if flag:
             for name, frequence in sorted(frequency_table.items(), key=lambda x:x[1], reverse=True):
+                f.write(f'{name}\t{sub_id}\t{frequence}\n')
                 self.r.hmset(name, {'sub_id': sub_id, 'level': 0, 'frequency': frequence})
                 self.index_list.append(name)
                 sub_id += 1
         else:
-            for name, frequency_table in sorted(frequency_table.items(), key=lambda x:x[1], reverse=True):
+            for name, frequence in sorted(frequency_table.items(), key=lambda x:x[1], reverse=True):
                 self.index_list.append(name)
+                f.write(f'{name}\t{sub_id}\t{frequence}\n')
+        f.close()
         return None
 
     @print_cost_time
