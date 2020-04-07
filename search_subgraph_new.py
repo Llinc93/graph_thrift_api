@@ -27,6 +27,7 @@ class SearchSubgraph(object):
         self.index_list = []
         self.sub_graph = {}
         self.nodes = set()
+        self.tmp_name = []
 
     @print_cost_time
     def set_node(self, frequency_table, flag=True):
@@ -68,7 +69,7 @@ class SearchSubgraph(object):
                 continue
             next_nodes = self.r.smembers(f'link_{name}')
             if not next_nodes:
-                print(name)
+                self.tmp_name.append(name)
                 continue
             sids = []
             nodes = []
@@ -79,7 +80,7 @@ class SearchSubgraph(object):
             min_sid = min(sids)
 
             for node, sid in zip(nodes, sids):
-                level = self.r.hget(node, 'level')
+                level = int(self.r.hget(node, 'level'))
                 self.r.hset(node, 'sub_id', min_sid)
                 self.r.hset(node, 'level', level + 1)
 
@@ -93,6 +94,8 @@ class SearchSubgraph(object):
             if key.startswith('link_'):
                 continue
             node = self.r.hgetall(key)
+            node['sub_id'] = int(node['sub_id'])
+            node['level'] = int(node['level'])
             if self.sub_graph.get(node['sub_id']):
                 if self.sub_graph[node['sub_id']]['level'] < node['level']:
                     self.sub_graph[node['sub_id']]['level'] = node['level']
@@ -106,6 +109,9 @@ class SearchSubgraph(object):
             number += value['count']
             print(f'子图: {key}\t节点数量: {value["count"]}\t层级: {value["level"]}')
             count += 1
+        with open('tmp_node', 'w', encoding='utf8') as f:
+            for name in self.tmp_name:
+                f.write(f'{name}\n')
         print(f'共有子图: {count}\t节点数量: {number}\tnodes_count:{len(self.nodes)}')
         return None
 
