@@ -1,0 +1,75 @@
+# create node
+CREATE VERTEX GR (primary_id id STRING, name STRING, id STRING);
+CREATE VERTEX GS (primary_id id STRING, name STRING, uniscid STRING, esdate STRING, industry STRING, province STRING, regcap STRING, reccapcur STRING, entstatus STRING, id STRING);
+CREATE VERTEX LL (primary_id id STRING, name STRING, id STRING);
+CREATE VERTEX PP (primary_id id STRING, name STRING, id STRING);
+CREATE VERTEX TT (primary_id id STRING, name STRING, id STRING);
+CREATE VERTEX ADDR (primary_id id STRING, name STRING, id STRING);
+CREATE VERTEX EE (primary_id id STRING, name STRING, id STRING);
+CREATE VERTEX GB (primary_id id STRING, name STRING, id STRING);
+
+#create edge
+CREATE DIRECTED EDGE BEE (FROM GS, TO GS, rate FLOAT);
+CREATE UNDIRECTED EDGE IPEER (FROM GR, TO GS, rate FLOAT, rate_type STRING);
+CREATE UNDIRECTED EDGE IPEES (FROM GS, TO GS, rate FLOAT, rate_type STRING);
+CREATE DIRECTED EDGE LEET (FROM GS, TO TT, domain STRING);
+CREATE DIRECTED EDGE LEL (FROM GS, TO LL);
+CREATE DIRECTED EDGE OPEP (FROM GS, TO PP);
+CREATE DIRECTED EDGE RED (FROM GS, TO DD);
+CREATE UNDIRECTED EDGE SPE (FROM GR, TO GS, position STRING);
+CREATE DIRECTED EDGE WEB (FROM GS, TO GB);
+CREATE DIRECTED EDGE EXTRA (FROM GS, TO GB);
+
+# create graph
+CREATE GRAPH graph_api (GR, GS, LL, PP, TT, ADDR, EE, GB, BEE, IPEER, IPEES, LEET, LEEE, LEL, OPEP, RED, SPE, WEB);
+
+# create job
+USE GRAPH graph_api
+BEGIN
+CREATE LOADING JOB load_graph_api FOR GRAPH graph_api {
+    DEFINE FILENAME gri="/home/tigergraph/mydata/gri.csv";
+    DEFINE FILENAME grs="/home/tigergraph/mydata/grs.csv";
+    DEFINE FILENAME gs="/home/tigergraph/mydata/gs.csv";
+    DEFINE FILENAME ll="/home/tigergraph/mydata/ll.csv";
+    DEFINE FILENAME pp="/home/tigergraph/mydata/pp.csv";
+    DEFINE FILENAME tt="/home/tigergraph/mydata/tt.csv";
+    DEFINE FILENAME addr="/home/tigergraph/mydata/dd.csv";
+    DEFINE FILENAME ee="/home/tigergraph/mydata/ee.csv";
+    DEFINE FILENAME gb="/home/tigergraph/mydata/gb.csv";
+
+    DEFINE FILENAME bee="/home/tigergraph/mydata/bee.csv";
+    DEFINE FILENAME ipeer="/home/tigergraph/mydata/ipeer.csv";
+    DEFINE FILENAME ipees="/home/tigergraph/mydata/ipees.csv";
+    DEFINE FILENAME leet="/home/tigergraph/mydata/leet.csv";
+    DEFINE FILENAME leee="/home/tigergraph/mydata/leee.csv";
+    DEFINE FILENAME lel="/home/tigergraph/mydata/lel.csv";
+    DEFINE FILENAME opep="/home/tigergraph/mydata/opep.csv";
+    DEFINE FILENAME red="/home/tigergraph/mydata/red.csv";
+    DEFINE FILENAME spe="/home/tigergraph/mydata/spe.csv";
+    DEFINE FILENAME web="/home/tigergraph/mydata/web.csv";
+
+    LOAD gri TO VERTEX GR VALUES ($0, $1, $0) USING header="true", separator=",";
+    LOAD grs TO VERTEX GR VALUES ($0, $1, $0) USING header="true", separator=",";
+    LOAD gs TO VERTEX GS VALUES ($0, $1, $2, $3, $4, $5, $6, $7, $8, $0) USING header="true", separator=",";
+    LOAD ll TO VERTEX LL VALUES ($0, $1, $0) USING header="true", separator=",";
+    LOAD pp TO VERTEX PP VALUES ($0, $1, $0) USING header="true", separator=",";
+    LOAD tt TO VERTEX TT VALUES ($0, $1, $0) USING header="true", separator=",";
+    LOAD addr TO VERTEX ADDR VALUES ($0, $1, $0) USING header="true", separator=",";
+    LOAD ee TO VERTEX EE VALUES ($0, $1, $0) USING header="true", separator=",";
+    LOAD gb TO VERTEX GB VALUES ($0, $1, $0) USING header="true",separator;
+
+    LOAD bee TO EDGE BEE VALUES ($1, $0, 1) USING header="true", separator=",";
+    LOAD ipeer TO EDGE IPEER VALUES ($0, $3, $1, $2) USING header="true", separator=",";
+    LOAD ipees TO EDGE IPEES VALUES ($0, $3, $1, $2) USING header="true", separator=",";
+    LOAD leet TO EDGE LEET VALUES ($0, $1, $2) USING header="true", separator=",";
+    LOAD leee TO EDGE LEEE VALUES ($0, $1, $2) USING header="true", separator=",";
+    LOAD lel TO EDGE LEL VALUES ($1, $0) USING header="true", separator=",";
+    LOAD opep TO EDGE OPEP VALUES ($0, $1) USING header="true", separator=",";
+    LOAD red TO EDGE RED VALUES ($0, $1) USING header="true", separator=",";
+    LOAD spe TO EDGE SPE VALUES ($2, $0, $1) USING header="true", separator=",";
+    LOAD web TO EDGE WEB VALUES ($0, $1) USING header="true", separator=",";
+}
+END
+
+# run job
+RUN LOADING JOB load_graph_api;

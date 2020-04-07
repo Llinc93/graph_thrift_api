@@ -233,3 +233,13 @@ if __name__ == '__main__':
     p.join()
     # print(p.next, p.flag, p.current, p.file_content, p.result)
     print(a.get())
+
+
+
+    '''
+    a-->b
+    b-->c
+    b-->d
+    c-->d
+    e-->d
+    '''

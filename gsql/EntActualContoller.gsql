@@ -1,0 +1,40 @@
+EntActualContoller:
+CREATE QUERY EntActualContoller(STRING name, BOOL flag=TRUE) FOR GRAPH graph_api {
+	ListAccum<edge> @@links;
+	OrAccum @top;
+	SumAccum<float> @rate = 0;
+	Int step;
+
+	a = {GS.*};
+	Start = {ANY};
+
+	IFflag
+	THEN
+		Start = SELECT t FROM a:t WHERE t.name == name ACCUM t.@rate = 1;
+	ELSE
+		Start = SELECT t FROM a:t WHERE t.uniscid == name ACCUM t.@rate = 1;
+	END;
+	PRINT Start AS nodes, @@links AS links;
+
+	step = 1;
+	WHILE step <= 10 AND Start.size() > 0
+	DO
+		IF step == 10
+		THEN
+			Start = SELECT tgt
+				FROM Start -((REV_IPEES|REV_IPEER|REV_BEE):e)-> :tgt
+				ACCUM
+					@@links += e, tgt.@top += TRUE, tgt.@rate += Start.@rate * e.rate;
+		ELSE
+			Start = SELECT tgt
+				FROM Start -((REV_IPEES|REV_IPEER|REV_BEE):e)-> :tgt
+				ACCUM
+					@@links += e, tgt.@top += FALSE, tgt.@rate += Start.@rate * e.rate;
+		END;
+
+		PRINT Start AS nodes, @@links AS links;
+
+		@@links.clear();
+		step = step + 1;
+	END;
+}
