@@ -351,7 +351,32 @@ class Parse():
         pids = defaultdict(set)
         actions = {}
         sub_ids = set()
+        graph2 = copy.deepcopy(graph)
+
+        nodes = defaultdict(float)
+        links = []
         for path in graph:
+            tmp_nodes = path['n']
+            tmp_links = path['r']
+            tmp_path = []
+            tmp_number = 1
+            while len(tmp_nodes):
+                sub = tmp_nodes.pop()
+                link = tmp_links.pop() if tmp_links else sub['ID']
+                tmp_path.append(link)
+                if tmp_path in links:
+                    continue
+
+                if sub['ID'] == lcid:
+                    nodes[sub['ID']] = 0
+                else:
+                    nodes[sub['ID']] += tmp_number
+                if link and not isinstance(link, str):
+                    if link['label'] == 'BEE':
+                        link['RATE'] = 1
+                    tmp_number *= float(link['RATE'])
+
+        for path in graph2:
             tmp_nodes = path['n']
             tmp_links = path['r']
 
@@ -371,8 +396,8 @@ class Parse():
                     continue
 
                 action = {
-                    "number": 0,
-                    "number_c": link['RATE'] if link else 0,
+                    "number": 0 if sub['ID'] == lcid else nodes[sub['ID']],
+                    "number_c": float(link['RATE']) if link else None,
                     "children": None if sub['ID'] == lcid else [],
                     "lastnode": 0 if parent else 1,
                     "name": sub['NAME'],
@@ -390,24 +415,9 @@ class Parse():
                 top.append(actions[(sid, pid)])
             actions[(sid, pid)]['children'] = [actions[i, sid] for i in pids[sid]]
 
-        def get_number(action):
-            if action['id'] == lcid:
-                return action['number_c']
-
-            number = 0
-            for item in action['children']:
-                tmp = get_number(item)
-                if item['id'] != lcid:
-                    item['number'] = tmp
-                    number += float(tmp) * float(item['number_c'])
-                else:
-                    number += float(tmp)
-            return number
-
         flag = False
         data = []
         for item in top:
-            item['number'] = get_number(item)
             if item['number'] < min_rate:
                 continue
 

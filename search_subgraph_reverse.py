@@ -19,7 +19,7 @@ def print_cost_time(func):
         start = time.time()
         number, graph_index = func(self, *args, **kwargs)
         end = time.time()
-        print(f'子图: {number}\t数量: {graph_index}\t耗时: {end - start}')
+        print(f'子图: {number}\t行数: {graph_index}\t耗时: {end - start}')
         return graph_index
 
     return inner
@@ -37,7 +37,6 @@ class SearchSubgraphReverse(object):
     TARGET = '/home/20200220csv/tmp/sub_graph_%s_1.csv'
 
     NUMBER = 1
-    SUM = 2
 
     def __init__(self):
         self.frequency_table = defaultdict(int)
@@ -63,16 +62,19 @@ class SearchSubgraphReverse(object):
         self.get_frequency_table()
         if not list(filter(lambda x:self.frequency_table[x] == 1, self.frequency_table.keys())):
             self.flag = False
-            return f'{self.NUMBER}_1', 0
-        records = filter(lambda x:self.frequency_table[x] == self.NUMBER, self.frequency_table.keys())
+            return f'{self.NUMBER}_1', 0, 0
+
         count = 0
+        records = filter(lambda x: self.frequency_table[x] == self.NUMBER, self.frequency_table.keys())
         for record in records:
+            sub = 0
             indexs = self.content_map[record]
             for index in indexs:
                 row = self.file_content[index]
-                if self.frequency_table[row[0]] + self.frequency_table[row[1]] == self.NUMBER + 1:
-                    self.filter_indexs.add(index)
-                    count += 1
+                sub = sub + self.frequency_table[row[0]] + self.frequency_table[row[1]]
+            if sub == self.NUMBER * (self.NUMBER + 1):
+               self.filter_indexs |= set(indexs)
+               count += len(indexs)
         return f'{self.NUMBER}_1', count
 
     def run(self):

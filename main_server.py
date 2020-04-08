@@ -268,7 +268,7 @@ class MyFaceHandler(Interface.Iface):
 if __name__ == '__main__':
     handler = MyFaceHandler()
     processor = Interface.Processor(handler)
-    transport = TSocket.TServerSocket(host='0.0.0.0', port=19918)
+    transport = TSocket.TServerSocket(host='0.0.0.0', port=8140)
     tfactory = TTransport.TBufferedTransportFactory()
     pfactory = TCompactProtocol.TCompactProtocolFactory()
     # pfactory = TBinaryProtocol.TBinaryProtocolFactory()
