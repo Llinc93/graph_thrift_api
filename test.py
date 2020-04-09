@@ -58,4 +58,4 @@ for file, label in files:
                 bra_links.extend(row)
                 bra_links_set |= set(row)
 
-print(f'人员节点:{}\n人员节点(去重): {}\n企业节点:{}\n企业节点(去重): {}\n自然人投资:{}\n自然人投资(去重): {}\n企业投资:{}\n企业投资(去重): {}\n企业分支:{}\n企业分支(去重): {}')
+print(f'人员节点:{len(per_nodes)}\n人员节点(去重): {len(per_nodes_set)}\n企业节点:{len(ent_nodes)}\n企业节点(去重): {len(ent_nodes_set)}\n自然人投资:{len(per_links)}\n自然人投资(去重): {len(per_links_set)}\n企业投资:{len(ent_links)}\n企业投资(去重): {len(ent_links_set)}\n企业分支:{len(bra_links)}\n企业分支(去重): {len(bra_links_set)}')
