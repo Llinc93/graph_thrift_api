@@ -70,7 +70,8 @@ EntActualController = 'http://172.27.2.5:9000/query/graph_api/EntActualContoller
 EntGraphUrl = 'http://172.27.2.5:9000/query/graph_api/EntGraph'
 EntRelevanceSeekGraphUrl = 'http://172.27.2.5:9000/query/graph_api/EntsRelevanceSeekGraph'
 
-
+# FLASK、GUNICORN
 HOST = '0.0.0.0'
 PORT = 8140
 DEBUG = True
+

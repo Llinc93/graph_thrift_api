@@ -79,7 +79,7 @@ def getEntActualContoller():
     try:
         entName = request.form.get('entName')
         uscCode = request.form.get('uscCode')
-        min_ratio = request.form.get('min_ratio', 0)
+        min_ratio = float(request.form.get('min_ratio', 0))
 
         if not min_ratio:
             min_ratio = 0
@@ -142,8 +142,8 @@ def getEntGraphG():
     try:
         keyword = request.form['keyword']
         attIds = request.form['attIds']
-        level = request.form['level']
-        nodeType = request.form['nodeType']
+        level = int(request.form['level'])
+        nodeType = float(request.form['nodeType'])
 
         if int(level) > 3 or int(level) <= 0:
             raise ValueError
@@ -210,7 +210,7 @@ def getEntsRelevanceSeekGraphG():
     try:
         entName = request.form['entName']
         attIds = request.form['attIds']
-        level = request.form['level']
+        level = int(request.form['level'])
 
         relationshipFilter = parse.get_relationshipFilter(attIds)
         if not relationshipFilter:
