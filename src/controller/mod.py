@@ -21,7 +21,7 @@ def getFinalBeneficiaryName():
     try:
         entName = request.form.get('entName')
         uscCode = request.form.get('uscCode')
-        min_ratio = request.form.get('min_ratio', 0)
+        min_ratio = float(request.form.get('min_ratio', 0))
         if not min_ratio:
             min_ratio = 0
         lcid = neo4j_client.get_lcid(entname=entName, usccode=uscCode)
@@ -143,7 +143,7 @@ def getEntGraphG():
         keyword = request.form['keyword']
         attIds = request.form['attIds']
         level = int(request.form['level'])
-        nodeType = float(request.form['nodeType'])
+        nodeType = request.form['nodeType']
 
         if int(level) > 3 or int(level) <= 0:
             raise ValueError
