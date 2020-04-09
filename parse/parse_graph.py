@@ -380,11 +380,18 @@ class Parse():
             tmp_nodes = path['n']
             tmp_links = path['r']
 
+            ring_detection = defaultdict(int)
+            for node in tmp_nodes:
+                ring_detection[node['ID']] += 1
+            if list(filter(lambda x:x[1] > 1, ring_detection.items())):
+                continue
+
             while len(tmp_nodes):
                 sub = tmp_nodes.pop()
                 parent = tmp_nodes[-1] if tmp_nodes else None
                 link = tmp_links.pop() if tmp_links else None
-                if tmp_links and link['label'] == 'BEE':
+
+                if link and link['label'] == 'BEE':
                     link['RATE'] = 1
 
                 if parent:
