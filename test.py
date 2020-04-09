@@ -17,7 +17,7 @@ bra_links_set = set()
 
 
 files = [
-    ('qiyexinxi.csv', 'ent_nodes'),
+    ('qiyejiedian.csv', 'ent_nodes'),
     ('renyuanjiedian.csv', 'per_nodes'),
     ('ziranrentouzi.csv', 'per'),
     ('qiyetouzi.csv', 'ent_links'),

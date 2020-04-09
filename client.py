@@ -14,8 +14,8 @@ class PyClient():
 
         # self.host = '47.93.228.56'
         # self.post = 9918
-        self.host = '127.0.0.1'
-        self.port = 19918
+        self.host = '121.52.214.42'
+        self.port = 8140
 
     def getEntActualContoller(self, username, uscCode, mix_rate):
         try:
