@@ -370,7 +370,6 @@ def ent_relevance_seek_graph(data):
             if link['id'] in ids:
                 continue
 
-            links.append(get_link(link))
             ids.append(link['id'])
             appear[link['from_id']] += 1
             appear[link['to_id']] += 1
