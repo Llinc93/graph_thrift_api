@@ -1,7 +1,9 @@
-import config
+import re
 import requests
 from itertools import combinations
 from threading import Thread
+
+import config
 
 
 class MyThread(Thread):
@@ -27,11 +29,19 @@ def get_ent_actual_controller(name=None, uniscid=None):
 
 
 def get_ent_graph(name, node_type, level, attIds):
+    if node_type != 'GS':
+        node_attribute = True
+    else:
+        if len(name) == 32 and re.findall('[a-z0-9]', name):
+            flag = True
+        else:
+            flag = False
 
     params = {
         'name': name,
         'node_type': node_type,
         'level': level,
+        'flag': flag
     }
 
     for attid in attIds.split(';'):

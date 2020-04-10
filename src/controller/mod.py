@@ -164,35 +164,42 @@ def getEntGraphG():
         traceback.print_exc()
         return json.dumps({'nodes': [], 'success': 102, 'links': []}, ensure_ascii=False)
 
-# def getEntGraphG_ti(self, keyword, attIds, level, nodeType):
-#     """
-#     企业图谱查询
-#     keyword 关键字
-#     attIds 过滤关系
-#     level 层级，最大3层
-#     nodeType 节点类型
-#
-#     Parameters:
-#      - keyword
-#      - attIds
-#      - level
-#      - nodeType
-#     """
-#     try:
-#         from model import tiger_graph
-#         from parse import tiger_graph_parse
-#
-#         raw_data = tiger_graph.get_ent_graph(name=keyword, node_type=nodeType, level=level, attIds=attIds)
-#
-#         if raw_data['error']:
-#             raise ValueError
-#
-#         nodes, links = tiger_graph_parse.ent_graph(raw_data)
-#
-#         return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
-#     except:
-#         traceback.print_exc()
-#         return json.dumps({'nodes': [], 'success': 102, 'links': []}, ensure_ascii=False)
+@MOD.route('/getEntGraphG', methods=['POST'])
+def getEntGraphG_ti():
+    """
+    企业图谱查询
+    keyword 关键字
+    attIds 过滤关系
+    level 层级，最大3层
+    nodeType 节点类型
+
+    Parameters:
+     - keyword
+     - attIds
+     - level
+     - nodeType
+    """
+    try:
+        from model import tiger_graph
+        from parse import tiger_graph_parse
+
+        keyword = request.form['keyword']
+        attIds = request.form['attIds']
+        level = int(request.form['level'])
+        nodeType = request.form['nodeType']
+
+        raw_data = tiger_graph.get_ent_graph(name=keyword, node_type=nodeType, level=level, attIds=attIds)
+
+        if raw_data['error']:
+            raise ValueError
+
+        nodes, links = tiger_graph_parse.ent_graph(raw_data)
+
+        return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
+    except:
+        traceback.print_exc()
+        return json.dumps({'nodes': [], 'success': 102, 'links': []}, ensure_ascii=False)
+
 
 @MOD.route('/getEntsRelevanceSeekGraphG', methods=['POST'])
 def getEntsRelevanceSeekGraphG():

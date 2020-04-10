@@ -168,7 +168,8 @@ def get_final_beneficiary_name_v1(data, min_rate, entname):
     :return:
     '''
     nodes = {}
-    links = defaultdict(set)
+    links = {}
+    pids = defaultdict(set)
     appear = []
     null = []
     nodes_indegree = defaultdict(int)   # 每个节点的入度，0表示为叶子节点
@@ -204,14 +205,14 @@ def get_final_beneficiary_name_v1(data, min_rate, entname):
         for link in tmp_links:
             if link['to_id'] in null or link['from_id'] in null:
                 continue
-            links[link['to_id']].add(link)
+            links[(link['from_id'], link['to_id'])] = link
+            pids[link['to_id']].add(link['from_id'])
             nodes_indegree['from_id'] += 1
 
     flag = False
     actions = []
     top_nodes = filter(lambda x:x[1] == 0, nodes_indegree.items())
     for node in top_nodes:
-
         if node['number'] < min_rate:
             continue
 
@@ -223,7 +224,7 @@ def get_final_beneficiary_name_v1(data, min_rate, entname):
         node['pid'] = None
 
         stack = [node['id']]
-        tmp = list(links[node['id']])
+        tmp = [links[(sid, node['id'])] for sid in pids[node['id']]]
         while tmp:
             link = tmp.pop()
 
@@ -241,8 +242,10 @@ def get_final_beneficiary_name_v1(data, min_rate, entname):
             if snode['name'] == entname:
                 stack = [node['v_id']]
             else:
-                tmp.extend(list(links[link['from_id']]))
+                tmp.extend([links[(sid, node['id'])] for sid in pids[links['from_id']]])
                 stack.append(link['from_id'])
+
+        actions.append(node)
 
     if flag:
         for node in top_nodes:
