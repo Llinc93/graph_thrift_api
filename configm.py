@@ -11,7 +11,7 @@ pidfile = "gunicorn.pid"
 # accesslog = "log/access.log"
 # errorlog = "log/debug.log"
 daemon = True
-timeout = 1800
+timeout = 600
 
 # 启动的进程数
 workers = multiprocessing.cpu_count()
