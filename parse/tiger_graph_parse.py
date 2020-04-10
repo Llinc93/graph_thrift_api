@@ -92,7 +92,6 @@ def get_final_beneficiary_name(data, min_ratio, entname):
     pids = defaultdict(set)
     nodes = {}
     links = {}
-
     while data['results']:
         path = data['results'].pop()
 
@@ -146,6 +145,109 @@ def get_final_beneficiary_name(data, min_ratio, entname):
             if not flag and nodes[nid]['type'] == "GS" and nodes[nid]['lastnode'] == 1:
                 nodes[nid]['lastnode'] = 0
             actions.append(nodes[nid])
+
+    return actions
+
+
+def get_final_beneficiary_name_v1(data, min_rate, entname):
+    '''
+    {
+        "number": 0,
+        "number_c": "0.15",
+        "children": null,
+        "lastnode": 0,
+        "name": "宁波市赛伯乐招宝创业投资管理有限公司",
+        "pid": "2f961e803631b5b48aed07451fe33601",
+        "id": "eac5a21c62286a1b3325d8b1baa1d349",
+        "type": "GS",
+        "attr": 2
+    },
+
+    :param data:
+    :param min_ratio:
+    :return:
+    '''
+    nodes = {}
+    links = defaultdict(set)
+    appear = []
+    null = []
+    nodes_indegree = defaultdict(int)   # 每个节点的入度，0表示为叶子节点
+    while data['results']:
+        item = data['results'].pop()
+        tmp_nodes = item['nodes']
+        tmp_links = item['links']
+
+        for node in tmp_nodes:
+
+            if not node['attributes']['name']:
+                null.append(node['v_id'])
+                continue
+
+            if node['v_type'] == 'GR' and node['attributes']['@rate'] < min_rate:
+                continue
+
+            if node['v_id'] in appear:
+                continue
+
+            appear.append(node['v_id'])
+            action = {
+                'number': node['attributes']['@rate'],
+                'children': [],
+                'lastnode': 1 if node['attributes']['@top'] else 0,
+                'name': node['attributes']['name'],
+                'id': node['v_id'],
+                'type': node['v_type'],
+                'attr': 2 if node['attributes']['name'] == entname else 1,
+            }
+            nodes[node['v_id']] = action
+
+        for link in tmp_links:
+            if link['to_id'] in null or link['from_id'] in null:
+                continue
+            links[link['to_id']].add(link)
+            nodes_indegree['from_id'] += 1
+
+    flag = False
+    actions = []
+    top_nodes = filter(lambda x:x[1] == 0, nodes_indegree.items())
+    for node in top_nodes:
+
+        if node['number'] < min_rate:
+            continue
+
+        if node['type'] == 'GR' and node['number'] >= 0.25:
+            node['lastnode'] = 1
+            flag = True
+
+        node['number_c'] = None
+        node['pid'] = None
+
+        stack = [node['id']]
+        tmp = list(links[node['id']])
+        while tmp:
+            link = tmp.pop()
+
+            # 检测环，遇到环跳过
+            if link['from_id'] in stack:
+                continue
+
+            pnode = nodes[links['to_id']]
+            snode = nodes[links['from_id']]
+
+            pnode['children'].append(snode)
+            snode['number_c'] = link['rate']
+            snode['pid'] = pnode['id']
+
+            if snode['name'] == entname:
+                stack = [node['v_id']]
+            else:
+                tmp.extend(list(links[link['from_id']]))
+                stack.append(link['from_id'])
+
+    if flag:
+        for node in top_nodes:
+            if node['type'] == 'GS':
+                node['lastnode'] = 0
 
     return actions
 
@@ -291,3 +393,69 @@ def ent_relevance_seek_graph(data):
         links.append(get_link(link))
 
     return nodes, links
+
+
+if __name__ == '__main__':
+    data = {
+        'results': [
+            {
+                'nodes': [
+                    {'v_id': 1, 'v_type': 'GS', 'attributes': {'@rate': 0, '@top': False, 'name': 'a'}}
+                ],
+                'links': [],
+            },
+            {
+                'nodes': [
+                    {'v_id': 2, 'v_type': 'GS', 'attributes': {'@rate': 0, '@top': False, 'name': 'b'}},
+                    {'v_id': 6, 'v_type': 'GS', 'attributes': {'@rate': 0, '@top': False, 'name': 'f'}},
+                    {'v_id': 11, 'v_type': 'GS', 'attributes': {'@rate': 0, '@top': False, 'name': 'k'}},
+                ],
+                'links': [
+                    {'from_id': 1, 'to_id': 2, 'e_type': 'REV', 'attributes': {'rate': 1}},    # a<-b
+                    {'from_id': 1, 'to_id': 6, 'e_type': 'REV', 'attributes': {'rate': 1}},    # a<-f
+                    {'from_id': 1, 'to_id': 11, 'e_type': 'REV', 'attributes': {'rate': 1}},    # a<-k
+                ],
+            },
+            {
+                'nodes': [
+                    {'v_id': 3, 'v_type': 'GS', 'attributes': {'@rate': 0, '@top': False, 'name': 'c'}},
+                    {'v_id': 8, 'v_type': 'GS', 'attributes': {'@rate': 0, '@top': False, 'name': 'h'}},
+                    {'v_id': 9, 'v_type': 'GS', 'attributes': {'@rate': 0, '@top': False, 'name': 'i'}},
+                    {'v_id': 12, 'v_type': 'GS', 'attributes': {'@rate': 0, '@top': False, 'name': 'l'}},
+                ],
+                'links': [
+                    {'from_id': 2, 'to_id': 3, 'e_type': 'REV', 'attributes': {'rate': 1}},    # b<-c
+                    {'from_id': 6, 'to_id': 9, 'e_type': 'REV', 'attributes': {'rate': 1}},    # f<-i
+                    {'from_id': 6, 'to_id': 8, 'e_type': 'REV', 'attributes': {'rate': 1}},    # f<-h
+                    {'from_id': 11, 'to_id': 12, 'e_type': 'REV', 'attributes': {'rate': 1}},    # k<-l
+                ],
+            },
+            {
+                'nodes': [
+                    {'v_id': 7, 'v_type': 'GS', 'attributes': {'@rate': 0, '@top': False, 'name': 'g'}},
+                    {'v_id': 11, 'v_type': 'GS', 'attributes': {'@rate': 0, '@top': False, 'name': 'k'}},
+                    {'v_id': 4, 'v_type': 'GS', 'attributes': {'@rate': 0, '@top': False, 'name': 'd'}},
+                ],
+                'links': [
+                    {'from_id': 3, 'to_id': 4, 'e_type': 'REV', 'attributes': {'rate': 1}},    # c<-d
+                    {'from_id': 8, 'to_id': 7, 'e_type': 'REV', 'attributes': {'rate': 1}},    # h<-g
+                    {'from_id': 9, 'to_id': 7, 'e_type': 'REV', 'attributes': {'rate': 1}},    # i<-g
+                    {'from_id': 12, 'to_id': 11, 'e_type': 'REV', 'attributes': {'rate': 1}},    # l<-k
+                ],
+            },
+            {
+                'nodes': [
+                    {'v_id': 5, 'v_type': 'GS', 'attributes': {'@rate': 0, '@top': False, 'name': 'e'}},
+                    {'v_id': 2, 'v_type': 'GS', 'attributes': {'@rate': 0, '@top': False, 'name': 'b'}},
+                ],
+                'links': [
+                    {'from_id': 4, 'to_id': 5, 'e_type': 'REV', 'attributes': {'rate': 1}},    # d<-e
+                    {'from_id': 4, 'to_id': 2, 'e_type': 'REV', 'attributes': {'rate': 1}},    # d<-b
+                ],
+            },
+        ]
+    }
+
+    import json
+    ret = get_final_beneficiary_name_v1(data=data, min_rate=0, entname='a')
+    print(json.dumps(ret))

@@ -1,4 +1,4 @@
-import time, redis
+import time, redis, re
 from py2neo import Graph
 
 import config
@@ -92,9 +92,16 @@ class Neo4jClient(object):
         :param level:
         :return:
         '''
+        if node_type != 'GS':
+            node_attribute = 'ID'
+        else:
+            if len(entname) == 32 and re.findall('[a-z0-9]', entname):
+                node_attribute = 'ID'
+            else:
+                node_attribute = 'NAME'
         flag = True
-        command = "match (n:%s {NAME: '%s'}) call apoc.path.expand(n, '%s', '', 1, %s) yield path foreach(r in relationships(path) | set r.pid=properties(startNode(r))['ID']) foreach(r in relationships(path) | set r.id=properties(endNode(r))['ID']) foreach(r in relationships(path) | set r.label=type(r)) foreach(r in relationships(path) | set r.ID=id(r)) foreach(n in nodes(path) | set n.label=labels(n)[0]) return [n in nodes(path) | properties(n)] as n, [r in relationships(path) | properties(r)] as r"
-        print(command % (node_type, entname, relationshipFilter, level))
+        command = "match (n:%s {%s: '%s'}) call apoc.path.expand(n, '%s', '', 1, %s) yield path foreach(r in relationships(path) | set r.pid=properties(startNode(r))['ID']) foreach(r in relationships(path) | set r.id=properties(endNode(r))['ID']) foreach(r in relationships(path) | set r.label=type(r)) foreach(r in relationships(path) | set r.ID=id(r)) foreach(n in nodes(path) | set n.label=labels(n)[0]) return [n in nodes(path) | properties(n)] as n, [r in relationships(path) | properties(r)] as r"
+        print(command % (node_type, node_attribute, entname, relationshipFilter, level))
         rs = self.graph.run(command % (node_type, entname, relationshipFilter, level))
         info = rs.data()
         if not info:
