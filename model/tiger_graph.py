@@ -30,7 +30,7 @@ def get_ent_actual_controller(name=None, uniscid=None):
 
 def get_ent_graph(name, node_type, level, attIds):
     if node_type != 'GS':
-        node_attribute = True
+        flag = True
     else:
         if len(name) == 32 and re.findall('[a-z0-9]', name):
             flag = True
