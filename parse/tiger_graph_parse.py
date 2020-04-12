@@ -149,6 +149,78 @@ def get_final_beneficiary_name(data, min_ratio, entname):
     return actions
 
 
+def get_final_beneficiary_name_neo(graph, min_rate, lcid):
+    '''
+    根据neo4j的结果，计算受益所有人
+    :param graph:
+    :return:
+    '''
+    pids = defaultdict(set)
+    actions = {}
+    sub_ids = set()
+    graph2 = deepcopy(graph)
+
+    nodes = defaultdict(float)
+    for path in graph2:
+        tmp_nodes = path['nodes']
+        tmp_links = path['links']
+
+        while len(tmp_nodes):
+            sub = tmp_nodes.pop()
+            parent = tmp_nodes[-1] if tmp_nodes else None
+            link = tmp_links.pop() if tmp_links else None
+
+            if link and link['e_type'] == 'BEE':
+                link['attributes']['rate'] = 1
+
+            if parent:
+                con = (sub['id'], parent['id'])
+                sub_ids.add(sub['id'])
+            else:
+                con = (sub['id'], None)
+            if con in actions:
+                continue
+
+            action = {
+                "number": 0 if sub['id'] == lcid else nodes[sub['id']],
+                "number_c": float(link['attributes']['rate']) if link else None,
+                "children": None if sub['id'] == lcid else [],
+                "lastnode": 0 if parent else 1,
+                "name": sub['name'],
+                "pid": parent['id'] if parent else None,
+                "id": sub['id'],
+                "type": sub['type'],
+                "attr": 2 if sub['id'] == lcid else 1,
+            }
+            actions[con] = action
+            pids[action['pid']] .add(action['id'])
+
+    top = []
+    for sid, pid in actions.keys():
+        if pid is None and sid not in sub_ids:
+            top.append(actions[(sid, pid)])
+        actions[(sid, pid)]['children'] = [actions[i, sid] for i in pids[sid]]
+
+    flag = False
+    data = []
+    for item in top:
+        if item['number'] < min_rate:
+            continue
+
+        if item['number'] > 0.25 and item['type'] == 'GR':
+            flag = True
+        else:
+            item['lastnode'] = 0
+
+        data.append(item)
+
+    if not flag:
+        for item in data:
+            if item['type'] == 'GS':
+                item['lastnode'] = 1
+    return data
+
+
 def get_final_beneficiary_name_v1(data, min_rate, entname):
     '''
     {
@@ -168,11 +240,11 @@ def get_final_beneficiary_name_v1(data, min_rate, entname):
     :return:
     '''
     nodes = {}
-    links = {}
+    links = []
     pids = defaultdict(set)
     appear = []
     null = []
-    nodes_indegree = defaultdict(int)   # 每个节点的入度，0表示为叶子节点
+    start = None
     while data['results']:
         item = data['results'].pop()
         tmp_nodes = item['nodes']
@@ -201,58 +273,42 @@ def get_final_beneficiary_name_v1(data, min_rate, entname):
                 'attr': 2 if node['attributes']['name'] == entname else 1,
             }
             nodes[node['v_id']] = action
+            if node['attributes']['name'] == entname:
+                start = node['v_id']
 
         for link in tmp_links:
             if link['to_id'] in null or link['from_id'] in null:
                 continue
-            links[(link['from_id'], link['to_id'])] = link
-            pids[link['to_id']].add(link['from_id'])
-            nodes_indegree['from_id'] += 1
+            links.append(link)
+            pids[link['from_id']].add(link['to_id'])
 
-    flag = False
-    actions = []
-    top_nodes = filter(lambda x:x[1] == 0, nodes_indegree.items())
-    for node in top_nodes:
-        if node['number'] < min_rate:
+    links_index = []
+    stack = [start]
+    tmp_links = [[start]]
+    while stack:
+        link = tmp_links.pop()
+        tmp = stack.pop()
+        if tmp not in pids:
+            links_index.append(link)
             continue
-
-        if node['type'] == 'GR' and node['number'] >= 0.25:
-            node['lastnode'] = 1
-            flag = True
-
-        node['number_c'] = None
-        node['pid'] = None
-
-        stack = [node['id']]
-        tmp = [links[(sid, node['id'])] for sid in pids[node['id']]]
-        while tmp:
-            link = tmp.pop()
-
-            # 检测环，遇到环跳过
-            if link['from_id'] in stack:
+        for pid in pids[tmp]:
+            if pid in link:
                 continue
+            action = deepcopy(link)
+            stack.append(pid)
+            action.append(pid)
+            tmp_links.append(action)
+    print(links_index)
 
-            pnode = nodes[links['to_id']]
-            snode = nodes[links['from_id']]
-
-            pnode['children'].append(snode)
-            snode['number_c'] = link['rate']
-            snode['pid'] = pnode['id']
-
-            if snode['name'] == entname:
-                stack = [node['v_id']]
-            else:
-                tmp.extend([links[(sid, node['id'])] for sid in pids[links['from_id']]])
-                stack.append(link['from_id'])
-
-        actions.append(node)
-
-    if flag:
-        for node in top_nodes:
-            if node['type'] == 'GS':
-                node['lastnode'] = 0
-
-    return actions
+    path = []
+    for link_index in links_index:
+        tmp_links = []
+        tmp_nodes = []
+        for index in link_index:
+            tmp_links.append(links[index])
+            tmp_nodes.append(nodes[index])
+        path.append({'nodes': tmp_nodes, 'links': tmp_links})
+    return get_final_beneficiary_name_neo(graph=path, min_rate=min_rate, lcid=start)
 
 
 def get_link(link):
@@ -457,7 +513,14 @@ if __name__ == '__main__':
             },
         ]
     }
-
+    '''
+    1 2 3 4 5
+    1 2 3 4 2
+    1 11 12
+    1 11 12 11
+    1 6 8 7
+    1 6 9 7
+    '''
     import json
     ret = get_final_beneficiary_name_v1(data=data, min_rate=0, entname='a')
     print(json.dumps(ret))
