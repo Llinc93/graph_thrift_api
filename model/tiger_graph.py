@@ -1,7 +1,9 @@
 import re
 import requests
+from copy import deepcopy
 from itertools import combinations
 from threading import Thread
+from collections import defaultdict
 
 import config
 
@@ -57,35 +59,93 @@ def task(params):
     if raw_data['error']:
         return None, None, True
 
-    nodes = []
+    # nodes = []
+    # links = []
+    # null = []
+    # path = set()
+    # if raw_data['results'].pop()['@@res_flag']:
+    #     snode = raw_data['results'][0]['nodes'][0]
+    #     while raw_data['results']:
+    #         item = raw_data['results'].pop()
+    #         tmp_nodes = item['nodes']
+    #         tmp_links = item['links']
+    #
+    #         for node in tmp_nodes:
+    #             if not node['attributes']['name']:
+    #                 null.append(node['v_id'])
+    #                 continue
+    #
+    #             if node['attributes']['name'] == params['ename']:
+    #                 path.add(node['v_id'])
+    #                 nodes.append(node)
+    #             elif node['v_id'] in path:
+    #                 nodes.append(node)
+    #
+    #         for link in tmp_links:
+    #             if link['to_id'] in null or link['from_id'] in null:
+    #                 continue
+    #
+    #             if link['to_id'] in path and link['to_id'] != snode['v_id']:
+    #                 path.add(link['from_id'])
+    #                 links.append(link)
+
+    nodes = {}
     links = []
+    pids = defaultdict(set)
+    appear = []
     null = []
-    path = set()
-    if raw_data['results'].pop()['@@res_flag']:
-        snode = raw_data['results'][0]['nodes'][0]
-        while raw_data['results']:
-            item = raw_data['results'].pop()
-            tmp_nodes = item['nodes']
-            tmp_links = item['links']
+    start = None
+    while raw_data['results']:
+        item = raw_data['results'].pop()
+        tmp_nodes = item['nodes']
+        tmp_links = item['links']
 
-            for node in tmp_nodes:
-                if not node['attributes']['name']:
-                    null.append(node['v_id'])
-                    continue
+        for node in tmp_nodes:
 
-                if node['attributes']['name'] == params['ename']:
-                    path.add(node['v_id'])
-                    nodes.append(node)
-                elif node['v_id'] in path:
-                    nodes.append(node)
+            if not node['attributes']['name']:
+                null.append(node['v_id'])
+                continue
 
-            for link in tmp_links:
-                if link['to_id'] in null or link['from_id'] in null:
-                    continue
+            if node['v_id'] in appear:
+                continue
 
-                if link['to_id'] in path and link['to_id'] != snode['v_id']:
-                    path.add(link['from_id'])
-                    links.append(link)
+            appear.append(node['v_id'])
+            action = {
+                'number': node['attributes']['@rate'],
+                'children': [],
+                'lastnode': 1 if node['attributes']['@top'] else 0,
+                'name': node['attributes']['name'],
+                'id': node['v_id'],
+                'type': node['v_type'],
+                'attr': 2 if node['attributes']['name'] == params['sname'] else 1,
+            }
+            nodes[node['v_id']] = action
+            if node['attributes']['name'] == params['sname']:
+                start = node['v_id']
+
+        for link in tmp_links:
+            if link['to_id'] in null or link['from_id'] in null:
+                continue
+            links.append(link)
+            pids[link['from_id']].add(link['to_id'])
+
+    links_index = []
+    stack = [start]
+    tmp_links = [[start]]
+    while stack:
+        link = tmp_links.pop()
+        tmp = stack.pop()
+        if tmp not in pids:
+            links_index.append(link)
+            continue
+        for pid in pids[tmp]:
+            if pid in link:
+                continue
+            action = deepcopy(link)
+            stack.append(pid)
+            action.append(pid)
+            tmp_links.append(action)
+    print(links_index)
 
     return nodes, links, False
 

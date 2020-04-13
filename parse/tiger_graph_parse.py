@@ -69,86 +69,6 @@ def ent_actual_controller(data, min_rate):
     return nodes, links
 
 
-def get_final_beneficiary_name(data, min_ratio, entname):
-    '''
-    {
-        "number": 0,
-        "number_c": "0.15",
-        "children": null,
-        "lastnode": 0,
-        "name": "宁波市赛伯乐招宝创业投资管理有限公司",
-        "pid": "2f961e803631b5b48aed07451fe33601",
-        "id": "eac5a21c62286a1b3325d8b1baa1d349",
-        "type": "GS",
-        "attr": 2
-    },
-
-    :param data:
-    :param min_ratio:
-    :return:
-    '''
-    nids = defaultdict(int)
-    actions = []
-    pids = defaultdict(set)
-    nodes = {}
-    links = {}
-    while data['results']:
-        path = data['results'].pop()
-
-        for link in path['links']:
-            pids[link['to_id']].add(link['from_id'])
-            links[(link['from_id'], link['to_id'])] = link
-            nids[link['to_id']] += 0
-            nids[link['from_id']] += 1
-
-        for node in path['nodes']:
-            action = {
-                "number": node['attributes']['@rate'],
-                "number_c": 0,
-                "children": [],
-                "lastnode": 1 if node['attributes']['@top'] else 0,
-                "name": node['attributes']['name'],
-                "pid": None,
-                "id": node['v_id'],
-                "type": node['v_type'],
-                "attr": 1,
-            }
-            if node['v_id'] in nodes and action['number'] <= nodes[node['v_id']]['number']:
-                continue
-            nodes[node['v_id']] = action
-
-    for pid, sub_ids in pids.items():
-        pnode = nodes[pid]
-        for sid in sub_ids:
-            link = links[(sid, pid)]
-            snode = deepcopy(nodes[sid])
-            snode['children'] = nodes[sid]['children']
-            if snode['name'] == entname:
-                snode['attr'] = 2
-                snode['children'] = None
-                snode['number'] = 0
-            snode['pid'] = pid
-            snode['number_c'] = link['attributes']['rate']
-            pnode['children'].append(snode)
-
-    flag = True
-    for nid, count in nids.items():
-        if count == 0:
-            if nodes[nid]['number'] >= 0.25 and nodes[nid]['number'] >= min_ratio and nodes[nid]['type'] == 'GR':
-                nodes[nid]['lastnode'] = 1
-                flag = False
-
-    for nid, count in nids.items():
-        if count == 0:
-            if nodes[nid]['number'] < min_ratio and nodes[nid]['type'] == 'GR':
-                continue
-            if not flag and nodes[nid]['type'] == "GS" and nodes[nid]['lastnode'] == 1:
-                nodes[nid]['lastnode'] = 0
-            actions.append(nodes[nid])
-
-    return actions
-
-
 def get_final_beneficiary_name_neo(graph, min_rate, lcid):
     '''
     根据neo4j的结果，计算受益所有人
@@ -298,7 +218,7 @@ def get_final_beneficiary_name_v1(data, min_rate, entname):
             stack.append(pid)
             action.append(pid)
             tmp_links.append(action)
-    print(links_index)
+    # print(links_index)
 
     path = []
     for link_index in links_index:
