@@ -62,7 +62,7 @@ def task(params):
     null = []
     path = set()
     if raw_data['results'].pop()['@@res_flag']:
-        snode = raw_data['results']['nodes'][0]
+        snode = raw_data['results'][0]['nodes'][0]
         while raw_data['results']:
             item = raw_data['results'].pop()
             tmp_nodes = item['nodes']
@@ -86,6 +86,7 @@ def task(params):
                 if link['to_id'] in path and link['to_id'] != snode['v_id']:
                     path.add(link['from_id'])
                     links.append(link)
+
     return nodes, links, False
 
 

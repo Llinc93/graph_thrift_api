@@ -1,61 +1,42 @@
-import csv
-import sys
+def task(raw_data, params):
+    nodes = []
+    links = []
+    null = []
+    path = set()
+    if raw_data['results'].pop()['@@res_flag']:
+        snode = raw_data['results'][0]['nodes'][0]
+        while raw_data['results']:
+            item = raw_data['results'].pop()
+            tmp_nodes = item['nodes']
+            tmp_links = item['links']
+
+            for node in tmp_nodes:
+                if not node['attributes']['name']:
+                    null.append(node['v_id'])
+                    continue
+
+                if node['attributes']['name'] == params['ename']:
+                    path.add(node['v_id'])
+                    nodes.append(node)
+                    flag = False
+                elif node['v_id'] in path:
+                    nodes.append(node)
+
+            for link in tmp_links:
+                if link['to_id'] in null or link['from_id'] in null:
+                    continue
+
+                if link['to_id'] in path and link['to_id'] != snode['v_id']:
+                    path.add(link['from_id'])
+                    links.append(link)
+    return nodes, links, False
 
 
-ent_nodes = []
-ent_nodes_set = set()
-ent_links = []
-ent_links_set = set()
+if __name__ == '__main__':
+    data = [
 
-per_nodes = []
-per_nodes_set = set()
-per_links = []
-per_links_set = set()
-
-bra_links = []
-bra_links_set = set()
-
-
-files = [
-    ('qiyejiedian.csv', 'ent_nodes'),
-    ('renyuanjiedian.csv', 'per_nodes'),
-    ('ziranrentouzi.csv', 'per'),
-    ('qiyetouzi.csv', 'ent_links'),
-    ('qiyefenzhi.csv', 'bra'),
-]
-
-for file, label in files:
-    if label == 'ent_nodes':
-        with open(file) as f:
-            reader = csv.reader(f)
-            for row in f:
-                ent_nodes.extend(row[-1])
-                ent_nodes_set |= set(row[-1])
-    elif label == 'per_nodes':
-        with open(file) as f:
-            reader = csv.reader(f)
-            for row in f:
-                per_nodes.extend(row[-1])
-                per_nodes_set |= set(row[-1])
-    elif label == 'per':
-        with open(file) as f:
-            reader = csv.reader(f)
-            for row in f:
-                per_links.extend(row[0])
-                per_links_set |= set(row[0])
-    elif label == 'ent_links':
-        with open(file) as f:
-            reader = csv.reader(f)
-            for row in f:
-                ent_links.append(row[0])
-                ent_links.append(row[-1])
-                ent_links_set.add(row[0])
-                ent_links_set.add(row[-1])
-    elif label == 'bra':
-        with open(file) as f:
-            reader = csv.reader(f)
-            for row in f:
-                bra_links.extend(row)
-                bra_links_set |= set(row)
-
-print(f'人员节点:{len(per_nodes)}\n人员节点(去重): {len(per_nodes_set)}\n企业节点:{len(ent_nodes)}\n企业节点(去重): {len(ent_nodes_set)}\n自然人投资:{len(per_links)}\n自然人投资(去重): {len(per_links_set)}\n企业投资:{len(ent_links)}\n企业投资(去重): {len(ent_links_set)}\n企业分支:{len(bra_links)}\n企业分支(去重): {len(bra_links_set)}')
+    ]
+    nodes, links, flag = task(raw_data=data)
+    print(nodes)
+    print(links)
+    print()

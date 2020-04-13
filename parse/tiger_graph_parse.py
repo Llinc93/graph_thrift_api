@@ -256,6 +256,11 @@ def get_final_beneficiary_name_v1(data, min_rate, entname):
 
 
 def get_link(link):
+    if 'REV_' in link['e_type']:
+        tmp_id = link['from_id']
+        link['from_id'] = link['to_id']
+        link['to_id'] = tmp_id
+
     link_type = link['e_type'].split('REV_')[-1]
     action = {
         'id': link['id'],

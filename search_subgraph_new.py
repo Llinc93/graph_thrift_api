@@ -1,4 +1,5 @@
 import csv
+import json
 import time
 import redis
 import functools
@@ -25,6 +26,7 @@ class SearchSubgraph(object):
         self.pool = redis.ConnectionPool(host='localhost', port=6379, db=2, decode_responses=True)
         self.r = redis.Redis(connection_pool=self.pool)
         self.index_list = []
+        self.subid_list = []
         self.sub_graph = {}
         self.nodes = set()
         self.tmp_name = []
@@ -33,19 +35,22 @@ class SearchSubgraph(object):
     def set_node(self, frequency_table, flag=True):
         '''第一步：建立接待你映射表并存储'''
         f = open('frequency_table.txt', 'w', encoding='utf8')
-
+        sorted_frequency_table = sorted(frequency_table.items(), key=lambda x:x[1], reverse=True)
         sub_id = 1
         if flag:
-            for name, frequence in sorted(frequency_table.items(), key=lambda x:x[1], reverse=True):
+            for name, frequence in sorted_frequency_table:
                 f.write(f'{name}\t{sub_id}\t{frequence}\n')
                 self.r.hmset(name, {'sub_id': sub_id, 'level': 0, 'frequency': frequence})
+                self.r.sadd(f'subid_{sub_id}', name)
                 self.index_list.append(name)
                 sub_id += 1
         else:
-            for name, frequence in sorted(frequency_table.items(), key=lambda x:x[1], reverse=True):
+            for name, frequence in sorted_frequency_table:
                 self.index_list.append(name)
                 f.write(f'{name}\t{sub_id}\t{frequence}\n')
         f.close()
+        with open('index_list.txt', 'w', encoding='utf8') as f:
+            f.write(json.dumps(self.index_list))
         return None
 
     @print_cost_time
@@ -73,9 +78,9 @@ class SearchSubgraph(object):
             if not self.r.exists(f'link_{name}'):
                 continue
             next_nodes = self.r.smembers(f'link_{name}')
-            if not next_nodes:
-                self.tmp_name.append(name)
-                continue
+            # if not next_nodes:
+            #     self.tmp_name.append(name)
+            #     continue
             sids = []
             nodes = []
             for node in next_nodes:
@@ -88,17 +93,39 @@ class SearchSubgraph(object):
                 level = int(self.r.hget(node, 'level'))
                 self.r.hset(node, 'sub_id', min_sid)
                 self.r.hset(node, 'level', level + 1)
-
         return None
+
+    @print_cost_time
+    def run2(self, file_content):
+        '''run2'''
+        for row in file_content:
+            id1 = int(self.r.hget(row[0], 'sub_id'))
+            id2 = int(self.r.hget(row[1], 'sub_id'))
+            if id1 == id2:
+                continue
+            if id1 < id2:
+                nodes = self.r.smembers(id2)
+                for node in nodes:
+                    self.r.hset(node, 'sub_id', id1)
+                    self.r.sadd(f'subid_{id1}', node)
+                else:
+                    self.r.delete(id2)
+            else:
+                nodes = self.r.smembers(id1)
+                for node in nodes:
+                    self.r.hset(node, 'sub_id', id2)
+                    self.r.sadd(f'subid_{id2}', node)
+                else:
+                    self.r.delete(id1)
 
     @print_cost_time
     def get_all_data(self):
         '''获取全部数据'''
-        keys = self.r.keys()
+        keys = self.r.keys('subid_*')
+        count = 0
         for key in keys:
-            if key.startswith('link_'):
-                continue
-            node = self.r.hgetall(key)
+            count += 1
+            node = self.r.smembers(key.split('_')[1])
             node['sub_id'] = int(node['sub_id'])
             node['level'] = int(node['level'])
             if self.sub_graph.get(node['sub_id']):
@@ -140,5 +167,6 @@ if __name__ == '__main__':
     print(f'构建频率表耗时：{time.time() - s}')
     obj = SearchSubgraph()
     obj.run(frequency_table, file_content, flag=True)
+    obj.run2(file_content)
     obj.get_all_data()
     print('end')
