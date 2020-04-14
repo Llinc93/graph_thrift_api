@@ -69,7 +69,7 @@ def ent_actual_controller(data, min_rate):
     return nodes, links
 
 
-def get_final_beneficiary_name_neo(graph, min_rate, lcid):
+def get_final_beneficiary_name_neo(graph, min_rate):
     '''
     根据neo4j的结果，计算受益所有人
     :param graph:
@@ -79,6 +79,13 @@ def get_final_beneficiary_name_neo(graph, min_rate, lcid):
     actions = {}
     sub_ids = set()
     for path in graph:
+        tmp_nodes = []
+        tmp_links = []
+        while path['nodes']:
+            tmp_nodes.append(path['nodes'].pop())
+        while path['links']:
+            tmp_links.append(path['links'].pop())
+            
         tmp_nodes = path['nodes']
         tmp_links = path['links']
 
@@ -102,6 +109,7 @@ def get_final_beneficiary_name_neo(graph, min_rate, lcid):
                 "number_c": float(link['attributes']['rate']) if link else None,
                 "pid": parent['id'] if parent else None,
             }
+            action.update(sub)
             actions[con] = action
             pids[action['pid']] .add(action['id'])
 
@@ -218,7 +226,7 @@ def get_final_beneficiary_name(data, min_rate, entname):
             tmp_nodes.append(nodes[link_index[index]])
         tmp_nodes.append(nodes[link_index[-1]])
         path.append({'nodes': tmp_nodes, 'links': tmp_links})
-    return get_final_beneficiary_name_neo(graph=path, min_rate=min_rate, lcid=start)
+    return get_final_beneficiary_name_neo(graph=path, min_rate=min_rate)
 
 
 def get_link(link):
