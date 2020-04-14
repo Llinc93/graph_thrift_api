@@ -13,7 +13,7 @@ class Filter(object):
         ('/opt/csv/jsdata/企业投资_0414.csv', r'/home/tigergraph/data/企业投资.csv', 'IPEES'),
         ('/home/csvdata/自然人投资_0309.csv', r'/home/tigergraph/data/自然人投资.csv', 'IPEER'),
         ('/home/csvdata/企业分支.csv', r'/home/tigergraph/data/企业分支.csv', 'BEE'),
-        ('/home/csvdata/主要管理人员position处理0311.csv', r'/home/tigergraph/data/主要管理人员.csv', 'SPE'),
+        ('/home/csvdata/主要管理人员0312.csv', r'/home/tigergraph/data/主要管理人员.csv', 'SPE'),
 
         ('/home/csvdata/专利关系.csv', r'/home/tigergraph/data/专利关系.csv', 'OPEP'),
         ('/home/csvdata/专利节点.csv', r'/home/tigergraph/data/专利节点.csv', 'PP'),
@@ -27,10 +27,10 @@ class Filter(object):
         ('/home/csvdata/相同办公地.csv', r'/home/tigergraph/data/相同办公地.csv', 'RED'),
         ('/home/csvdata/办公地节点.csv', r'/home/tigergraph/data/办公地节点.csv', 'DD'),
 
-        ('/home/csvdata/相同联系方式-电话0306.csv', r'/home/tigergraph/data/相同联系方式-电话.csv', 'LEE1'),
+        ('/home/csvdata/相同联系方式-电话0306.csv', r'/home/tigergraph/data/相同联系方式-电话.csv', 'LEET'),
         ('/home/csvdata/电话节点.csv', r'/home/tigergraph/data/电话节点.csv', 'TT'),
 
-        ('/home/csvdata/相同联系方式-邮箱0306.csv', r'/home/tigergraph/data/相同联系方式-邮箱.csv', 'LEE2'),
+        ('/home/csvdata/相同联系方式-邮箱0306.csv', r'/home/tigergraph/data/相同联系方式-邮箱.csv', 'LEEE'),
         ('/home/csvdata/邮箱节点.csv', r'/home/tigergraph/data/邮箱节点.csv', 'EE'),
     ]
 
