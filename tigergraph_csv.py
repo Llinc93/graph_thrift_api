@@ -436,6 +436,7 @@ class Filter(object):
             for row in csv.reader(rf):
                 writer = csv.writer(wf)
                 if index == 1:
+                    index += 1
                     continue
                 else:
                     try:

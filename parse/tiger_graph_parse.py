@@ -85,9 +85,6 @@ def get_final_beneficiary_name_neo(graph, min_rate):
             tmp_nodes.append(path['nodes'].pop())
         while path['links']:
             tmp_links.append(path['links'].pop())
-            
-        tmp_nodes = path['nodes']
-        tmp_links = path['links']
 
         while len(tmp_nodes):
             sub = tmp_nodes.pop()
