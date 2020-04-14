@@ -1,145 +1,361 @@
+import hashlib
 from copy import deepcopy
 from collections import defaultdict
 
 
-def task(raw_data, params):
+def task(raw_data, params=None):
     nodes = {}
-    links = []
+    links = defaultdict(list)
     pids = defaultdict(set)
     appear = []
     null = []
-    start = None
-    while raw_data['results']:
-        item = raw_data['results'].pop()
-        tmp_nodes = item['nodes']
-        tmp_links = item['links']
+    start_node = raw_data['results'][0]['nodes'][0]
+    end_node = None
+    if raw_data['results'].pop()['@@res_flag']:
+        while raw_data['results']:
+            item = raw_data['results'].pop()
+            tmp_nodes = item['nodes']
+            tmp_links = item['links']
 
-        for node in tmp_nodes:
+            for node in tmp_nodes:
+                if not node['attributes']['name']:
+                    null.append(node['v_id'])
+                    continue
+                if node['v_id'] in appear:
+                    continue
+                if node['attributes']['name'] == params['ename']:
+                    end_node = node
+                appear.append(node['v_id'])
+                nodes[node['v_id']] = node
 
-            if not node['attributes']['name']:
-                null.append(node['v_id'])
+            for link in tmp_links:
+                if link['to_id'] in null or link['from_id'] in null:
+                    continue
+
+                pids[link['from_id']].add(link['to_id'])
+                links[(link['from_id'], link['to_id'])].append(link)
+
+        links_index = []
+        stack = [start_node['v_id']]
+        tmp_links = [[start_node['v_id']]]
+        print(pids)
+        while stack:
+            link = tmp_links.pop()
+            tmp = stack.pop()
+            if tmp == end_node['v_id']:
+                links_index.append(link)
                 continue
+            for pid in pids[tmp]:
+                if pid in link:
+                    continue
+                action = deepcopy(link)
+                stack.append(pid)
+                action.append(pid)
+                tmp_links.append(action)
 
-            if node['v_id'] in appear:
-                continue
-
-            appear.append(node['v_id'])
-            action = {
-                'number': node['attributes']['@rate'],
-                'children': [],
-                'lastnode': 1 if node['attributes']['@top'] else 0,
-                'name': node['attributes']['name'],
-                'id': node['v_id'],
-                'type': node['v_type'],
-                'attr': 2 if node['attributes']['name'] == params['sname'] else 1,
-            }
-            nodes[node['v_id']] = action
-            if node['attributes']['name'] == params['sname']:
-                start = node['v_id']
-
-        for link in tmp_links:
-            if link['to_id'] in null or link['from_id'] in null:
-                continue
-            links.append(link)
-            pids[link['from_id']].add(link['to_id'])
-
-    links_index = []
-    stack = [start]
-    tmp_links = [[start]]
-    while stack:
-        link = tmp_links.pop()
-        tmp = stack.pop()
-        if tmp not in pids:
-            links_index.append(link)
-            continue
-        for pid in pids[tmp]:
-            if pid in link:
-                continue
-            action = deepcopy(link)
-            stack.append(pid)
-            action.append(pid)
-            tmp_links.append(action)
-    print(links_index)
-
-    return nodes, links, False
+        data_nodes = []
+        data_links = []
+        for link_index in links_index:
+            for index in range(len(link_index) - 1):
+                for i in pids[link_index[index]]:
+                    data_links.extend(links[link_index[index], i])
+                data_nodes.append(nodes[link_index[index]])
+            data_nodes.append(nodes[link_index[-1]])
+    return data_nodes, data_links, False
 
 
 if __name__ == '__main__':
     data = {
-        'results': [
+        "version": {
+            "edition": "developer",
+            "api": "v2",
+            "schema": 0
+        },
+        "error": False,
+        "message": "",
+        "results": [
             {
-                'nodes': [
-                    {'v_id': 1, 'v_type': 'GS', 'attributes': {'@rate': 0, '@top': False, 'name': 'a'}}
+                "nodes": [
+                    {
+                        "v_id": "8be5e8b4e2ed29cab6a0bf550a2c2baf",
+                        "v_type": "GS",
+                        "attributes": {
+                            "name": "镇江市广播电视服务公司修理部",
+                            "uniscid": "null",
+                            "esdate": "1986-03-19",
+                            "industry": "F",
+                            "province": "320000",
+                            "regcap": "0",
+                            "reccapcur": "null",
+                            "entstatus": "吊销，未注销",
+                            "id": "8be5e8b4e2ed29cab6a0bf550a2c2baf",
+                            "@outdegree": 0
+                        }
+                    }
                 ],
-                'links': [],
+                "links": []
             },
             {
-                'nodes': [
-                    {'v_id': 2, 'v_type': 'GS', 'attributes': {'@rate': 0, '@top': False, 'name': 'b'}},
-
+                "nodes": [
+                    {
+                        "v_id": "9a9298a5f35b71374ee86a9c6d9791b4",
+                        "v_type": "GS",
+                        "attributes": {
+                            "name": "镇江市广播电视服务公司",
+                            "uniscid": "null",
+                            "esdate": "1982-04-02",
+                            "industry": "F",
+                            "province": "320000",
+                            "regcap": "41",
+                            "reccapcur": "人民币",
+                            "entstatus": "吊销，未注销",
+                            "id": "9a9298a5f35b71374ee86a9c6d9791b4",
+                            "@outdegree": 5
+                        }
+                    }
                 ],
-                'links': [
-                    {'from_id': 1, 'to_id': 2, 'e_type': 'REV', 'attributes': {'rate': 1}},    # a<-b
-                ],
+                "links": [
+                    {
+                        "e_type": "REV_BEE",
+                        "from_id": "8be5e8b4e2ed29cab6a0bf550a2c2baf",
+                        "from_type": "GS",
+                        "to_id": "9a9298a5f35b71374ee86a9c6d9791b4",
+                        "to_type": "GS",
+                        "directed": True,
+                        "attributes": {
+                            "rate": 1
+                        }
+                    }
+                ]
             },
             {
-                'nodes': [
-                    {'v_id': 3, 'v_type': 'GS', 'attributes': {'@rate': 0, '@top': False, 'name': 'c'}},
-                    {'v_id': 1, 'v_type': 'GS', 'attributes': {'@rate': 0, '@top': False, 'name': 'a'}},  #
-                    {'v_id': 1, 'v_type': 'GS', 'attributes': {'@rate': 0, '@top': False, 'name': 'a'}},  #
-                    {'v_id': 1, 'v_type': 'GS', 'attributes': {'@rate': 0, '@top': False, 'name': 'a'}},  #
+                "nodes": [
+                    {
+                        "v_id": "72edf3a59d69865f3aedcb974fb41fdf",
+                        "v_type": "GS",
+                        "attributes": {
+                            "name": "镇江市广播电视服务公司智能游艺服务部",
+                            "uniscid": "null",
+                            "esdate": "1993-03-13",
+                            "industry": "R",
+                            "province": "320000",
+                            "regcap": "0",
+                            "reccapcur": "人民币",
+                            "entstatus": "吊销，未注销",
+                            "id": "72edf3a59d69865f3aedcb974fb41fdf",
+                            "@outdegree": 1
+                        }
+                    },
+                    {
+                        "v_id": "8be5e8b4e2ed29cab6a0bf550a2c2baf",
+                        "v_type": "GS",
+                        "attributes": {
+                            "name": "镇江市广播电视服务公司修理部",
+                            "uniscid": "null",
+                            "esdate": "1986-03-19",
+                            "industry": "F",
+                            "province": "320000",
+                            "regcap": "0",
+                            "reccapcur": "null",
+                            "entstatus": "吊销，未注销",
+                            "id": "8be5e8b4e2ed29cab6a0bf550a2c2baf",
+                            "@outdegree": 1
+                        }
+                    },
+                    {
+                        "v_id": "332d1a9bcac6f0ba67b2f71e0931f019",
+                        "v_type": "GS",
+                        "attributes": {
+                            "name": "镇江市广播电视服务公司经营部",
+                            "uniscid": "null",
+                            "esdate": "1987-01-24",
+                            "industry": "F",
+                            "province": "320000",
+                            "regcap": "0",
+                            "reccapcur": "人民币",
+                            "entstatus": "注销",
+                            "id": "332d1a9bcac6f0ba67b2f71e0931f019",
+                            "@outdegree": 1
+                        }
+                    },
+                    {
+                        "v_id": "0a1d273b377acb6b2a6b133ac3a26d08",
+                        "v_type": "GS",
+                        "attributes": {
+                            "name": "镇江市广播电视服务公司门市部",
+                            "uniscid": "null",
+                            "esdate": "1986-03-19",
+                            "industry": "F",
+                            "province": "320000",
+                            "regcap": "0",
+                            "reccapcur": "人民币",
+                            "entstatus": "吊销，未注销",
+                            "id": "0a1d273b377acb6b2a6b133ac3a26d08",
+                            "@outdegree": 1
+                        }
+                    },
+                    {
+                        "v_id": "88341ca058be014e108621327dd559ff",
+                        "v_type": "GS",
+                        "attributes": {
+                            "name": "镇江市广播电视服务公司老菜饭庄",
+                            "uniscid": "null",
+                            "esdate": "1994-02-22",
+                            "industry": "H",
+                            "province": "320000",
+                            "regcap": "0",
+                            "reccapcur": "人民币",
+                            "entstatus": "注销",
+                            "id": "88341ca058be014e108621327dd559ff",
+                            "@outdegree": 1
+                        }
+                    }
                 ],
-                'links': [
-                    {'from_id': 1, 'to_id': 2, 'e_type': 'REV', 'attributes': {'rate': 1}},  # a<-b
-                    {'from_id': 1, 'to_id': 6, 'e_type': 'REV', 'attributes': {'rate': 1}},  # a<-f
-                    {'from_id': 1, 'to_id': 11, 'e_type': 'REV', 'attributes': {'rate': 1}},  # a<-k
-                    {'from_id': 1, 'to_id': 11, 'e_type': 'REV', 'attributes': {'rate': 1}},  # a<-k
-                ],
+                "links": [
+                    {
+                        "e_type": "BEE",
+                        "from_id": "9a9298a5f35b71374ee86a9c6d9791b4",
+                        "from_type": "GS",
+                        "to_id": "72edf3a59d69865f3aedcb974fb41fdf",
+                        "to_type": "GS",
+                        "directed": True,
+                        "attributes": {
+                            "rate": 1
+                        }
+                    },
+                    {
+                        "e_type": "BEE",
+                        "from_id": "9a9298a5f35b71374ee86a9c6d9791b4",
+                        "from_type": "GS",
+                        "to_id": "8be5e8b4e2ed29cab6a0bf550a2c2baf",
+                        "to_type": "GS",
+                        "directed": True,
+                        "attributes": {
+                            "rate": 1
+                        }
+                    },
+                    {
+                        "e_type": "BEE",
+                        "from_id": "9a9298a5f35b71374ee86a9c6d9791b4",
+                        "from_type": "GS",
+                        "to_id": "332d1a9bcac6f0ba67b2f71e0931f019",
+                        "to_type": "GS",
+                        "directed": True,
+                        "attributes": {
+                            "rate": 1
+                        }
+                    },
+                    {
+                        "e_type": "BEE",
+                        "from_id": "9a9298a5f35b71374ee86a9c6d9791b4",
+                        "from_type": "GS",
+                        "to_id": "0a1d273b377acb6b2a6b133ac3a26d08",
+                        "to_type": "GS",
+                        "directed": True,
+                        "attributes": {
+                            "rate": 1
+                        }
+                    },
+                    {
+                        "e_type": "BEE",
+                        "from_id": "9a9298a5f35b71374ee86a9c6d9791b4",
+                        "from_type": "GS",
+                        "to_id": "88341ca058be014e108621327dd559ff",
+                        "to_type": "GS",
+                        "directed": True,
+                        "attributes": {
+                            "rate": 1
+                        }
+                    }
+                ]
             },
             {
-                'nodes': [
-                    {'v_id': 7, 'v_type': 'GS', 'attributes': {'@rate': 0, '@top': False, 'name': 'g'}},
+                "nodes": [
+                    {
+                        "v_id": "9a9298a5f35b71374ee86a9c6d9791b4",
+                        "v_type": "GS",
+                        "attributes": {
+                            "name": "镇江市广播电视服务公司",
+                            "uniscid": "null",
+                            "esdate": "1982-04-02",
+                            "industry": "F",
+                            "province": "320000",
+                            "regcap": "41",
+                            "reccapcur": "人民币",
+                            "entstatus": "吊销，未注销",
+                            "id": "9a9298a5f35b71374ee86a9c6d9791b4",
+                            "@outdegree": 5
+                        }
+                    }
                 ],
-                'links': [
-                    {'from_id': 3, 'to_id': 4, 'e_type': 'REV', 'attributes': {'rate': 1}},    # c<-d
-                    {'from_id': 8, 'to_id': 7, 'e_type': 'REV', 'attributes': {'rate': 1}},    # h<-g
-                    {'from_id': 9, 'to_id': 7, 'e_type': 'REV', 'attributes': {'rate': 1}},    # i<-g
-                    {'from_id': 12, 'to_id': 11, 'e_type': 'REV', 'attributes': {'rate': 1}},    # l<-k
-                ],
+                "links": [
+                    {
+                        "e_type": "REV_BEE",
+                        "from_id": "72edf3a59d69865f3aedcb974fb41fdf",
+                        "from_type": "GS",
+                        "to_id": "9a9298a5f35b71374ee86a9c6d9791b4",
+                        "to_type": "GS",
+                        "directed": True,
+                        "attributes": {
+                            "rate": 1
+                        }
+                    },
+                    {
+                        "e_type": "REV_BEE",
+                        "from_id": "8be5e8b4e2ed29cab6a0bf550a2c2baf",
+                        "from_type": "GS",
+                        "to_id": "9a9298a5f35b71374ee86a9c6d9791b4",
+                        "to_type": "GS",
+                        "directed": True,
+                        "attributes": {
+                            "rate": 1
+                        }
+                    },
+                    {
+                        "e_type": "REV_BEE",
+                        "from_id": "332d1a9bcac6f0ba67b2f71e0931f019",
+                        "from_type": "GS",
+                        "to_id": "9a9298a5f35b71374ee86a9c6d9791b4",
+                        "to_type": "GS",
+                        "directed": True,
+                        "attributes": {
+                            "rate": 1
+                        }
+                    },
+                    {
+                        "e_type": "REV_BEE",
+                        "from_id": "0a1d273b377acb6b2a6b133ac3a26d08",
+                        "from_type": "GS",
+                        "to_id": "9a9298a5f35b71374ee86a9c6d9791b4",
+                        "to_type": "GS",
+                        "directed": True,
+                        "attributes": {
+                            "rate": 1
+                        }
+                    },
+                    {
+                        "e_type": "REV_BEE",
+                        "from_id": "88341ca058be014e108621327dd559ff",
+                        "from_type": "GS",
+                        "to_id": "9a9298a5f35b71374ee86a9c6d9791b4",
+                        "to_type": "GS",
+                        "directed": True,
+                        "attributes": {
+                            "rate": 1
+                        }
+                    }
+                ]
             },
             {
-                'nodes': [
-                    {'v_id': 5, 'v_type': 'GS', 'attributes': {'@rate': 0, '@top': False, 'name': 'e'}},
-                ],
-                'links': [
-                    {'from_id': 4, 'to_id': 5, 'e_type': 'REV', 'attributes': {'rate': 1}},    # d<-e
-                ],
-            },
-            {
-                'nodes': [
-                    {'v_id': 5, 'v_type': 'GS', 'attributes': {'@rate': 0, '@top': False, 'name': 'e'}},
-                ],
-                'links': [
-                    {'from_id': 4, 'to_id': 5, 'e_type': 'REV', 'attributes': {'rate': 1}},  # d<-e
-                ],
-            },
-            {
-                'nodes': [
-                    {'v_id': 3, 'v_type': 'GS', 'attributes': {'@rate': 0, '@top': False, 'name': 'c'}},
-                    {'v_id': 1, 'v_type': 'GS', 'attributes': {'@rate': 0, '@top': False, 'name': 'a'}},  #
-                    {'v_id': 1, 'v_type': 'GS', 'attributes': {'@rate': 0, '@top': False, 'name': 'a'}},  #
-                    {'v_id': 1, 'v_type': 'GS', 'attributes': {'@rate': 0, '@top': False, 'name': 'a'}},  #
-                ],
-                'links': [
-                    {'from_id': 4, 'to_id': 5, 'e_type': 'REV', 'attributes': {'rate': 1}},  # d<-e
-                    {'from_id': 4, 'to_id': 2, 'e_type': 'REV', 'attributes': {'rate': 1}},  # d<-b
-                    {'from_id': 1, 'to_id': 6, 'e_type': 'REV', 'attributes': {'rate': 1}},  # a<-f
-                    {'from_id': 1, 'to_id': 11, 'e_type': 'REV', 'attributes': {'rate': 1}},  # a<-k
-                ],
-            },
+                "@@res_flag": True
+            }
         ]
     }
-    nodes, links, flag = task(raw_data=data)
+    params = {
+        'sname': '镇江市广播电视服务公司修理部',
+        'ename': '镇江市广播电视服务公司'
+    }
+    nodes, links, flag = task(raw_data=data, params=params)
     print(nodes)
     print(links)
     print()

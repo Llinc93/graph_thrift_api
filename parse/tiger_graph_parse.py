@@ -86,7 +86,9 @@ def get_final_beneficiary_name_neo(graph, min_rate, lcid):
         tmp_links = path['links']
 
         while len(tmp_nodes):
+            print(tmp_nodes)
             sub = tmp_nodes.pop()
+            print(sub)
             parent = tmp_nodes[-1] if tmp_nodes else None
             link = tmp_links.pop() if tmp_links else None
 
@@ -94,6 +96,7 @@ def get_final_beneficiary_name_neo(graph, min_rate, lcid):
                 link['attributes']['rate'] = 1
 
             if parent:
+                print(sub, parent)
                 con = (sub['id'], parent['id'])
                 sub_ids.add(sub['id'])
             else:
@@ -160,7 +163,7 @@ def get_final_beneficiary_name_v1(data, min_rate, entname):
     :return:
     '''
     nodes = {}
-    links = []
+    links = {}
     pids = defaultdict(set)
     appear = []
     null = []
@@ -199,7 +202,8 @@ def get_final_beneficiary_name_v1(data, min_rate, entname):
         for link in tmp_links:
             if link['to_id'] in null or link['from_id'] in null:
                 continue
-            links.append(link)
+            # links.append(link)
+            links[(link['from_id'], link['to_id'])] = link
             pids[link['from_id']].add(link['to_id'])
 
     links_index = []
@@ -224,9 +228,10 @@ def get_final_beneficiary_name_v1(data, min_rate, entname):
     for link_index in links_index:
         tmp_links = []
         tmp_nodes = []
-        for index in link_index:
-            tmp_links.append(links[index])
-            tmp_nodes.append(nodes[index])
+        for index in range(len(link_index) - 1):
+            tmp_links.append(links[(link_index[index], link_index[index + 1])])
+            tmp_nodes.append(nodes[link_index[index]])
+        tmp_nodes.append(nodes[link_index[-1]])
         path.append({'nodes': tmp_nodes, 'links': tmp_links})
     return get_final_beneficiary_name_neo(graph=path, min_rate=min_rate, lcid=start)
 
