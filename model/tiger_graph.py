@@ -107,6 +107,8 @@ def task(params):
                 tmp_links.append(action)
 
         for link_index in links_index:
+            if len(link_index) > int(params['level']) + 1:
+                continue
             for index in range(len(link_index) - 1):
                 for i in pids[link_index[index]]:
                     data_links.extend(links[link_index[index], i])

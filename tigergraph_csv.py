@@ -10,10 +10,10 @@ class Filter(object):
         ('/home/csvdata/基本信息企业节点.csv', r'/home/neo4j_test/import/基本信息企业节点.csv', 'GS'),
         ('/home/csvdata/人员节点-投资.csv', r'/home/neo4j_test/import/人员节点-投资.csv', 'GR'),
         ('/home/csvdata/人员节点-高管.csv', r'/home/neo4j_test/import/人员节点-高管.csv', 'GR'),
-        ('/home/csvdata/企业投资_0309.csv', r'/home/neo4j_test/import/企业投资.csv', 'IPEES'),
+        ('/opt/csv/jsdata/企业投资_0414.csv', r'/home/neo4j_test/import/企业投资.csv', 'IPEES'),
         ('/home/csvdata/自然人投资_0309.csv', r'/home/neo4j_test/import/自然人投资.csv', 'IPEER'),
         ('/home/csvdata/企业分支.csv', r'/home/neo4j_test/import/企业分支.csv', 'BEE'),
-        ('/home/csvdata/主要管理人员.csv', r'/home/neo4j_test/import/主要管理人员.csv', 'SPE'),
+        ('/home/csvdata/主要管理人员position处理0311.csv', r'/home/neo4j_test/import/主要管理人员.csv', 'SPE'),
 
         ('/home/csvdata/专利关系.csv', r'/home/neo4j_test/import/专利关系.csv', 'OPEP'),
         ('/home/csvdata/专利节点.csv', r'/home/neo4j_test/import/专利节点.csv', 'PP'),
