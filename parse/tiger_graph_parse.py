@@ -144,7 +144,7 @@ def get_final_beneficiary_name_neo(graph, min_rate, lcid):
     return data
 
 
-def get_final_beneficiary_name_v1(data, min_rate, entname):
+def get_final_beneficiary_name(data, min_rate, entname):
     '''
     {
         "number": 0,
