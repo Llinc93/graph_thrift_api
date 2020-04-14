@@ -51,9 +51,9 @@ class Filter(object):
         ('/home/tigergraph/data/办公地节点.csv', r'/home/tigergraph/data/dd.csv', 'DD', '办公地节点'),
         ('/home/tigergraph/data/相同办公地.csv', r'/home/tigergraph/data/red.csv', 'RED', '相同办公地'),
         ('/home/tigergraph/data/电话节点.csv', r'/home/tigergraph/data/tt.csv', 'TT', '电话节点'),
-        ('/home/tigergraph/data/相同联系方式-电话.csv', r'/home/tigergraph/data/lee1.csv', 'LEET', '相同联系方式'),
+        ('/home/tigergraph/data/相同联系方式-电话.csv', r'/home/tigergraph/data/leet.csv', 'LEET', '相同联系方式'),
         ('/home/tigergraph/data/邮箱节点.csv', r'/home/tigergraph/data/ee.csv', 'EE', '邮箱节点'),
-        ('/home/tigergraph/data/相同联系方式-邮箱.csv', r'/home/tigergraph/data/le2.csv', 'LEEE', '相同联系方式'),
+        ('/home/tigergraph/data/相同联系方式-邮箱.csv', r'/home/tigergraph/data/leee.csv', 'LEEE', '相同联系方式'),
     ]
 
     def __init__(self):
