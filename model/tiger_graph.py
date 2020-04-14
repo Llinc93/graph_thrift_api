@@ -53,7 +53,9 @@ def get_ent_graph(name, node_type, level, attIds):
     return ret.json()
 
 
-def task(raw_data, params=None):
+def task(params):
+    ret = requests.get(url=config.EntRelevanceSeekGraphUrl, params=params)
+    raw_data = ret.json()
     data_nodes = []
     data_links = []
     nodes = {}
