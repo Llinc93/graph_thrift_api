@@ -53,101 +53,64 @@ def get_ent_graph(name, node_type, level, attIds):
     return ret.json()
 
 
-def task(params):
-    ret = requests.get(url=config.EntRelevanceSeekGraphUrl, params=params)
-    raw_data = ret.json()
-    if raw_data['error']:
-        return None, None, True
-
-    # nodes = []
-    # links = []
-    # null = []
-    # path = set()
-    # if raw_data['results'].pop()['@@res_flag']:
-    #     snode = raw_data['results'][0]['nodes'][0]
-    #     while raw_data['results']:
-    #         item = raw_data['results'].pop()
-    #         tmp_nodes = item['nodes']
-    #         tmp_links = item['links']
-    #
-    #         for node in tmp_nodes:
-    #             if not node['attributes']['name']:
-    #                 null.append(node['v_id'])
-    #                 continue
-    #
-    #             if node['attributes']['name'] == params['ename']:
-    #                 path.add(node['v_id'])
-    #                 nodes.append(node)
-    #             elif node['v_id'] in path:
-    #                 nodes.append(node)
-    #
-    #         for link in tmp_links:
-    #             if link['to_id'] in null or link['from_id'] in null:
-    #                 continue
-    #
-    #             if link['to_id'] in path and link['to_id'] != snode['v_id']:
-    #                 path.add(link['from_id'])
-    #                 links.append(link)
-
+def task(raw_data, params=None):
+    data_nodes = []
+    data_links = []
     nodes = {}
-    links = []
+    links = defaultdict(list)
     pids = defaultdict(set)
     appear = []
     null = []
-    start = None
-    while raw_data['results']:
-        item = raw_data['results'].pop()
-        tmp_nodes = item['nodes']
-        tmp_links = item['links']
+    start_node = raw_data['results'][0]['nodes'][0]
+    end_node = None
+    if raw_data['results'].pop()['@@res_flag']:
+        while raw_data['results']:
+            item = raw_data['results'].pop()
+            tmp_nodes = item['nodes']
+            tmp_links = item['links']
 
-        for node in tmp_nodes:
+            for node in tmp_nodes:
+                if not node['attributes']['name']:
+                    null.append(node['v_id'])
+                    continue
+                if node['v_id'] in appear:
+                    continue
+                if node['attributes']['name'] == params['ename']:
+                    end_node = node
+                appear.append(node['v_id'])
+                nodes[node['v_id']] = node
 
-            if not node['attributes']['name']:
-                null.append(node['v_id'])
+            for link in tmp_links:
+                if link['to_id'] in null or link['from_id'] in null:
+                    continue
+
+                pids[link['from_id']].add(link['to_id'])
+                links[(link['from_id'], link['to_id'])].append(link)
+
+        links_index = []
+        stack = [start_node['v_id']]
+        tmp_links = [[start_node['v_id']]]
+        while stack:
+            link = tmp_links.pop()
+            tmp = stack.pop()
+            if tmp == end_node['v_id']:
+                links_index.append(link)
                 continue
+            for pid in pids[tmp]:
+                if pid in link:
+                    continue
+                action = deepcopy(link)
+                stack.append(pid)
+                action.append(pid)
+                tmp_links.append(action)
 
-            if node['v_id'] in appear:
-                continue
-
-            appear.append(node['v_id'])
-            action = {
-                'number': node['attributes']['@rate'],
-                'children': [],
-                'lastnode': 1 if node['attributes']['@top'] else 0,
-                'name': node['attributes']['name'],
-                'id': node['v_id'],
-                'type': node['v_type'],
-                'attr': 2 if node['attributes']['name'] == params['sname'] else 1,
-            }
-            nodes[node['v_id']] = action
-            if node['attributes']['name'] == params['sname']:
-                start = node['v_id']
-
-        for link in tmp_links:
-            if link['to_id'] in null or link['from_id'] in null:
-                continue
-            links.append(link)
-            pids[link['from_id']].add(link['to_id'])
-
-    links_index = []
-    stack = [start]
-    tmp_links = [[start]]
-    while stack:
-        link = tmp_links.pop()
-        tmp = stack.pop()
-        if tmp not in pids:
-            links_index.append(link)
-            continue
-        for pid in pids[tmp]:
-            if pid in link:
-                continue
-            action = deepcopy(link)
-            stack.append(pid)
-            action.append(pid)
-            tmp_links.append(action)
-    print(links_index)
-
-    return nodes, links, False
+        for link_index in links_index:
+            for index in range(len(link_index) - 1):
+                for i in pids[link_index[index]]:
+                    data_links.extend(links[link_index[index], i])
+                data_nodes.append(nodes[link_index[index]])
+            data_nodes.append(nodes[link_index[-1]])
+    return data_nodes, data_links, False
 
 
 def get_ent_relevance_seek_graph(names, attIds, level):
