@@ -78,10 +78,8 @@ def get_final_beneficiary_name_neo(graph, min_rate, lcid):
     pids = defaultdict(set)
     actions = {}
     sub_ids = set()
-    graph2 = deepcopy(graph)
-
     nodes = defaultdict(float)
-    for path in graph2:
+    for path in graph:
         tmp_nodes = path['nodes']
         tmp_links = path['links']
 
@@ -105,15 +103,8 @@ def get_final_beneficiary_name_neo(graph, min_rate, lcid):
                 continue
 
             action = {
-                "number": 0 if sub['id'] == lcid else nodes[sub['id']],
                 "number_c": float(link['attributes']['rate']) if link else None,
-                "children": None if sub['id'] == lcid else [],
-                "lastnode": 0 if parent else 1,
-                "name": sub['name'],
                 "pid": parent['id'] if parent else None,
-                "id": sub['id'],
-                "type": sub['type'],
-                "attr": 2 if sub['id'] == lcid else 1,
             }
             actions[con] = action
             pids[action['pid']] .add(action['id'])

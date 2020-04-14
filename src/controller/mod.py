@@ -21,7 +21,7 @@ def get_final_beneficiary_name():
     try:
         entName = request.form.get('entName')
         uscCode = request.form.get('uscCode')
-        min_ratio = request.form.get('min_ratio')
+        min_ratio = float(request.form.get('min_ratio'))
 
         raw_data = tiger_graph.get_ent_actual_controller(name=entName, uniscid=uscCode)
 
