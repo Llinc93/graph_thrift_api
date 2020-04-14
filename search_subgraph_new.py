@@ -23,13 +23,12 @@ class SearchSubgraph(object):
         节点    频率    ID     层级
     '''
     def __init__(self):
-        self.pool = redis.ConnectionPool(host='localhost', port=6379, db=2, decode_responses=True)
+        self.pool = redis.ConnectionPool(host='localhost', port=6379, db=1, decode_responses=True)
         self.r = redis.Redis(connection_pool=self.pool)
         self.index_list = []
         self.subid_list = []
         self.sub_graph = {}
         self.nodes = set()
-        self.tmp_name = []
 
     @print_cost_time
     def set_node(self, frequency_table, flag=True):
@@ -109,14 +108,14 @@ class SearchSubgraph(object):
                     self.r.hset(node, 'sub_id', id1)
                     self.r.sadd(f'subid_{id1}', node)
                 else:
-                    self.r.delete(id2)
+                    self.r.delete(f'subid_{id2}')
             else:
                 nodes = self.r.smembers(id1)
                 for node in nodes:
                     self.r.hset(node, 'sub_id', id2)
                     self.r.sadd(f'subid_{id2}', node)
                 else:
-                    self.r.delete(id1)
+                    self.r.delete(f'subid_{id1}')
 
     @print_cost_time
     def get_all_data(self):
@@ -125,26 +124,11 @@ class SearchSubgraph(object):
         count = 0
         for key in keys:
             count += 1
-            node = self.r.smembers(key.split('_')[1])
-            node['sub_id'] = int(node['sub_id'])
-            node['level'] = int(node['level'])
-            if self.sub_graph.get(node['sub_id']):
-                if self.sub_graph[node['sub_id']]['level'] < node['level']:
-                    self.sub_graph[node['sub_id']]['level'] = node['level']
-                self.sub_graph[node['sub_id']]['count'] += 1
-            else:
-                self.sub_graph[node['sub_id']] = {'count': 1, 'level': 0}
-
-        count = 0
-        number = 0
-        for key, value in sorted(self.sub_graph.items(), key=lambda x: x[0]):
-            number += value['count']
-            print(f'子图: {key}\t节点数量: {value["count"]}\t层级: {value["level"]}')
+            node = self.r.smembers(key)
             count += 1
-        with open('tmp_node', 'w', encoding='utf8') as f:
-            for name in self.tmp_name:
-                f.write(f'{name}\n')
-        print(f'共有子图: {count}\t节点数量: {number}\tnodes_count:{len(self.nodes)}')
+            print(f'子图: {key.split("_")[1]}\t节点数量: {len(node)}')
+            count += 1
+        print(f'共有子图: {len(keys)}\t节点数量: {count}')
         return None
 
 
@@ -162,7 +146,7 @@ def get_frequency_table(file):
 
 if __name__ == '__main__':
     s = time.time()
-    file = '/home/20200220csv/tmp/501/target/target_1.csv'
+    file = '/home/20200220csv/target.csv'
     frequency_table, file_content = get_frequency_table(file)
     print(f'构建频率表耗时：{time.time() - s}')
     obj = SearchSubgraph()
