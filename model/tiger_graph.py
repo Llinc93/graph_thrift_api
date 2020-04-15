@@ -100,11 +100,12 @@ def task(params):
         while stack:
             link = tmp_links.pop()
             tmp = stack.pop()
+            if len(link) > params['level'] + 1:
+                continue
             if tmp == end_node['v_id']:
                 links_index.append(link)
                 continue
-            if len(link) > params['level'] + 1:
-                continue
+
             for pid in pids[tmp]:
                 if pid in link:
                     continue
