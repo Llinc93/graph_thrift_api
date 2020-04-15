@@ -150,7 +150,7 @@ if __name__ == '__main__':
     frequency_table, file_content = get_frequency_table(file)
     print(f'构建频率表耗时：{time.time() - s}')
     obj = SearchSubgraph()
-    obj.run(frequency_table, file_content, flag=True)
+    # obj.run(frequency_table, file_content, flag=True)
     obj.run2(file_content)
     obj.get_all_data()
     print('end')

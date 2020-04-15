@@ -65,6 +65,7 @@ def task(params):
     null = []
     start_node = raw_data['results'][0]['nodes'][0]
     end_node = None
+    find_flag = False
     if raw_data['results'].pop()['@@res_flag']:
         while raw_data['results']:
             item = raw_data['results'].pop()
@@ -72,20 +73,24 @@ def task(params):
             tmp_links = item['links']
 
             for node in tmp_nodes:
-                if not node['attributes']['name']:
-                    null.append(node['v_id'])
-                    continue
-                if node['v_id'] in appear:
-                    continue
                 if node['attributes']['name'] == params['ename']:
                     end_node = node
-                appear.append(node['v_id'])
-                nodes[node['v_id']] = node
+                    find_flag = True
+                if find_flag:
+                    if not node['attributes']['name']:
+                        null.append(node['v_id'])
+                        continue
+                    if node['v_id'] in appear:
+                        continue
+                    appear.append(node['v_id'])
+                    nodes[node['v_id']] = node
+
+            if not find_flag:
+                continue
 
             for link in tmp_links:
                 if link['to_id'] in null or link['from_id'] in null:
                     continue
-
                 pids[link['from_id']].add(link['to_id'])
                 links[(link['from_id'], link['to_id'])].append(link)
 
@@ -98,12 +103,14 @@ def task(params):
             if tmp == end_node['v_id']:
                 links_index.append(link)
                 continue
+            if len(link) > params['level'] + 1:
+                continue
             for pid in pids[tmp]:
                 if pid in link:
                     continue
                 action = deepcopy(link)
-                stack.append(pid)
                 action.append(pid)
+                stack.append(pid)
                 tmp_links.append(action)
 
         for link_index in links_index:

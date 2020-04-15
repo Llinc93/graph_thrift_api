@@ -206,6 +206,8 @@ def get_final_beneficiary_name(data, min_rate, entname):
         if tmp not in pids:
             links_index.append(link)
             continue
+        if len(link) > 11:
+            continue
         for pid in pids[tmp]:
             if pid in link:
                 continue

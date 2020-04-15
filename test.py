@@ -3,14 +3,17 @@ from copy import deepcopy
 from collections import defaultdict
 
 
-def task(raw_data, params=None):
+def task(raw_data, params):
+    data_nodes = []
+    data_links = []
     nodes = {}
+    tmp = []
     links = defaultdict(list)
     pids = defaultdict(set)
-    appear = []
-    null = []
     start_node = raw_data['results'][0]['nodes'][0]
     end_node = None
+    find_flag = False
+    relations = {}
     if raw_data['results'].pop()['@@res_flag']:
         while raw_data['results']:
             item = raw_data['results'].pop()
@@ -18,50 +21,38 @@ def task(raw_data, params=None):
             tmp_links = item['links']
 
             for node in tmp_nodes:
-                if not node['attributes']['name']:
-                    null.append(node['v_id'])
-                    continue
-                if node['v_id'] in appear:
-                    continue
-                if node['attributes']['name'] == params['ename']:
+                if not find_flag and node['attributes']['name'] == params['ename']:
                     end_node = node
-                appear.append(node['v_id'])
-                nodes[node['v_id']] = node
+                    find_flag = True
+                    nodes[node['v_id']] = node
+                    relations[node['v_id']] += 1
+                    break
+                if find_flag:
+                    if node['v_id'] in nodes:
+                        continue
+                    nodes[node['v_id']] = node
+                    relations[node['v_id']] = 0
 
-            for link in tmp_links:
-                if link['to_id'] in null or link['from_id'] in null:
-                    continue
-
-                pids[link['from_id']].add(link['to_id'])
-                links[(link['from_id'], link['to_id'])].append(link)
-
-        links_index = []
-        stack = [start_node['v_id']]
-        tmp_links = [[start_node['v_id']]]
-        print(pids)
-        while stack:
-            link = tmp_links.pop()
-            tmp = stack.pop()
-            if tmp == end_node['v_id']:
-                links_index.append(link)
+            for node in nodes.values():
+                print(node['attributes']['name'])
+            print()
+            if not find_flag:
                 continue
-            for pid in pids[tmp]:
-                if pid in link:
-                    continue
-                action = deepcopy(link)
-                stack.append(pid)
-                action.append(pid)
-                tmp_links.append(action)
 
-        data_nodes = []
-        data_links = []
-        for link_index in links_index:
-            for index in range(len(link_index) - 1):
-                for i in pids[link_index[index]]:
-                    data_links.extend(links[link_index[index], i])
-                data_nodes.append(nodes[link_index[index]])
-            data_nodes.append(nodes[link_index[-1]])
-    return data_nodes, data_links, False
+            previous_link = {}
+            for link in tmp_links:
+
+                if link['e_type'].startswith('REV_'):
+                    tmp_id = link['to_id']
+                    link['to_id'] = link['from_id']
+                    link['from_id'] = tmp_id
+                    link['e_type'] = link['e_type'].split('_')[-1]
+                if link['from_id'] in relations:
+                    pids[link['from_id']].add(link['to_id'])
+                    links[(link['from_id'], link['to_id'], link['e_type'])].append(link)
+                    relations[link['from_id']] += 1
+
+    return nodes.values(), tmp, False
 
 
 if __name__ == '__main__':
@@ -356,6 +347,6 @@ if __name__ == '__main__':
         'ename': '镇江市广播电视服务公司'
     }
     nodes, links, flag = task(raw_data=data, params=params)
-    print(nodes)
-    print(links)
+    # for link in links:
+        # print(link)
     print()
