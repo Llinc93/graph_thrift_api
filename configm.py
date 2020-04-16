@@ -8,10 +8,10 @@ import multiprocessing
 # loglevel = 'debug'
 bind = "0.0.0.0:8140"
 pidfile = "gunicorn.pid"
-# accesslog = "log/access.log"
-# errorlog = "log/debug.log"
+accesslog = "log/access.log"
+errorlog = "log/debug.log"
 daemon = True
-timeout = 300
+timeout = 1800
 
 # 启动的进程数
 workers = multiprocessing.cpu_count() - 4

@@ -278,10 +278,10 @@ def get_node(node):
     }
     if action['type'] == 'GS':
         action['attibuteMap']['industry_class'] = node['attributes']['industry']
-        action['attibuteMap']['bussiness_age'] = node['attributes']['esdate']
+        action['attibuteMap']['business_age'] = node['attributes']['esdate'][:4]
         action['attibuteMap']['province'] = node['attributes']['province']
-        action['attibuteMap']['regcapcur'] = node['attributes']['regcap']
-        action['attibuteMap']['registered_captial'] = node['attributes']['reccapcur']
+        action['attibuteMap']['regcapcur'] = node['attributes']['reccapcur']
+        action['attibuteMap']['registered_capital'] = node['attributes']['regcap']
         action['attibuteMap']['business_status'] = node['attributes']['entstatus']
     return action
 

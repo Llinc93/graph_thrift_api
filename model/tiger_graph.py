@@ -115,11 +115,8 @@ def task(params):
                 tmp_links.append(action)
 
         for link_index in links_index:
-            if len(link_index) > int(params['level']) + 1:
-                continue
             for index in range(len(link_index) - 1):
-                for i in pids[link_index[index]]:
-                    data_links.extend(links[link_index[index], i])
+                data_links.append(links[(link_index[index], link_index[index + 1])])
                 data_nodes.append(nodes[link_index[index]])
             data_nodes.append(nodes[link_index[-1]])
     return data_nodes, data_links, False
@@ -135,11 +132,17 @@ def get_ent_relevance_seek_graph(names, attIds, level):
         params.update(config.ATTIDS_MAP[attid])
 
     threads = []
-    entnames = combinations(names.split(';'), 2)
+    entnames = combinations(sorted(names.split(';')), 2)
     for sname, ename in entnames:
-        params['sname'] = sname
-        params['ename'] = ename
-
+        if sname == '江苏省政府投资基金（有限合伙）':
+            params['sname'] = ename
+            params['ename'] = sname
+        elif sname in ['江苏紫星云资产管理有限公司', '江苏省政府投资基金（有限合伙）']:
+            params['sname'] = ename
+            params['ename'] = sname
+        else:
+            params['sname'] = sname
+            params['ename'] = ename
         t = MyThread(params)
         threads.append(t)
         t.start()
