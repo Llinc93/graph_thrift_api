@@ -1,3 +1,4 @@
+import time
 import hashlib
 from copy import deepcopy
 from collections import defaultdict
@@ -75,6 +76,7 @@ def get_final_beneficiary_name_neo(graph, min_rate):
     :param graph:
     :return:
     '''
+    s = time.time()
     pids = defaultdict(set)
     actions = {}
     sub_ids = set()
@@ -133,6 +135,7 @@ def get_final_beneficiary_name_neo(graph, min_rate):
         for item in data:
             if item['type'] == 'GS':
                 item['lastnode'] = 1
+    print('构造耗时2', time.time() - s)
     return data
 
 
@@ -154,6 +157,7 @@ def get_final_beneficiary_name(data, min_rate, entname):
     :param min_ratio:
     :return:
     '''
+    s = time.time()
     nodes = {}
     links = {}
     pids = defaultdict(set)
@@ -196,6 +200,8 @@ def get_final_beneficiary_name(data, min_rate, entname):
                 continue
             links[(link['from_id'], link['to_id'])] = link
             pids[link['from_id']].add(link['to_id'])
+    e1 = time.time()
+    print('汇总耗时', e1 - s)
 
     links_index = []
     stack = [start]
@@ -215,6 +221,8 @@ def get_final_beneficiary_name(data, min_rate, entname):
             stack.append(pid)
             action.append(pid)
             tmp_links.append(action)
+    e2 = time.time()
+    print('拼接耗时', e2 - e1)
 
     path = []
     for link_index in links_index:
@@ -225,6 +233,7 @@ def get_final_beneficiary_name(data, min_rate, entname):
             tmp_nodes.append(nodes[link_index[index]])
         tmp_nodes.append(nodes[link_index[-1]])
         path.append({'nodes': tmp_nodes, 'links': tmp_links})
+    print('构造耗时1', time.time() - e2)
     return get_final_beneficiary_name_neo(graph=path, min_rate=min_rate)
 
 

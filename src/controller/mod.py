@@ -1,4 +1,5 @@
 import json
+import time
 import traceback
 from flask import Blueprint, request
 
@@ -19,16 +20,19 @@ def get_final_beneficiary_name():
      - entName
     """
     try:
+        s = time.time()
         entName = request.form.get('entName')
         uscCode = request.form.get('uscCode')
         min_ratio = float(request.form.get('min_ratio'))
 
         raw_data = tiger_graph.get_ent_actual_controller(name=entName, uniscid=uscCode)
-
+        e = time.time()
+        print('查询耗时', e - s)
         if raw_data['error']:
             raise ValueError
 
         data = tiger_graph_parse.get_final_beneficiary_name(raw_data, min_ratio, entName)
+        print('总耗时', time.time() - s)
         return json.dumps({'data': data, 'success': 0}, ensure_ascii=False)
     except:
         traceback.print_exc()
@@ -45,16 +49,20 @@ def get_ent_actual_contoller():
      - entName
     """
     try:
+        s = time.time()
         entName = request.form.get('entName')
         uscCode = request.form.get('uscCode')
         min_ratio = float(request.form.get('min_ratio', 0))
 
         raw_data = tiger_graph.get_ent_actual_controller(name=entName, uniscid=uscCode)
-
+        e = time.time()
+        print('查询耗时', e - s)
         if raw_data['error']:
             raise ValueError
 
         nodes, links = tiger_graph_parse.ent_actual_controller(raw_data, min_ratio)
+        print('构造耗时', time.time() - e)
+        print('总耗时', time.time() - s)
         return json.dumps({'data': {'nodes': nodes, 'links': links}, 'success': 0}, ensure_ascii=False)
     except:
         traceback.print_exc()
@@ -78,18 +86,21 @@ def get_ent_graph_g():
      - nodeType
     """
     try:
+        s = time.time()
         keyword = request.form['keyword']
         attIds = request.form['attIds']
         level = int(request.form['level'])
         nodeType = request.form['nodeType']
 
         raw_data = tiger_graph.get_ent_graph(name=keyword, node_type=nodeType, level=level, attIds=attIds)
-
+        e = time.time()
+        print('查询耗时', e - s)
         if raw_data['error']:
             raise ValueError
 
         nodes, links = tiger_graph_parse.ent_graph(raw_data)
-
+        print('构造耗时', time.time() - e)
+        print('总耗时', time.time() - s)
         return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
     except:
         traceback.print_exc()
@@ -110,12 +121,14 @@ def get_ents_relevance_seek_graph_g():
      - level
     """
     try:
+        s = time.time()
         entName = request.form['entName']
         attIds = request.form['attIds']
         level = int(request.form['level'])
 
         raw_data = tiger_graph.get_ent_relevance_seek_graph(names=entName, attIds=attIds, level=level)
         nodes, links = tiger_graph_parse.ent_relevance_seek_graph(raw_data)
+        print('总耗时', time.time() - s)
         return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
     except:
         traceback.print_exc()
