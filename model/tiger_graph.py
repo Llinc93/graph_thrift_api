@@ -19,7 +19,8 @@ class MyThread(Thread):
     def run(self):
         # self.ret = task(self.params)
         # self.ret = task_v2(self.params)
-        self.ret = task_v3(self.params)
+        # self.ret = task_v3(self.params)
+        self.ret = task_v4(self.params)
         return None
 
 
@@ -278,6 +279,65 @@ def task_v2(params):
             data_links.append(links[list(sorted([path[index], path[index + 1]]))])
     return data_nodes, data_links, False
 
+def task_v4(params):
+    s1 = time.time()
+    ret = requests.get(url=config.EntRelevanceSeekGraphUrl_v2, params=params)
+    e1 = time.time()
+    raw_data = ret.json()
+    print('查询耗时', e1 - s1)
+
+    nodes = {}
+    links = defaultdict(list)
+    stack = defaultdict(list)
+    path_list = []
+    item = raw_data['results'].pop()
+    start_node = item['Start_node']
+    end_node = item['End_node']
+    data_nodes = []
+    data_links = []
+    if raw_data['results'].pop()['@@res_flag']:
+        tmp_links = raw_data['results'].pop()
+        for link in tmp_links:
+            links[tuple(sorted([link['to_id'], link['from_id']]))].append(link)
+
+        for index, item in enumerate(raw_data['results'], 1):
+            if index == 1:
+                for node in item['nodes']:
+                    nodes[node['v_id']] = node
+                    for previous in node['attributes']['@previous_id']:
+                        path_list.append([previous, node['v_id']])
+                        stack[(index, node['v_id'])].append([previous, node['v_id']])
+            else:
+                tmp = set()
+                for node in item['nodes']:
+                    for previous in node['attributes']['@previous_id']:
+                        links = stack[(index - 1, previous)]
+                        tmp.add(previous)
+                        for link in links:
+                            if node['v_id'] in link:
+                                continue
+                            link.append(node['v_id'])
+                            path_list.append([previous, node['v_id']])
+                            stack[(index, node['v_id'])].append(link)
+                for key in tmp:
+                    stack.pop((index - 1, key))
+
+        print('拼接路径耗时:', time.time() - e1)
+        for path in path_list:
+            print('path', path)
+            if path[-1] != end_node['v_id'] or path[0] != start_node['v_id']:
+                continue
+            nodes[path[0]].pop('@previous_id')
+            nodes[path[0]].pop('@previous_link')
+            data_nodes[path[0]] = nodes[path[0]]
+            for index in range(1, len(path)):
+                nodes[path[index]].pop('@previous_id')
+                nodes[path[index]].pop('@previous_link')
+                data_nodes[path[index]] = nodes[path[index]]
+                for link in links[tuple(sorted([path[index - 1], path[index]]))]:
+                    data_links.append(link)
+
+    return data_nodes.values(), data_links
 
 def get_ent_relevance_seek_graph(names, attIds, level):
     params = {
