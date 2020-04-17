@@ -137,6 +137,89 @@ def task(params):
         print('构造耗时', time.time() - e3)
     return data_nodes, data_links, False
 
+def task_v3(params):
+
+    s1 = time.time()
+    ret = requests.get(url=config.EntRelevanceSeekGraphUrl, params=params)
+    e1 = time.time()
+    print('查询耗时', e1 - s1)
+    raw_data = ret.json()
+    data_nodes = []
+    data_links = []
+    nodes = {}
+    links = defaultdict(list)
+    pids = defaultdict(set)
+    appear = {}
+    null = {}
+    start_node = raw_data['results'][0]['nodes'][0]
+    end_node = None
+    find_flag = False
+
+    node_count = 0
+    link_count = 1
+
+    if raw_data['results'].pop()['@@res_flag']:
+
+        for link in raw_data['results'].pop()['links']:
+            if link['to_id'] in null or link['from_id'] in null:
+                continue
+            pids[link['from_id']].add(link['to_id'])
+            links[(link['from_id'], link['to_id'])].append(link)
+
+        while raw_data['results']:
+            item = raw_data['results'].pop()
+            tmp_nodes = item['nodes']
+            tmp_links = item['links']
+
+            node_count += len(tmp_nodes)
+            link_count += len(tmp_links)
+
+            for node in tmp_nodes:
+                if node['attributes']['name'] == params['ename']:
+                    end_node = node
+                    find_flag = True
+                if find_flag:
+                    if not node['attributes']['name']:
+                        null[node['v_id']] = 0
+                        continue
+                    if node['v_id'] in appear:
+                        continue
+                    appear[node['v_id']] = 0
+                    nodes[node['v_id']] = node
+
+            if not find_flag:
+                continue
+
+        e2 = time.time()
+        print('汇总耗时', e2 - e1)
+        links_index = []
+        stack = [start_node['v_id']]
+        tmp_links = [[start_node['v_id']]]
+        while stack:
+            link = tmp_links.pop()
+            tmp = stack.pop()
+            if len(link) > params['level'] + 1:
+                continue
+            if tmp == end_node['v_id']:
+                links_index.append(link)
+                continue
+
+            for pid in pids[tmp]:
+                if pid in link:
+                    continue
+                action = deepcopy(link)
+                action.append(pid)
+                stack.append(pid)
+                tmp_links.append(action)
+        e3 = time.time()
+        print('拼接耗时', e3 - e2)
+        for link_index in links_index:
+            for index in range(len(link_index) - 1):
+                data_links.extend(links[(link_index[index], link_index[index + 1])])
+                data_nodes.append(nodes[link_index[index]])
+            data_nodes.append(nodes[link_index[-1]])
+        print('构造耗时', time.time() - e3)
+    return data_nodes, data_links, False
 
 def task_v2(params):
 
