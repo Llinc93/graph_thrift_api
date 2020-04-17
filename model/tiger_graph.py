@@ -287,20 +287,26 @@ def task_v4(params):
     print('查询耗时', e1 - s1)
 
     nodes = {}
-    links = defaultdict(list)
+    edges = defaultdict(list)
     stack = defaultdict(list)
     path_list = []
     item = raw_data['results'].pop()
     start_node = item['Start_node']
     end_node = item['End_node']
-    data_nodes = []
+    nodes[start_node['v_id']] = start_node
+    nodes[end_node['v_id']] = end_node
+    data_nodes = {}
     data_links = []
+    e2 = None
     if raw_data['results'].pop()['@@res_flag']:
-        tmp_links = raw_data['results'].pop()
+        tmp_links = raw_data['results'].pop()['links']
         for link in tmp_links:
-            links[tuple(sorted([link['to_id'], link['from_id']]))].append(link)
+            edges[tuple(sorted([link['to_id'], link['from_id']]))].append(link)
 
+        e2 = time.time()
         for index, item in enumerate(raw_data['results'], 1):
+            print(index, '耗时', time.time() - e2)
+            e2 = time.time()
             if index == 1:
                 for node in item['nodes']:
                     nodes[node['v_id']] = node
@@ -314,7 +320,7 @@ def task_v4(params):
                         links = stack[(index - 1, previous)]
                         tmp.add(previous)
                         for link in links:
-                            if node['v_id'] in link:
+                            if node['v_id'] in link or end_node['v_id'] in link:
                                 continue
                             link.append(node['v_id'])
                             path_list.append([previous, node['v_id']])
@@ -327,17 +333,17 @@ def task_v4(params):
             print('path', path)
             if path[-1] != end_node['v_id'] or path[0] != start_node['v_id']:
                 continue
-            nodes[path[0]].pop('@previous_id')
-            nodes[path[0]].pop('@previous_link')
+            #nodes[path[0]].pop('@previous_id')
+            #nodes[path[0]].pop('@previous_link')
             data_nodes[path[0]] = nodes[path[0]]
             for index in range(1, len(path)):
-                nodes[path[index]].pop('@previous_id')
-                nodes[path[index]].pop('@previous_link')
+                #nodes[path[index]].pop('@previous_id')
+                # nodes[path[index]].pop('@previous_link')
                 data_nodes[path[index]] = nodes[path[index]]
-                for link in links[tuple(sorted([path[index - 1], path[index]]))]:
+                for link in edges[tuple(sorted([path[index - 1], path[index]]))]:
                     data_links.append(link)
 
-    return data_nodes.values(), data_links
+    return data_nodes.values(), data_links, False
 
 def get_ent_relevance_seek_graph(names, attIds, level):
     params = {
