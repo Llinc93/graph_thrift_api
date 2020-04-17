@@ -1,0 +1,66 @@
+CREATE QUERY EntsRelevanceSeekGraph(STRING sname, STRING ename, BOOL flag, STRING ipees="EXTRA", STRING rev_ipees="EXTRA", STRING ipeer="EXTRA", STRING rev_ipeer="EXTRA", STRING leet="EXTRA", STRING rev_leet="EXTRA", STRING leee="EXTRA", STRING rev_leee="EXTRA", STRING lel="EXTRA", STRING rev_lel="EXTRA", STRING opep="EXTRA", STRING rev_opep="EXTRA", STRING red="EXTRA", STRING rev_red="EXTRA", STRING spe="EXTRA", STRING rev_spe="EXTRA", STRING web="EXTRA", STRING rev_web="EXTRA", STRING bee="EXTRA", STRING rev_bee="EXTRA") FOR GRAPH {
+	SumAccum<int> @score = 0;
+	SumAccum<INT> @outdegree;
+	OrAccum @knowStart = false, @knowEnd = false;
+   	SetAccum<edge> @evidence, @@edgeSet;
+   	SetAccum<vertex> @@verSet;
+
+	a = {GS.*};
+	Start_node = {ANY};
+	Start_node = SELECT tgt FROM a:tgt WHERE tgt.name == sname ACCUM tgt.@outdegree = 0;
+
+	IF flag
+	THEN
+		Start = SELECT tgt FROM Start_node -((ipees|rev_ipees|bee|rev_bee):e)-> :tgt	WHERE tgt.name == ename ACCUM @@edgeSet += e, tgt.@outdegree = tgt.outdegree(ipees) + tgt.outdegree(rev_ipees) + tgt.outdegree(ipeer) + tgt.outdegree(rev_ipeer) + tgt.outdegree(leet) + tgt.outdegree(rev_leet) + tgt.outdegree(leee) + tgt.outdegree(rev_leee) + tgt.outdegree(lel) + tgt.outdegree(rev_lel) + tgt.outdegree(opep) + tgt.outdegree(rev_opep) + tgt.outdegree(red) + tgt.outdegree(rev_red) + tgt.outdegree(spe) + tgt.outdegree(rev_spe) + tgt.outdegree(web) + tgt.outdegree(rev_web) + tgt.outdegree(bee) + tgt.outdegree(rev_bee);
+		PRINT Start as nodes, @@edgeSet as links;
+	ELSE
+		End_node = {ANY};
+		End_node = SELECT tgt FROM a:tgt WHERE tgt.name == sname ACCUM tgt.@outdegree = 0;
+		L0 (ANY) = {Start_node, End_node};
+
+		WHILE true LIMIT 2 DO
+			// Data Initialize
+			L0 = SELECT v
+			FROM L0:v
+			POST-ACCUM
+				CASE WHEN v == A THEN
+					v.@knowA += true
+				END
+				,CASE WHEN v == B THEN
+					v.@knowB += true
+				END
+				,v.@score = 1
+			;
+			L1 (ANY) = L0;
+
+			WHILE true LIMIT level DO
+				L1 = SELECT t
+					FROM L1:s-((ipees|rev_ipees|ipeer|rev_ipeer|leet|rev_leet|leee|rev_leee|lel|rev_lel|opep|rev_opep|red|rev_red|spe|rev_spe|web|rev_web|bee|rev_bee):e)-:t
+					WHERE t.@score == 0
+					ACCUM t.@knowA += s.@knowA
+						,t.@knowB += s.@knowB
+						,t.@score += s.@score
+						,t.@evidence += s.@evidence
+						,t.@evidence += e
+						,tgt.@outdegree = tgt.outdegree(ipees) + tgt.outdegree(rev_ipees) + tgt.outdegree(ipeer) + tgt.outdegree(rev_ipeer) + tgt.outdegree(leet) + tgt.outdegree(rev_leet) + tgt.outdegree(leee) + tgt.outdegree(rev_leee) + tgt.outdegree(lel) + tgt.outdegree(rev_lel) + tgt.outdegree(opep) + tgt.outdegree(rev_opep) + tgt.outdegree(red) + tgt.outdegree(rev_red) + tgt.outdegree(spe) + tgt.outdegree(rev_spe) + tgt.outdegree(web) + tgt.outdegree(rev_web) + tgt.outdegree(bee) + tgt.outdegree(rev_bee)
+				;
+	    	END;
+
+			COMMON_AB = SELECT t
+				FROM RELATED:t
+				WHERE t.@knowA == true AND t.@knowB == true
+				ORDER BY t.@score
+				LIMIT k
+			;
+			COMMON_AB = SELECT s from COMMON_AB:s
+						ACCUM @@edgeSet += s.@evidence
+			;
+		END;
+		PRINT @@edgeSet;
+		getVertexesFromEdge(@@edgeSet, @@verSet);
+		Start = {@@verSet};
+		Start = SELECT s FROM Start:s
+				POST-ACCUM s.@evidence.clear();
+		PRINT Start;
+	END;
+}

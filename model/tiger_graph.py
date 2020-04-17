@@ -18,7 +18,7 @@ class MyThread(Thread):
 
     def run(self):
         self.ret = task(self.params)
-        self.ret = task_v2(self.params)
+        # self.ret = task_v2(self.params)
         return None
 
 
@@ -165,13 +165,15 @@ def task_v2(params):
                         find_flag = True
                         for node_id, link in zip(node['attributes']['@previous_id'], node['attributes']['@previous_link']):
                             stack.append([node['v_id'], node_id])
-                            links[list(sorted([node['v_id'], node_id]))] = link
+                            links[tuple(sorted([node['v_id'], node_id]))] = link
             else:
                 tmp = {node['v_id']: node for node in tmp_nodes}
                 nodes.update(tmp)
                 tmp_stack = []
                 while stack:
                     path = stack.pop()
+                    if not tmp.get(path[-1]):
+                        continue
                     next_list = tmp[path[-1]]['attributes']['@previous_id']
                     next_link = tmp[path[-1]]['attributes']['@previous_link']
                     for next_id, link in zip(next_list, next_link):
@@ -182,7 +184,7 @@ def task_v2(params):
                             action = deepcopy(path)
                             action.append(next_id)
                             tmp_stack.append(action)
-                        links[list(sorted([path[-1], next_id]))] = link
+                        links[tuple(sorted([path[-1], next_id]))] = link
 
                 stack = tmp_stack
 
@@ -208,7 +210,7 @@ def get_ent_relevance_seek_graph(names, attIds, level):
         s = time.time()
         params['sname'] = sname
         params['ename'] = ename
-        sname, ename = requests.get(url=config.TEST, params=params)['results'][0]['nodes']
+        sname, ename = requests.get(url=config.TEST, params=params).json()['results'][0]['nodes']
         if int(sname['attributes']['@outdegree']) > int(ename['attributes']['@outdegree']):
             params['sname'] = ename['attributes']['name']
             params['ename'] = sname['attributes']['name']
