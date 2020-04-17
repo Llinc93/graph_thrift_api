@@ -18,6 +18,7 @@ class MyThread(Thread):
 
     def run(self):
         self.ret = task(self.params)
+        self.ret = task_v2(self.params)
         return None
 
 
@@ -66,8 +67,8 @@ def task(params):
     nodes = {}
     links = defaultdict(list)
     pids = defaultdict(set)
-    appear = []
-    null = []
+    appear = {}
+    null = {}
     start_node = raw_data['results'][0]['nodes'][0]
     end_node = None
     find_flag = False
@@ -90,11 +91,11 @@ def task(params):
                     find_flag = True
                 if find_flag:
                     if not node['attributes']['name']:
-                        null.append(node['v_id'])
+                        null[node['v_id']] = 0
                         continue
                     if node['v_id'] in appear:
                         continue
-                    appear.append(node['v_id'])
+                    appear[node['v_id']] = 0
                     nodes[node['v_id']] = node
 
             if not find_flag:
@@ -137,6 +138,61 @@ def task(params):
     return data_nodes, data_links, False
 
 
+def task_v2(params):
+
+    s1 = time.time()
+    ret = requests.get(url=config.EntRelevanceSeekGraphUrl_v2, params=params)
+    e1 = time.time()
+    print('查询耗时', e1 - s1)
+    raw_data = ret.json()
+    data_nodes = []
+    data_links = []
+    start_node = raw_data['results'][0]['nodes'][0]
+    end_node = None
+    nodes = {}
+    stack = []
+    links = {}
+    links[start_node['v_id']] = set()
+    if raw_data['results'].pop()['@@res_flag']:
+        find_flag = False
+        while len(raw_data['results']) > 1:
+            item = raw_data['results'].pop()
+            tmp_nodes = item['nodes']
+            if not find_flag:
+                for node in tmp_nodes:
+                    if node['attributes']['name'] == params['ename']:
+                        end_node = node
+                        find_flag = True
+                        for node_id, link in zip(node['attributes']['@previous_id'], node['attributes']['@previous_link']):
+                            stack.append([node['v_id'], node_id])
+                            links[list(sorted([node['v_id'], node_id]))] = link
+            else:
+                tmp = {node['v_id']: node for node in tmp_nodes}
+                nodes.update(tmp)
+                tmp_stack = []
+                while stack:
+                    path = stack.pop()
+                    next_list = tmp[path[-1]]['attributes']['@previous_id']
+                    next_link = tmp[path[-1]]['attributes']['@previous_link']
+                    for next_id, link in zip(next_list, next_link):
+                        if next_id in path:
+                            if next_id == end_node['v_id']:
+                                tmp_stack.append([end_node['v_id'], next_id])
+                        else:
+                            action = deepcopy(path)
+                            action.append(next_id)
+                            tmp_stack.append(action)
+                        links[list(sorted([path[-1], next_id]))] = link
+
+                stack = tmp_stack
+
+    for path in stack:
+        for index in range(len(path) - 1):
+            data_nodes.append(nodes[path[index]])
+            data_links.append(links[list(sorted([path[index], path[index + 1]]))])
+    return data_nodes, data_links, False
+
+
 def get_ent_relevance_seek_graph(names, attIds, level):
     params = {
         'sname': '',
@@ -156,6 +212,9 @@ def get_ent_relevance_seek_graph(names, attIds, level):
         if int(sname['attributes']['@outdegree']) > int(ename['attributes']['@outdegree']):
             params['sname'] = ename['attributes']['name']
             params['ename'] = sname['attributes']['name']
+        else:
+            params['sname'] = sname['attributes']['name']
+            params['ename'] = ename['attributes']['name']
         print('度数比较耗时', time.time() - s)
         t = MyThread(params)
         threads.append(t)

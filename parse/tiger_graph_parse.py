@@ -299,8 +299,8 @@ def ent_graph(data):
     nodes = []
     links = []
     rev_link = {}
-    ids = []
-    null = []
+    ids = {}
+    null = {}
     appear = defaultdict(int)
     if len(data['results']) == 1:
         return nodes, links
@@ -312,7 +312,7 @@ def ent_graph(data):
 
         for node in tmp_nodes:
             if not node['attributes']['name']:
-                null.append(node['v_id'])
+                null[node['v_id']] = 0
 
         for link in tmp_links:
             if link['to_id'] in null or link['from_id'] in null:
@@ -331,7 +331,7 @@ def ent_graph(data):
         for node in tmp_nodes:
             if node['v_id'] in ids or node['v_id'] in null:
                 continue
-            ids.append(node['v_id'])
+            ids[node['v_id']] = 0
             if node['attributes']['@outdegree'] > 0:
                 node['attributes']['@outdegree'] -= appear[node['v_id']]
             nodes.append(get_node(node))

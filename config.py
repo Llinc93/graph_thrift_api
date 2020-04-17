@@ -69,6 +69,7 @@ LINK_NAME = {
 EntActualController = 'http://172.27.2.5:9000/query/graph_api/EntActualContoller'
 EntGraphUrl = 'http://172.27.2.5:9000/query/graph_api/EntGraph'
 EntRelevanceSeekGraphUrl = 'http://172.27.2.5:9000/query/graph_api/EntsRelevanceSeekGraph'
+EntRelevanceSeekGraphUrl_v2 = 'http://172.27.2.5:9000/query/graph_api/test2'
 TEST = 'http://172.27.2.5:9000/query/graph_api/test'
 
 # FLASK、GUNICORN
