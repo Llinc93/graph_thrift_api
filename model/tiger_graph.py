@@ -17,8 +17,9 @@ class MyThread(Thread):
         self.ret = None
 
     def run(self):
-        self.ret = task(self.params)
+        # self.ret = task(self.params)
         # self.ret = task_v2(self.params)
+        self.ret = task_v3(self.params)
         return None
 
 
