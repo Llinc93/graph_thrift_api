@@ -24,6 +24,83 @@ class MyThread(Thread):
         return None
 
 
+class MyThreadTest(Thread):
+
+    def __init__(self, params):
+        super(MyThreadTest, self).__init__()
+        self.params = params
+        self.ret = None
+
+    def run(self):
+        # self.ret = task(self.params)
+        # self.ret = task_v2(self.params)
+        # self.ret = task_v3(self.params)
+        self.ret = task_test(self.params)
+        return None
+
+def task_test(params):
+    s1 = time.time()
+    ret = requests.get(url=config.EntRelevanceSeekGraphUrl_v2, params=params)
+    e1 = time.time()
+    raw_data = ret.json()
+    print('test查询耗时', e1 - s1)
+
+    nodes = {}
+    edges = defaultdict(list)
+    stack = defaultdict(list)
+    path_list = []
+    item = raw_data['results'].pop()
+    start_node = item['Start_node'][0]
+    end_node = item['End_node'][0]
+    nodes[start_node['v_id']] = start_node
+    nodes[end_node['v_id']] = end_node
+    data_nodes = {}
+    data_links = []
+
+    if raw_data['results'].pop()['@@res_flag']:
+        tmp_links = raw_data['results'].pop()['links']
+        for link in tmp_links:
+            edges[tuple(sorted([link['to_id'], link['from_id']]))].append(link)
+
+        e2 = time.time()
+        for index, item in enumerate(raw_data['results'], 1):
+            print(index, 'test耗时', time.time() - e2)
+            e2 = time.time()
+            if index == 1:
+                for node in item['nodes']:
+                    nodes[node['v_id']] = node
+                    for previous in node['attributes']['@previous_id']:
+                        path_list.append([previous, node['v_id']])
+                        stack[(index, node['v_id'])].append([previous, node['v_id']])
+            else:
+                tmp = set()
+                for node in item['nodes']:
+                    nodes[node['v_id']] = node
+                    for previous in node['attributes']['@previous_id']:
+                        links = stack[(index - 1, previous)]
+                        tmp.add(previous)
+                        for link in links:
+                            if node['v_id'] in link or end_node['v_id'] in link:
+                                continue
+                            action = deepcopy(link)
+                            action.append(node['v_id'])
+                            path_list.append(action)
+                            stack[(index, node['v_id'])].append(action)
+                for key in tmp:
+                    stack.pop((index - 1, key))
+
+        print('test拼接路径耗时:', time.time() - e1)
+        for path in path_list:
+            if path[-1] != end_node['v_id'] or path[0] != start_node['v_id']:
+                continue
+            data_nodes[path[0]] = nodes[path[0]]
+            for index in range(1, len(path)):
+                data_nodes[path[index]] = nodes[path[index]]
+                for link in edges[tuple(sorted([path[index - 1], path[index]]))]:
+                    data_links.append(link)
+
+    return data_nodes.values(), data_links, False
+
 def get_ent_actual_controller(name=None, uniscid=None):
     '''获取实际控股人'''
     params = {
@@ -291,13 +368,13 @@ def task_v4(params):
     stack = defaultdict(list)
     path_list = []
     item = raw_data['results'].pop()
-    start_node = item['Start_node']
-    end_node = item['End_node']
+    start_node = item['Start_node'][0]
+    end_node = item['End_node'][0]
     nodes[start_node['v_id']] = start_node
     nodes[end_node['v_id']] = end_node
     data_nodes = {}
     data_links = []
-    e2 = None
+
     if raw_data['results'].pop()['@@res_flag']:
         tmp_links = raw_data['results'].pop()['links']
         for link in tmp_links:
@@ -316,29 +393,27 @@ def task_v4(params):
             else:
                 tmp = set()
                 for node in item['nodes']:
+                    nodes[node['v_id']] = node
                     for previous in node['attributes']['@previous_id']:
                         links = stack[(index - 1, previous)]
                         tmp.add(previous)
                         for link in links:
                             if node['v_id'] in link or end_node['v_id'] in link:
                                 continue
-                            link.append(node['v_id'])
-                            path_list.append([previous, node['v_id']])
-                            stack[(index, node['v_id'])].append(link)
+                            action = deepcopy(link)
+                            action.append(node['v_id'])
+                            path_list.append(action)
+                            stack[(index, node['v_id'])].append(action)
                 for key in tmp:
                     stack.pop((index - 1, key))
 
         print('拼接路径耗时:', time.time() - e1)
         for path in path_list:
-            print('path', path)
+            # print('path', path)
             if path[-1] != end_node['v_id'] or path[0] != start_node['v_id']:
                 continue
-            #nodes[path[0]].pop('@previous_id')
-            #nodes[path[0]].pop('@previous_link')
             data_nodes[path[0]] = nodes[path[0]]
             for index in range(1, len(path)):
-                #nodes[path[index]].pop('@previous_id')
-                # nodes[path[index]].pop('@previous_link')
                 data_nodes[path[index]] = nodes[path[index]]
                 for link in edges[tuple(sorted([path[index - 1], path[index]]))]:
                     data_links.append(link)
@@ -381,6 +456,42 @@ def get_ent_relevance_seek_graph(names, attIds, level):
         data.append((nodes, links))
     return data
 
+
+def get_ent_relevance_seek_graph_v2(names, attIds, level):
+    params = {
+        'sname': '',
+        'ename': '',
+        'level': level,
+    }
+    for attid in attIds.split(';'):
+        params.update(config.ATTIDS_MAP[attid])
+
+    threads = []
+    entnames = combinations(names.split(';'), 2)
+    for sname, ename in entnames:
+        s = time.time()
+        params['sname'] = sname
+        params['ename'] = ename
+        sname, ename = requests.get(url=config.TEST, params=params).json()['results'][0]['nodes']
+        if int(sname['attributes']['@outdegree']) > int(ename['attributes']['@outdegree']):
+            params['sname'] = ename['attributes']['name']
+            params['ename'] = sname['attributes']['name']
+        else:
+            params['sname'] = sname['attributes']['name']
+            params['ename'] = ename['attributes']['name']
+        print('test度数比较耗时', time.time() - s)
+        t = MyThreadTest(params)
+        threads.append(t)
+        t.start()
+
+    data = []
+    for t in threads:
+        t.join()
+        nodes, links, flag = t.ret
+        if flag:
+            raise ValueError('查询TigerGraph，错误')
+        data.append((nodes, links))
+    return data
 
 if __name__ == '__main__':
     get_ent_relevance_seek_graph('1;2;3', 'R101', 3)

@@ -134,3 +134,19 @@ def get_ents_relevance_seek_graph_g():
         traceback.print_exc()
         return json.dumps({'nodes': [], 'success': 103, 'links': []}, ensure_ascii=False)
 
+
+@MOD.route('/test', methods=['POST'])
+def test():
+    try:
+        s = time.time()
+        entName = request.form['entName']
+        attIds = request.form['attIds']
+        level = int(request.form['level'])
+
+        raw_data = tiger_graph.get_ent_relevance_seek_graph_v2(names=entName, attIds=attIds, level=level)
+        nodes, links = tiger_graph_parse.ent_relevance_seek_graph(raw_data)
+        print('test总耗时', time.time() - s)
+        return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
+    except:
+        traceback.print_exc()
+        return json.dumps({'nodes': [], 'success': 103, 'links': []}, ensure_ascii=False)
