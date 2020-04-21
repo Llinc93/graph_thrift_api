@@ -41,8 +41,8 @@ class MyThreadTest(Thread):
 def task_test(params):
     s1 = time.time()
     ret = requests.get(url=config.EntRelevanceSeekGraphUrl_v2, params=params)
-    e1 = time.time()
     raw_data = ret.json()
+    e1 = time.time()
     print('test查询耗时', e1 - s1)
 
     nodes = {}
@@ -61,10 +61,10 @@ def task_test(params):
         tmp_links = raw_data['results'].pop()['links']
         for link in tmp_links:
             edges[tuple(sorted([link['to_id'], link['from_id']]))].append(link)
-
         e2 = time.time()
+        print(f'links summary: {e2 - e1}s')
+
         for index, item in enumerate(raw_data['results'], 1):
-            print(index, 'test耗时', time.time() - e2)
             e2 = time.time()
             if index == 1:
                 for node in item['nodes']:
@@ -88,8 +88,10 @@ def task_test(params):
                             stack[(index, node['v_id'])].append(action)
                 for key in tmp:
                     stack.pop((index - 1, key))
-
+            print(index, 'test耗时', time.time() - e2)
         print('test拼接路径耗时:', time.time() - e1)
+
+        e3 = time.time()
         for path in path_list:
             if path[-1] != end_node['v_id'] or path[0] != start_node['v_id']:
                 continue
@@ -98,6 +100,7 @@ def task_test(params):
                 data_nodes[path[index]] = nodes[path[index]]
                 for link in edges[tuple(sorted([path[index - 1], path[index]]))]:
                     data_links.append(link)
+        print(f'build response: {time.time() - e3}s')
 
     return data_nodes.values(), data_links, False
 
@@ -359,8 +362,8 @@ def task_v2(params):
 def task_v4(params):
     s1 = time.time()
     ret = requests.get(url=config.EntRelevanceSeekGraphUrl_v2, params=params)
-    e1 = time.time()
     raw_data = ret.json()
+    e1 = time.time()
     print('查询耗时', e1 - s1)
 
     nodes = {}
@@ -379,10 +382,10 @@ def task_v4(params):
         tmp_links = raw_data['results'].pop()['links']
         for link in tmp_links:
             edges[tuple(sorted([link['to_id'], link['from_id']]))].append(link)
-
         e2 = time.time()
+        print(f'links summary: {e2 - e1}s')
+
         for index, item in enumerate(raw_data['results'], 1):
-            print(index, '耗时', time.time() - e2)
             e2 = time.time()
             if index == 1:
                 for node in item['nodes']:
@@ -406,6 +409,7 @@ def task_v4(params):
                             stack[(index, node['v_id'])].append(action)
                 for key in tmp:
                     stack.pop((index - 1, key))
+            print(index, '耗时', time.time() - e2)
 
         print('拼接路径耗时:', time.time() - e1)
         for path in path_list:
