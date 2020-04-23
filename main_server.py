@@ -2,7 +2,7 @@
 """
 thrift服务端
 """
-import traceback, os, sys, json
+import traceback, os, sys, json, time
 
 if sys.platform.startswith('win'):
     sys.path.append( os.getcwd() + '\com\\thrift\interface\server')
@@ -17,9 +17,9 @@ from thrift.server import TServer, TProcessPoolServer
 
 from interface.server import Interface
 from interface.server.ttypes import AuditException
-from model.ent_graph import neo4j_client
-from parse.parse_graph import parse
 
+from model import tiger_graph
+from parse import tiger_graph_parse
 
 class MyFaceHandler(Interface.Iface):
 
@@ -35,41 +35,16 @@ class MyFaceHandler(Interface.Iface):
        - entName
       """
       try:
-          if not min_ratio:
-              min_ratio = 0
-          lcid = neo4j_client.get_lcid(entname=entName, usccode=uscCode)
-          if not lcid:
-              return json.dumps({'data': [], 'success': 0}, ensure_ascii=False)
-          level = neo4j_client.get_level(lcid=lcid)
-          data = neo4j_client.get_final_beneficiary_name(entname=entName, usccode=uscCode, level=level)
-          if not data:
-              return json.dumps({'data': [], 'success': 0}, ensure_ascii=False)
-          data = parse.get_final_beneficiary_name(data, min_rate=min_ratio, lcid=lcid)
-
-          return json.dumps({'data': data, 'success': 0}, ensure_ascii=False)
-      except:
-          traceback.print_exc()
-          # print('error')
-          return json.dumps({'data': '', 'success': 104}, ensure_ascii=False)
-
-  def getFinalBeneficiaryName_ti(self, entName, uscCode, min_ratio=0):
-      """
-      企业实际控股人信息
-      entName 企业名称
-
-      Parameters:
-       - entName
-      """
-      try:
-          from model import tiger_graph
-          from parse import tiger_graph_parse
-
-          raw_data = tiger_graph.get_ent_actual_controller(name=entName, uniscid=uscCode)
-
+          s = time.time()
+          raw_data = tiger_graph.get_final_beneficiary_name(name=entName, uniscid=uscCode)
+          e = time.time()
+          print('查询耗时', e - s)
           if raw_data['error']:
               raise ValueError
 
-          data = tiger_graph_parse.get_final_beneficiary_name(raw_data, min_ratio, entName)
+          # data = tiger_graph_parse.get_final_beneficiary_name(raw_data, min_ratio, entName)
+          data = tiger_graph_parse.get_final_beneficiary_name_v2(raw_data, float(min_ratio), entName)
+          print('总耗时', time.time() - s)
           return json.dumps({'data': data, 'success': 0}, ensure_ascii=False)
       except:
           traceback.print_exc()
@@ -85,84 +60,24 @@ class MyFaceHandler(Interface.Iface):
      - entName
     """
     try:
-        if not min_ratio:
-            min_ratio = 0
-        lcid = neo4j_client.get_lcid(entname=entName, usccode=uscCode)
-        if not lcid:
-            return json.dumps({'data': {'nodes': [], 'links': []}, 'success': 0}, ensure_ascii=False)
-        level = neo4j_client.get_level(lcid=lcid)
-        data = neo4j_client.get_ent_actual_controller(entname=entName, usccode=uscCode, level=level)
-        if not data:
-            return json.dumps({'data': {'nodes': [], 'links': []}, 'success': 0}, ensure_ascii=False)
-        nodes, links = parse.get_ent_actual_controller(data, min_rate=min_ratio)
-        # print(time.time() - start)
-        if not links:
-            nodes = []
-        return json.dumps({'data': {'nodes': nodes, 'links': links}, 'success': 0}, ensure_ascii=False)
-    except:
-        traceback.print_exc()
-        # print('error')
-        return json.dumps({'data':'', 'success':101}, ensure_ascii=False)
-
-  def getEntActualContoller_tiger(self, entName, uscCode, min_ratio=0):
-    """
-    企业实际控股人信息
-    entName 企业名称
-
-    Parameters:
-     - entName
-    """
-    try:
-        from model import tiger_graph
-        from parse import tiger_graph_parse
+        s = time.time()
 
         raw_data = tiger_graph.get_ent_actual_controller(name=entName, uniscid=uscCode)
-
+        e = time.time()
+        print('查询耗时', e - s)
         if raw_data['error']:
             raise ValueError
 
-        nodes, links = tiger_graph_parse.ent_actual_controller(raw_data, min_ratio)
+        nodes, links = tiger_graph_parse.ent_actual_controller(raw_data, float(min_ratio))
+        print('构造耗时', time.time() - e)
+        print('总耗时', time.time() - s)
         return json.dumps({'data': {'nodes': nodes, 'links': links}, 'success': 0}, ensure_ascii=False)
     except:
         traceback.print_exc()
         # print('error')
-        return json.dumps({'data':'', 'success':101}, ensure_ascii=False)
+        return json.dumps({'data': '', 'success': 101}, ensure_ascii=False)
 
   def getEntGraphG(self, keyword, attIds, level, nodeType):
-    """
-    企业图谱查询
-    keyword 关键字
-    attIds 过滤关系
-    level 层级，最大3层
-    nodeType 节点类型
-
-    Parameters:
-     - keyword
-     - attIds
-     - level
-     - nodeType
-    """
-    try:
-        if int(level) > 3 or int(level) <= 0:
-            raise ValueError
-
-        relationshipFilter = parse.get_relationshipFilter(attIds)
-        if not relationshipFilter:
-            return json.dumps({'nodes': [], 'success': 0, 'links': []}, ensure_ascii=False)
-
-        data, flag = neo4j_client.get_ent_graph_g_v4(keyword, int(level) + 1, nodeType, relationshipFilter)
-
-        if not flag:
-            return json.dumps({'nodes': [], 'success': 0, 'links': []}, ensure_ascii=False)
-
-        # nodes, links = parse.parse_v3(data, filter, int(level), keyword)
-        nodes, links = parse.parse_v5(data, int(level))
-        return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
-    except:
-        traceback.print_exc()
-        return json.dumps({'nodes': [], 'success': 102, 'links': []}, ensure_ascii=False)
-
-  def getEntGraphG_ti(self, keyword, attIds, level, nodeType):
     """
     企业图谱查询
     keyword 关键字
@@ -192,56 +107,8 @@ class MyFaceHandler(Interface.Iface):
         traceback.print_exc()
         return json.dumps({'nodes': [], 'success': 102, 'links': []}, ensure_ascii=False)
 
-  # def getEntsRelevanceSeekGraphG(self, entName, attIds, level):
-  #   """
-  #   企业关联探寻
-  #   entName 企业名称
-  #   attIds 过滤关系
-  #   level 层级，最大6层
-  #
-  #   Parameters:
-  #    - entName
-  #    - attIds
-  #    - level
-  #   """
-  #   try:
-  #       if int(level) <= 0 or int(level) > 6:
-  #           raise ValueError
-  #
-  #       nodes, links, filter, direct = parse.get_term_v3(attIds.split(';'))
-  #       if not filter:
-  #           return json.dumps({'nodes': [], 'success': 0, 'links': []}, ensure_ascii=False)
-  #
-  #       nodes, links = parse.parallel_query(entName, level, nodes, links, filter, direct)
-  #       return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
-  #   except:
-  #       traceback.print_exc()
-  #       return json.dumps({'nodes': [], 'success': 103, 'links': []}, ensure_ascii=False)
 
   def getEntsRelevanceSeekGraphG(self, entName, attIds, level):
-    """
-    企业关联探寻
-    entName 企业名称
-    attIds 过滤关系
-    level 层级，最大6层
-
-    Parameters:
-     - entName
-     - attIds
-     - level
-    """
-    try:
-        relationshipFilter = parse.get_relationshipFilter(attIds)
-        if not relationshipFilter:
-            return json.dumps({'nodes': [], 'success': 0, 'links': []}, ensure_ascii=False)
-
-        nodes, links = parse.parallel_query(entName, int(level), relationshipFilter)
-        return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
-    except:
-        traceback.print_exc()
-        return json.dumps({'nodes': [], 'success': 103, 'links': []}, ensure_ascii=False)
-
-  def getEntsRelevanceSeekGraphG_ti(self, entName, attIds, level):
     """
     企业关联探寻
     entName 企业名称

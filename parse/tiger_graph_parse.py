@@ -237,64 +237,68 @@ def get_final_beneficiary_name(data, min_rate, entname):
     return get_final_beneficiary_name_neo(graph=path, min_rate=min_rate)
 
 
-def get_final_beneficiary_name_v2(data, min_rate, entname):
-    e1 = time.time()
-    nodes = {}
-    edges = defaultdict(list)
-    stack = defaultdict(list)
-    path_list = []
-    item = raw_data['results'].pop()
-    start_node = item['Start_node'][0]
-    end_node = item['End_node'][0]
-    nodes[start_node['v_id']] = start_node
-    nodes[end_node['v_id']] = end_node
-    data_nodes = {}
-    data_links = []
+def get_final_beneficiary_name_v2(raw_data, min_rate, entname):
+    flag = True
+    tmp_nodes = {}
+    index = 1
+    for item in raw_data['results']:
+        if flag:
+            for node in item['nodes']:
+                action = {
+                    "number": 0,
+                    "number_c":0,
+                    "children": None,
+                    "lastnode": 0,
+                    "name": node["attributes"]["name"],
+                    "pid": "",
+                    "id": node['v_id'],
+                    "type": node['v_type'],
+                    "attr": 2,
+                }
+                flag = False
+                tmp_nodes[(index, node['v_id'])] = action
+        else:
+            filter_index = set()
+            for node in item['nodes']:
+                action = {
+                    "number": node['attributes']['@rate'],
+                    "number_c": 0,
+                    "children": [],
+                    "lastnode": 0,
+                    "name": node["attributes"]["name"],
+                    "pid": "",
+                    "id": node['v_id'],
+                    "type": node['v_type'],
+                    "attr": 1,
+                }
+                for sid, link in node['attributes']['invested'].items():
+                    snode = deepcopy(tmp_nodes[(index - 1, sid)])
+                    snode["number_c"] = link["attributes"]["rate"]
+                    snode["pid"] = node["v_id"]
+                    filter_index.add(sid)
+                    action["children"].append(snode)
+                tmp_nodes[(index, node['v_id'])] = action
+            for sid in filter_index:
+                tmp_nodes.pop((index - 1, sid))
+        index += 1
 
-    if raw_data['results'].pop()['@@res_flag']:
-        tmp_links = raw_data['results'].pop()['links']
-        for link in tmp_links:
-            edges[tuple(sorted([link['to_id'], link['from_id']]))].append(link)
-        e2 = time.time()
-        print(f'links summary: {e2 - e1}s')
+    fag = False
+    response = []
+    for key, item in tmp_nodes.items():
+        if item['number'] < min_rate:
+            continue
 
-        for index, item in enumerate(raw_data['results'], 1):
-            e2 = time.time()
-            if index == 1:
-                for node in item['nodes']:
-                    nodes[node['v_id']] = node
-                    for previous in node['attributes']['@previous_id']:
-                        path_list.append([previous, node['v_id']])
-                        stack[(index, node['v_id'])].append([previous, node['v_id']])
-            else:
-                tmp = set()
-                for node in item['nodes']:
-                    nodes[node['v_id']] = node
-                    for previous in node['attributes']['@previous_id']:
-                        links = stack[(index - 1, previous)]
-                        tmp.add(previous)
-                        for link in links:
-                            if node['v_id'] in link:
-                                continue
-                            action = deepcopy(link)
-                            action.append(node['v_id'])
-                            path_list.append(action)
-                            stack[(index, node['v_id'])].append(action)
-                for key in tmp:
-                    stack.pop((index - 1, key))
-            print(index, '耗时', time.time() - e2)
+        if item['number'] > 0.25 and item['type'] == 'GR':
+            flag = True
+            item['lastnode'] = 1
 
-        print('拼接路径耗时:', time.time() - e1)
-        for path in path_list:
-            # print('path', path)
-            if path[-1] != end_node['v_id'] or path[0] != start_node['v_id']:
-                continue
-            data_nodes[path[0]] = nodes[path[0]]
-            for index in range(1, len(path)):
-                data_nodes[path[index]] = nodes[path[index]]
-                for link in edges[tuple(sorted([path[index - 1], path[index]]))]:
-                    data_links.append(link)
-        return None
+        response.append(item)
+
+    if not flag:
+        for item in response:
+            if item['type'] == 'GS':
+                item['lastnode'] = 1
+    return response
 
 
 def task_v4(raw_data):

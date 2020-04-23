@@ -120,8 +120,8 @@ def get_final_beneficiary_name(name=None, uniscid=None):
         'name': name if name else uniscid,
         'flag': True if name else False,
     }
-    ret = requests.get(url=config.EntActualController, params=params)
-    ret = requests.get()
+    # ret = requests.get(url=config.EntActualController, params=params)
+    ret = requests.get(url=config.EntFinalBeneficiaryName, params=params)
     return ret.json()
 
 
