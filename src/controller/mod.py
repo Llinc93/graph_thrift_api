@@ -23,15 +23,17 @@ def get_final_beneficiary_name():
         s = time.time()
         entName = request.form.get('entName')
         uscCode = request.form.get('uscCode')
-        min_ratio = float(request.form.get('min_ratio'))
+        min_ratio = float(request.form.get('min_ratio', 0))
 
-        raw_data = tiger_graph.get_ent_actual_controller(name=entName, uniscid=uscCode)
+        #raw_data = tiger_graph.get_ent_actual_controller(name=entName, uniscid=uscCode)
+        raw_data = tiger_graph.get_final_beneficiary_name(name=entName, uniscid=uscCode)
         e = time.time()
         print('查询耗时', e - s)
         if raw_data['error']:
             raise ValueError
 
-        data = tiger_graph_parse.get_final_beneficiary_name(raw_data, min_ratio, entName)
+        # data = tiger_graph_parse.get_final_beneficiary_name(raw_data, min_ratio, entName)
+        data = tiger_graph_parse.get_final_beneficiary_name_v2(raw_data, min_ratio, entName)
         print('总耗时', time.time() - s)
         return json.dumps({'data': data, 'success': 0}, ensure_ascii=False)
     except:
@@ -147,6 +149,8 @@ def test():
         nodes, links = tiger_graph_parse.ent_relevance_seek_graph(raw_data)
         print('test总耗时', time.time() - s)
         return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
+    except json.JSONDecodeError:
+        return json.dumps({'nodes': [], 'success': 103, 'links': [], 'msg': '数据量超出限制，请缩小查询条件'}, ensure_ascii=False)
     except:
         traceback.print_exc()
         return json.dumps({'nodes': [], 'success': 103, 'links': []}, ensure_ascii=False)

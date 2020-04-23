@@ -57,7 +57,7 @@ def task_test(params):
     data_nodes = {}
     data_links = []
 
-    if raw_data['results'].pop()['@@res_flag']:
+    if raw_data['results'].pop()['@@res_flag'] or True:
         tmp_links = raw_data['results'].pop()['links']
         for link in tmp_links:
             edges[tuple(sorted([link['to_id'], link['from_id']]))].append(link)
@@ -111,6 +111,17 @@ def get_ent_actual_controller(name=None, uniscid=None):
         'flag': True if name else False,
     }
     ret = requests.get(url=config.EntActualController, params=params)
+    ret = requests.get()
+    return ret.json()
+
+def get_final_beneficiary_name(name=None, uniscid=None):
+    '''获取实际控股人'''
+    params = {
+        'name': name if name else uniscid,
+        'flag': True if name else False,
+    }
+    ret = requests.get(url=config.EntActualController, params=params)
+    ret = requests.get()
     return ret.json()
 
 
