@@ -34,9 +34,6 @@ class MyThreadTest(Thread):
         self.ret = None
 
     def run(self):
-        # self.ret = task(self.params)
-        # self.ret = task_v2(self.params)
-        # self.ret = task_v3(self.params)
         self.ret = task_test(self.params)
         return None
 
@@ -60,7 +57,7 @@ def task_test(params):
     while raw_data['results']:
         tmp_nodes = raw_data['results'].pop()['nodes']
         for node in tmp_nodes:
-            if node['v_id'] in appear or node['atttributes']['name'] == params['ename']:
+            if node['v_id'] in appear or node['attributes']['name'] == params['ename']:
                 related = node['attributes'].pop('@related')
                 if node['v_id'] not in repeat:
                     nodes.append(node)
@@ -88,7 +85,6 @@ def get_ent_actual_controller(name=None, uniscid=None):
     }
     ret = requests.get(url=config.EntActualController, params=params)
     return ret.json()
-
 
 def get_final_beneficiary_name(name=None, uniscid=None):
     '''获取实际控股人'''
