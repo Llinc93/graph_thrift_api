@@ -67,11 +67,12 @@ LINK_NAME = {
 
 # TigerGraph
 EntActualController = 'http://172.27.2.5:9000/query/graph_api/EntActualContoller'
-EntFinalBeneficiaryName = 'http://172.27.2.2:9000/query/graph_api/EntFinalBeneficiaryName'
+# EntFinalBeneficiaryName = 'http://172.27.2.2:9000/query/graph_api/EntFinalBeneficiaryName'
+EntFinalBeneficiaryName = 'http://172.27.2.2:9000/query/graph_api/EntFinalBeneficiaryNameV2'
 EntGraphUrl = 'http://172.27.2.5:9000/query/graph_api/EntGraph'
 EntRelevanceSeekGraphUrl = 'http://172.27.2.5:9000/query/graph_api/EntsRelevanceSeekGraph'
-EntRelevanceSeekGraphUrl_v2 = 'http://172.27.2.5:9000/query/graph_api/test2'
-TEST = 'http://172.27.2.5:9000/query/graph_api/test'
+EntRelevanceSeekGraphUrl_v2 = 'http://172.27.2.5:9000/query/graph_api/EntsRelevanceSeekGrapV2'
+EntsDegreeCompare = 'http://172.27.2.5:9000/query/graph_api/EntsDegreeCompare'
 
 # FLASK、GUNICORN
 HOST = '0.0.0.0'

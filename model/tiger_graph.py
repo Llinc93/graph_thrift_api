@@ -1,5 +1,7 @@
 import re
 import time
+import json
+import hashlib
 import requests
 from copy import deepcopy
 from itertools import combinations
@@ -39,70 +41,44 @@ class MyThreadTest(Thread):
         return None
 
 def task_test(params):
-    s1 = time.time()
+    s = time.time()
     ret = requests.get(url=config.EntRelevanceSeekGraphUrl_v2, params=params)
     raw_data = ret.json()
     e1 = time.time()
-    print('test查询耗时', e1 - s1)
+    print(f'查询时间\t{e1 - s}s')
 
-    nodes = {}
-    edges = defaultdict(list)
-    stack = defaultdict(list)
-    path_list = []
-    item = raw_data['results'].pop()
-    start_node = item['Start_node'][0]
-    end_node = item['End_node'][0]
-    nodes[start_node['v_id']] = start_node
-    nodes[end_node['v_id']] = end_node
-    data_nodes = {}
-    data_links = []
+    if raw_data['error']:
+        return [], [], True
 
-    if raw_data['results'].pop()['@@res_flag'] or True:
-        tmp_links = raw_data['results'].pop()['links']
-        for link in tmp_links:
-            edges[tuple(sorted([link['to_id'], link['from_id']]))].append(link)
-        e2 = time.time()
-        print(f'links summary: {e2 - e1}s')
+    if not raw_data['results'].pop()['@@res_flag']:
+        return [], [], True
 
-        for index, item in enumerate(raw_data['results'], 1):
-            e2 = time.time()
-            if index == 1:
-                for node in item['nodes']:
-                    nodes[node['v_id']] = node
-                    for previous in node['attributes']['@previous_id']:
-                        path_list.append([previous, node['v_id']])
-                        stack[(index, node['v_id'])].append([previous, node['v_id']])
-            else:
-                tmp = set()
-                for node in item['nodes']:
-                    nodes[node['v_id']] = node
-                    for previous in node['attributes']['@previous_id']:
-                        links = stack[(index - 1, previous)]
-                        tmp.add(previous)
-                        for link in links:
-                            if node['v_id'] in link or end_node['v_id'] in link:
-                                continue
-                            action = deepcopy(link)
-                            action.append(node['v_id'])
-                            path_list.append(action)
-                            stack[(index, node['v_id'])].append(action)
-                for key in tmp:
-                    stack.pop((index - 1, key))
-            print(index, 'test耗时', time.time() - e2)
-        print('test拼接路径耗时:', time.time() - e1)
+    appear = {}
+    nodes = []
+    links = []
+    repeat = {}
+    while raw_data['results']:
+        tmp_nodes = raw_data['results'].pop()['nodes']
+        for node in tmp_nodes:
+            if node['v_id'] in appear or node['atttributes']['name'] == params['ename']:
+                related = node['attributes'].pop('@related')
+                if node['v_id'] not in repeat:
+                    nodes.append(node)
+                    repeat[node['v_id']] = {}
+                    for sid, link in related.items():
+                        appear[sid] = 0
+                        links.append(link)
+                        link["id"] = hashlib.md5(json.dumps(link, ensure_ascii=False).encode('utf8')).hexdigest()
+                        repeat[node['v_id']][link["id"]] = 0
+                else:
+                    for sid, link in related.items():
+                        appear[sid] = 0
+                        link["id"] = hashlib.md5(json.dumps(link, ensure_ascii=False).encode('utf8')).hexdigest()
+                        if link["id"] not in repeat[node['v_id']]:
+                            links.append(link)
+                            repeat[node['v_id']][link["id"]] = 0
 
-        e3 = time.time()
-        for path in path_list:
-            if path[-1] != end_node['v_id'] or path[0] != start_node['v_id']:
-                continue
-            data_nodes[path[0]] = nodes[path[0]]
-            for index in range(1, len(path)):
-                data_nodes[path[index]] = nodes[path[index]]
-                for link in edges[tuple(sorted([path[index - 1], path[index]]))]:
-                    data_links.append(link)
-        print(f'build response: {time.time() - e3}s')
-
-    return data_nodes.values(), data_links, False
+    return nodes, links, False
 
 def get_ent_actual_controller(name=None, uniscid=None):
     '''获取实际控股人'''
@@ -112,6 +88,7 @@ def get_ent_actual_controller(name=None, uniscid=None):
     }
     ret = requests.get(url=config.EntActualController, params=params)
     return ret.json()
+
 
 def get_final_beneficiary_name(name=None, uniscid=None):
     '''获取实际控股人'''
@@ -449,7 +426,7 @@ def get_ent_relevance_seek_graph(names, attIds, level):
         s = time.time()
         params['sname'] = sname
         params['ename'] = ename
-        sname, ename = requests.get(url=config.TEST, params=params).json()['results'][0]['nodes']
+        sname, ename = requests.get(url=config.EntsDegreeCompare, params=params).json()['results'][0]['nodes']
         if int(sname['attributes']['@outdegree']) > int(ename['attributes']['@outdegree']):
             params['sname'] = ename['attributes']['name']
             params['ename'] = sname['attributes']['name']
@@ -486,7 +463,7 @@ def get_ent_relevance_seek_graph_v2(names, attIds, level):
         s = time.time()
         params['sname'] = sname
         params['ename'] = ename
-        sname, ename = requests.get(url=config.TEST, params=params).json()['results'][0]['nodes']
+        sname, ename = requests.get(url=config.EntsDegreeCompare, params=params).json()['results'][0]['nodes']
         if int(sname['attributes']['@outdegree']) > int(ename['attributes']['@outdegree']):
             params['sname'] = ename['attributes']['name']
             params['ename'] = sname['attributes']['name']
@@ -503,7 +480,8 @@ def get_ent_relevance_seek_graph_v2(names, attIds, level):
         t.join()
         nodes, links, flag = t.ret
         if flag:
-            raise ValueError('查询TigerGraph，错误')
+            continue
+            # raise ValueError('查询TigerGraph，错误')
         data.append((nodes, links))
     return data
 

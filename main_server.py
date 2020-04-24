@@ -43,7 +43,7 @@ class MyFaceHandler(Interface.Iface):
               raise ValueError
 
           # data = tiger_graph_parse.get_final_beneficiary_name(raw_data, min_ratio, entName)
-          data = tiger_graph_parse.get_final_beneficiary_name_v2(raw_data, float(min_ratio), entName)
+          data = tiger_graph_parse.get_final_beneficiary_name_v2(raw_data, float(min_ratio))
           print('总耗时', time.time() - s)
           return json.dumps({'data': data, 'success': 0}, ensure_ascii=False)
       except:
