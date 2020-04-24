@@ -68,7 +68,7 @@ class MyFaceHandler(Interface.Iface):
         if raw_data['error']:
             raise ValueError
 
-        nodes, links = tiger_graph_parse.ent_actual_controller(raw_data, float(min_ratio))
+        nodes, links = tiger_graph_parse.ent_actual_controller(entName, raw_data, float(min_ratio))
         print('构造耗时', time.time() - e)
         print('总耗时', time.time() - s)
         return json.dumps({'data': {'nodes': nodes, 'links': links}, 'success': 0}, ensure_ascii=False)

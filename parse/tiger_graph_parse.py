@@ -6,7 +6,7 @@ from collections import defaultdict
 import config
 
 
-def ent_actual_controller(data, min_rate):
+def ent_actual_controller(entname, data, min_rate):
     nodes = []
     links = []
     special = []
@@ -29,12 +29,14 @@ def ent_actual_controller(data, min_rate):
             if node['v_id'] in appear:
                 continue
 
+            if node['attributes']['name'] == entname:
+                special.append(node['v_id'])
+
             appear.append(node['v_id'])
             attr = 1
             lastnode = 0
             if node['v_type'] == 'GR' and node['attributes']['@rate'] >= 0.25:
                 lastnode = 1
-                special.append(node['v_id'])
             if node['attributes']['@top']:
                 lastnode = 1
             if node['v_id'] in special:
@@ -239,6 +241,7 @@ def get_final_beneficiary_name(data, min_rate, entname):
 
 def get_final_beneficiary_name_v2(raw_data, min_rate, entname):
     flag = True
+    sids = {}
     tmp_nodes = {}
     index = 1
     for item in raw_data['results']:
@@ -256,7 +259,8 @@ def get_final_beneficiary_name_v2(raw_data, min_rate, entname):
                     "attr": 2,
                 }
                 flag = False
-                tmp_nodes[(index, node['v_id'])] = action
+                # tmp_nodes[(index, node['v_id'])] = action
+                tmp_nodes[node['v_id']] = action
         else:
             filter_index = set()
             for node in item['nodes']:
@@ -272,29 +276,31 @@ def get_final_beneficiary_name_v2(raw_data, min_rate, entname):
                     "attr": 1,
                 }
                 for sid, link in node['attributes']['invested'].items():
-                    snode = deepcopy(tmp_nodes[(index - 1, sid)])
+                    # snode = deepcopy(tmp_nodes[(index - 1, sid)])
+                    snode = deepcopy(tmp_nodes[sid])
                     snode["number_c"] = link["attributes"]["rate"]
                     snode["pid"] = node["v_id"]
-                    filter_index.add(sid)
+                    sids[sid] = 0
                     action["children"].append(snode)
                 tmp_nodes[(index, node['v_id'])] = action
-            for sid in filter_index:
-                tmp_nodes.pop((index - 1, sid))
         index += 1
 
-    fag = False
+    gs_flag = False
     response = []
     for key, item in tmp_nodes.items():
+        if key in sids:
+            continue
+
         if item['number'] < min_rate:
             continue
 
         if item['number'] > 0.25 and item['type'] == 'GR':
-            flag = True
+            gs_flag = True
             item['lastnode'] = 1
 
         response.append(item)
 
-    if not flag:
+    if not gs_flag:
         for item in response:
             if item['type'] == 'GS':
                 item['lastnode'] = 1
