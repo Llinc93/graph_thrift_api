@@ -242,6 +242,7 @@ def get_final_beneficiary_name(data, min_rate, entname):
 def get_final_beneficiary_name_v2(raw_data, min_rate, entname):
     flag = True
     sids = {}
+    repeat = {}
     tmp_nodes = {}
     index = 1
     for item in raw_data['results']:
@@ -259,30 +260,39 @@ def get_final_beneficiary_name_v2(raw_data, min_rate, entname):
                     "attr": 2,
                 }
                 flag = False
-                # tmp_nodes[(index, node['v_id'])] = action
                 tmp_nodes[node['v_id']] = action
+                repeat[node['v_id']] = {}
         else:
-            filter_index = set()
             for node in item['nodes']:
-                action = {
-                    "number": node['attributes']['@rate'],
-                    "number_c": 0,
-                    "children": [],
-                    "lastnode": 0,
-                    "name": node["attributes"]["name"],
-                    "pid": "",
-                    "id": node['v_id'],
-                    "type": node['v_type'],
-                    "attr": 1,
-                }
-                for sid, link in node['attributes']['invested'].items():
-                    # snode = deepcopy(tmp_nodes[(index - 1, sid)])
-                    snode = deepcopy(tmp_nodes[sid])
-                    snode["number_c"] = link["attributes"]["rate"]
-                    snode["pid"] = node["v_id"]
-                    sids[sid] = 0
-                    action["children"].append(snode)
-                tmp_nodes[(index, node['v_id'])] = action
+                if node['v_id'] in tmp_nodes:
+                    action = deepcopy(node['v_id'])
+                    for sid, link in node['attributes']['@invested'].items():
+                        if sid in repeat[node['v_id']]:
+                            continue
+                        snode = deepcopy(tmp_nodes[sid])
+                        snode["number_c"] = link["attributes"]["rate"]
+                        snode["pid"] = node["v_id"]
+                        sids[sid] = 0
+                        action["children"].append(snode)
+                else:
+                    action = {
+                        "number": node['attributes']['@rate'],
+                        "number_c": 0,
+                        "children": [],
+                        "lastnode": 0,
+                        "name": node["attributes"]["name"],
+                        "pid": "",
+                        "id": node['v_id'],
+                        "type": node['v_type'],
+                        "attr": 1,
+                    }
+                    for sid, link in node['attributes']['@invested'].items():
+                        snode = deepcopy(tmp_nodes[sid])
+                        snode["number_c"] = link["attributes"]["rate"]
+                        snode["pid"] = node["v_id"]
+                        sids[sid] = 0
+                        action["children"].append(snode)
+                tmp_nodes[node['v_id']] = action
         index += 1
 
     gs_flag = False

@@ -111,7 +111,6 @@ def get_ent_actual_controller(name=None, uniscid=None):
         'flag': True if name else False,
     }
     ret = requests.get(url=config.EntActualController, params=params)
-    ret = requests.get()
     return ret.json()
 
 def get_final_beneficiary_name(name=None, uniscid=None):
