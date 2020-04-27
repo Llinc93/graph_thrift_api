@@ -69,12 +69,13 @@ LINK_NAME = {
 EntActualController = 'http://172.27.2.5:9000/query/graph_api/EntActualContoller'
 # EntFinalBeneficiaryName = 'http://172.27.2.2:9000/query/graph_api/EntFinalBeneficiaryName'
 EntGraphUrl = 'http://172.27.2.5:9000/query/graph_api/EntGraph'
+#EntsDegreeCompare = 'http://172.27.2.5:9000/query/graph_api/EntsDegreeCompare'
+
 EntRelevanceSeekGraphUrl = 'http://172.27.2.5:9000/query/graph_api/EntsRelevanceSeekGraph'
 EntRelevanceSeekGraphUrl_v2 = 'http://172.27.2.5:9000/query/graph_api/EntsRelevanceSeekGraphV2'
-EntsDegreeCompare = 'http://172.27.2.5:9000/query/graph_api/EntsDegreeCompare'
 
 EntFinalBeneficiaryName = 'http://172.27.2.2:9000/query/graph_api/EntFinalBeneficiaryNameV2'
-#EntsDegreeCompare = 'http://172.27.2.5:9000/query/graph_api/EntsDegreeCompareV2'
+EntsDegreeCompare = 'http://172.27.2.5:9000/query/graph_api/EntsDegreeCompareV2'
 
 # FLASK、GUNICORN
 HOST = '0.0.0.0'

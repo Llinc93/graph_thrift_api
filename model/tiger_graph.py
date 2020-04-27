@@ -469,10 +469,10 @@ def get_ent_relevance_seek_graph_v2(names, attIds, level):
         params['ename'] = redis_client.r.get(ename)
         sname, ename = requests.get(url=config.EntsDegreeCompare, params=params).json()['results'][0]['nodes']
         if int(sname['attributes']['@outdegree']) > int(ename['attributes']['@outdegree']):
-            params['sname'] = ename['attributes']['name']
+            params['sname'] = ename['v_id']
             params['ename'] = sname['attributes']['name']
         else:
-            params['sname'] = sname['attributes']['name']
+            params['sname'] = sname['v_id']
             params['ename'] = ename['attributes']['name']
         print('test度数比较耗时', time.time() - s)
         t = MyThreadTest(params)
