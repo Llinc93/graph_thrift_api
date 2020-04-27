@@ -133,7 +133,7 @@ def get_ents_relevance_seek_graph_g():
         attIds = request.form['attIds']
         level = int(request.form['level'])
 
-        raw_data = tiger_graph.get_ent_relevance_seek_graph(names=entName, attIds=attIds, level=level)
+        raw_data = tiger_graph.get_ent_relevance_seek_graph_v2(names=entName, attIds=attIds, level=level)
         nodes, links = tiger_graph_parse.ent_relevance_seek_graph(raw_data)
         print('总耗时', time.time() - s)
         return json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
