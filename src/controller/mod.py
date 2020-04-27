@@ -24,9 +24,11 @@ def get_final_beneficiary_name():
         entName = request.form.get('entName')
         uscCode = request.form.get('uscCode')
         min_ratio = float(request.form.get('min_ratio', 0))
+        redis_client = tiger_graph.RedisClient()
+        lcid = redis_client.r.get(entName)
 
         #raw_data = tiger_graph.get_ent_actual_controller(name=entName, uniscid=uscCode)
-        raw_data = tiger_graph.get_final_beneficiary_name(name=entName, uniscid=uscCode)
+        raw_data = tiger_graph.get_final_beneficiary_name(name=lcid, uniscid=uscCode)
         e = time.time()
         print('查询耗时', e - s)
         if raw_data['error']:
@@ -56,7 +58,10 @@ def get_ent_actual_contoller():
         uscCode = request.form.get('uscCode')
         min_ratio = float(request.form.get('min_ratio', 0))
 
-        raw_data = tiger_graph.get_ent_actual_controller(name=entName, uniscid=uscCode)
+        redis_client = tiger_graph.RedisClient()
+        lcid = redis_client.r.get(entName)
+
+        raw_data = tiger_graph.get_ent_actual_controller(name=lcid, uniscid=uscCode)
         e = time.time()
         print('查询耗时', e - s)
         if raw_data['error']:
