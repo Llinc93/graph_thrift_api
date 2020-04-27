@@ -1,4 +1,5 @@
 import re
+import redis
 import time
 import json
 import hashlib
@@ -10,6 +11,11 @@ from collections import defaultdict
 
 import config
 
+
+class RedisClient(object):
+    def __init__(self):
+        pool = redis.ConnectionPool(host='localhost', port=6379, db=7, decode_responses=True)
+        self.r = redis.Redis(connection_pool=pool)
 
 class MyThread(Thread):
     
@@ -420,6 +426,7 @@ def get_ent_relevance_seek_graph(names, attIds, level):
     entnames = combinations(names.split(';'), 2)
     for sname, ename in entnames:
         s = time.time()
+
         params['sname'] = sname
         params['ename'] = ename
         sname, ename = requests.get(url=config.EntsDegreeCompare, params=params).json()['results'][0]['nodes']
@@ -453,12 +460,13 @@ def get_ent_relevance_seek_graph_v2(names, attIds, level):
     for attid in attIds.split(';'):
         params.update(config.ATTIDS_MAP[attid])
 
+    redis_client = RedisClient()
     threads = []
     entnames = combinations(names.split(';'), 2)
     for sname, ename in entnames:
         s = time.time()
-        params['sname'] = sname
-        params['ename'] = ename
+        params['sname'] = redis_client.r.get(sname)
+        params['ename'] = redis_client.r.get(ename)
         sname, ename = requests.get(url=config.EntsDegreeCompare, params=params).json()['results'][0]['nodes']
         if int(sname['attributes']['@outdegree']) > int(ename['attributes']['@outdegree']):
             params['sname'] = ename['attributes']['name']
