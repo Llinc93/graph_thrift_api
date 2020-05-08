@@ -18,7 +18,6 @@ class DataETL(object):
                 },
                 "max_result_window": "1000000000",
                 "refresh_interval": "-1",
-                "number_of_shards": "0",
                 "translog": {
                     "flush_threshold_size": "1024mb",
                     "sync_interval": "60s",
@@ -33,6 +32,7 @@ class DataETL(object):
                     }
                 },
                 "number_of_replicas": "0",
+                "number_of_shards": "0",
             }
         },
         "mappings": {
@@ -236,6 +236,34 @@ class DataETL(object):
                 "WEB_TITLE": {
                     "type": "text",
                     "norms": False,
+                }
+
+                # 股东表
+                "ACCONAM": {
+                    "type": float
+                },
+                "CONDATE": {
+                    "type": "date"
+                },
+                "INVNAME": {
+                    "type": "keyword",
+                    "index": False
+                },
+                "INVTYPE": {
+                    "type": "text",
+                    "index": False
+                },
+                "LCID_INV": {
+                    "type": "keyword",
+                    "index": False,
+                },
+                "PID_INV": {
+                    "type": "keyword",
+                    "index": False,
+                }
+                "SUBCONAM": {
+                    "type": float,
+                    "index": False,
                 }
             }
         }
@@ -458,14 +486,110 @@ class DataETL(object):
         action = self.jichu_tag(action)
         return action
 
-    def add_gudong(self, action, label):
+    def add_field(self, action):
+        '''
+        ES中企业基本信息 字段
+            SOFTWARE_SHORTNAME   ENTSTATUS   INDUSTRY_CODE   APP_NAME   BUSINESS   REGORG   ACTIVITY_DJ
+            INNOVATE_DJ   JWD   GROWTH   SOFTWARE_NAME   GROWTH_DJ   GOOD_NAME   ENTINFO_OLDNAME   ENTINFO_OPSCOPE
+            DOM   REGCAPCUR   INDUSTRYB   STRENGTH   STRENGTH_DJ   ESDATE   GENE   OPTO   PATEN_DESC   BUSINESS_DJ
+            WEB_TITLE   PATEN_NAME   TRADEMARK_NAME   EMPLOYDR_DJ   INV   SOCCONTRI   EMPLOYDR   APPRDATE   OPFROM
+            SHXYDM   EFFICIENCY   POSITION_DESC   EFFICIENCY_DJ   ENTNAME_GLLZD   REGCAP   POTENTIAL   INTRO   RISK
+            ENTTYPE   FRDB   POSITION_NAME   CASE_TITLE   LCID   APP_DESC   RISK_DJ   POTENTIAL_DJ   INNOVATE
+            SOCCONTRI_DJ   ENTINFO_NAME   ACTIVITY
+        ES --- 企业基本信息表字段部分
+            APPRDATE --- apprdate
+            DOM --- DOM
+            ENTINFO_NAME --- entname
+            ENTNAME_GLLZD --- entname
+            ENTSTATUS --- entstatus
+            ENTTYPE --- enttype
+            ESDATE --- esdate
+            INDUSTRY_CODE --- industry
+            ENTINFO_OPSCOPE --- opscope
+            OPFROM --- opfrom
+            OPTO --- opto
+            REGCAP --- regcap
+            REGCAPCUR --- reccapcur
+            REGORG --- regorg
+            LCID --- lcid
 
-        # 股东投资时间（T1）和接收投资时间(T2)
-        if label == None:
-            pass
-        else:
-            pass
-        return action
+        ES --- 股东表字段部分
+
+
+        '''
+        file_header = [
+            'acconam', 'blicno', 'blictype', 'condate', 'invname', 'invtype', 'lcid', 'lcid_inv', 'pid_inv',
+            'province_inv', 'subconam', 'rate', 'apprdate', 'candate', 'district', 'dom', 'enddate', 'entname',
+            'entstatus', 'enttype', 'esdate', 'industry', 'name', 'opfrom', 'opscope', 'opto', 'regcap', 'reccapcur',
+            'regno', 'regorg', 'revdate', 'province', 'uniscid'
+        ]
+        data = {
+            'ACCONAM': action['acconam'],
+            'CONDATE': action['condate'],
+            'INVNAME': action['invname'],
+            'INVTYPE': action['invtype'],
+            'LCID_INV': action['lcid_inv'],
+            'PID_INV': action['pid_inv'],
+            'SUBCONAM': float(action['subconam']) * self.RMB_exchange_rate.get(action['reccapcur'], 1.0)
+            'RATE': action['rate'],
+
+            "APPRDATE": action["apprdate"],
+            'DOM': action['dom'],
+            'ENTINFO_NAME': action['entname'],
+            'ENTNAME_GLLZD': action['entname'],
+            'ENTSTATUS': action['entstatus'],
+            'ENTTYPE': action['enttype'],
+            'ESDATE': action['esdate'],
+            'INDUSTRY_CODE': action['industry'],
+            'ENTINFO_OPSCOPE': action['opscope'],
+            'OPFROM': action['opfrom'],
+            'OPTO': action['opto'],
+            'REGCAP': action['regcap'],
+            'REGCAPCUR': action['reccapcur'],
+            'REGORG': action['regorg'],
+            'LCID': action['lcid'],
+            'SOFTWARE_SHORTNAME': None,
+            'APP_NAME': None,
+            'BUSINESS': None,
+            'ACTIVITY_DJ': None,
+            'INNOVATE_DJ': None,
+            'JWD': None,
+            'GROWTH': None,
+            'SOFTWARE_NAME': None,
+            'GROWTH_DJ': None,
+            'GOOD_NAME': None,
+            'ENTINFO_OLDNAME': None,
+            'INDUSTRYB': None,
+            'STRENGTH': None,
+            'STRENGTH_DJ': None,
+            'GENE': action['GENE'],
+            'PATEN_DESC': None,
+            'BUSINESS_DJ': None,
+            'WEB_TITLE': None,
+            'PATEN_NAME': None,
+            'TRADEMARK_NAME': None,
+            'EMPLOYDR_DJ': None,
+            'INV': None,
+            'SOCCONTRI': None,
+            'EMPLOYDR': None,
+            'SHXYDM': None,
+            'EFFICIENCY': None,
+            'POSITION_DESC': None,
+            'EFFICIENCY_DJ': None,
+            'POTENTIAL': None,
+            'INTRO': None,
+            'RISK': None,
+            'FRDB': None,
+            'POSITION_NAME': None,
+            'CASE_TITLE': None,
+            'APP_DESC': None,
+            'RISK_DJ': None,
+            'POTENTIAL_DJ': None,
+            'INNOVATE': None,
+            'SOCCONTRI_DJ': None,
+            'ACTIVITY': None,
+        }
+        return data
 
     def create(self):
         try:
@@ -486,17 +610,21 @@ class DataETL(object):
             error = traceback.format_exc()
             self.logger.error(f'bulk失败：{error}')
 
-    def run(self, label):
-        f = open(self.json_file, 'w', encoding='utf8')
+    def run(self):
+        f = open(self.json_file + "test", 'w', encoding='utf8')
+        index = 1
         for row in self.reader:
             try:
                 action = dict(zip(file_header, row))
                 action = self.add_tag(action)
-                #action = self.add_gudong(action, label)
+                action = self.add_field(action)
                 f.write(json.dumps({"index": {}}, ensure_ascii=False))
                 f.write('\n')
                 f.write(json.dumps(action, ensure_ascii=False))
                 f.write('\n')
+                if index == 20000:
+                    break
+                index += 1
             except:
                 error = traceback.format_exc()
                 self.logger.error(f'etl失败：{error} --- 原文：{json.dumps(row, ensure_ascii=False)}')
@@ -559,7 +687,6 @@ if __name__ == '__main__':
         'entstatus', 'enttype', 'esdate', 'industry', 'name', 'opfrom', 'opscope', 'opto', 'regcap', 'reccapcur',
         'regno', 'regorg', 'revdate', 'province', 'uniscid'
     ]
-    file_header = [item.upper() for item in file_header]
     log_file = 'gudong.log'
     etl = DataETL(ip, port, index, csv_file, file_header, log_file)
-    etl.run(label)
+    etl.run()
