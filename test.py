@@ -424,3 +424,17 @@ nodes = data['data']['nodes']
 links = data['data']['links']
 
 print(len(nodes))
+
+
+from multiprocessing import Pool
+import traceback
+from elasticsearch.helpers import parallel_bulk
+
+traceback.format_exc()
+p = Pool(2)
+
+p.apply_async()
+
+p.close()
+
+p.join()

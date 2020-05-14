@@ -190,11 +190,11 @@ class DataETL(object):
                     "type": "long"
                 },
                 "REGCAPCUR": {
-                    "type": "date",
+                    "type": "keyword",
                     "index": False
                 },
                 "REGORG": {
-                    "type": "date",
+                    "type": "text",
                     "index": False
                 },
                 "RISK": {
@@ -236,11 +236,11 @@ class DataETL(object):
                 "WEB_TITLE": {
                     "type": "text",
                     "norms": False,
-                }
+                },
 
                 # 股东表
                 "ACCONAM": {
-                    "type": float
+                    "type": "float"
                 },
                 "CONDATE": {
                     "type": "date"
@@ -260,9 +260,9 @@ class DataETL(object):
                 "PID_INV": {
                     "type": "keyword",
                     "index": False,
-                }
+                },
                 "SUBCONAM": {
-                    "type": float,
+                    "type": "float",
                     "index": False,
                 }
             }
@@ -336,7 +336,6 @@ class DataETL(object):
     def __init__(self, ip, port, index, csv_file, file_header, log_file):
         self.es = Elasticsearch({"host": ip, "port": port})
         self.index = index
-        self.mappings = {}
         self.file = open(csv_file, 'r', encoding='utf8')
         self.json_file = csv_file.split('.')[0] + '.json'
         self.file_header = file_header
@@ -389,8 +388,9 @@ class DataETL(object):
                 action['GENE'].append(f'A6_{year}_{month}')
 
         # step 1.3 注册资本
-        regcap = float(action['REGCAP'])
+        regcap = float(action['REGCAP']) if action['REGCAP'] else 0
         if regcap > 1:
+
             if regcap > 100000:
                 action['GENE'].append('A8_39')
             elif regcap > 90000:
@@ -524,30 +524,30 @@ class DataETL(object):
             'regno', 'regorg', 'revdate', 'province', 'uniscid'
         ]
         data = {
-            'ACCONAM': action['acconam'],
-            'CONDATE': action['condate'],
-            'INVNAME': action['invname'],
-            'INVTYPE': action['invtype'],
-            'LCID_INV': action['lcid_inv'],
-            'PID_INV': action['pid_inv'],
-            'SUBCONAM': float(action['subconam']) * self.RMB_exchange_rate.get(action['reccapcur'], 1.0)
-            'RATE': action['rate'],
+            'ACCONAM': action['acconam'] if action['acconam'] else None,
+            'CONDATE': action['condate'] if action['condate'] else None,
+            'INVNAME': action['invname'] if action['invname'] else None,
+            'INVTYPE': action['invtype'] if action['invtype'] else None,
+            'LCID_INV': action['lcid_inv'] if action['lcid_inv'] else None,
+            'PID_INV': action['pid_inv'] if action['pid_inv'] else None,
+            'SUBCONAM': float(action['subconam']) * self.RMB_exchange_rate.get(action['reccapcur'], 1.0) if action['subconam'] else None,
+            'RATE': action['rate'] if action['rate'] else None,
 
-            "APPRDATE": action["apprdate"],
-            'DOM': action['dom'],
-            'ENTINFO_NAME': action['entname'],
-            'ENTNAME_GLLZD': action['entname'],
-            'ENTSTATUS': action['entstatus'],
-            'ENTTYPE': action['enttype'],
-            'ESDATE': action['esdate'],
-            'INDUSTRY_CODE': action['industry'],
-            'ENTINFO_OPSCOPE': action['opscope'],
-            'OPFROM': action['opfrom'],
-            'OPTO': action['opto'],
-            'REGCAP': action['regcap'],
-            'REGCAPCUR': action['reccapcur'],
-            'REGORG': action['regorg'],
-            'LCID': action['lcid'],
+            "APPRDATE": action["apprdate"] if action['apprdate'] else None,
+            'DOM': action['dom'] if action['dom'] else None,
+            'ENTINFO_NAME': action['entname'] if action['entname'] else None,
+            'ENTNAME_GLLZD': action['entname'] if action['entname'] else None,
+            'ENTSTATUS': action['entstatus'] if action['entstatus'] else None,
+            'ENTTYPE': action['enttype'] if action['enttype'] else None,
+            'ESDATE': action['esdate'] if action['esdate'] else None,
+            'INDUSTRY_CODE': action['industry'] if action['industry'] else None,
+            'ENTINFO_OPSCOPE': action['opscope'] if action['opscope'] else None,
+            'OPFROM': action['opfrom'] if action['opfrom'] else None,
+            'OPTO': action['opto'] if action['opto'] else None,
+            'REGCAP': action['regcap'] if action['regcap'] else None,
+            'REGCAPCUR': action['reccapcur'] if action['reccapcur'] else None,
+            'REGORG': action['regorg'] if action['regorg'] else None,
+            'LCID': action['lcid'] if action['lcid'] else None,
             'SOFTWARE_SHORTNAME': None,
             'APP_NAME': None,
             'BUSINESS': None,
@@ -562,7 +562,7 @@ class DataETL(object):
             'INDUSTRYB': None,
             'STRENGTH': None,
             'STRENGTH_DJ': None,
-            'GENE': action['GENE'],
+            'GENE': action['GENE'] if action['GENE'] else None,
             'PATEN_DESC': None,
             'BUSINESS_DJ': None,
             'WEB_TITLE': None,
@@ -613,7 +613,8 @@ class DataETL(object):
     def run(self):
         f = open(self.json_file + "test", 'w', encoding='utf8')
         index = 1
-        for row in self.reader:
+        for row in self.file:
+            row = row.strip().split("|||")
             try:
                 action = dict(zip(file_header, row))
                 action = self.add_tag(action)
@@ -690,3 +691,4 @@ if __name__ == '__main__':
     log_file = 'gudong.log'
     etl = DataETL(ip, port, index, csv_file, file_header, log_file)
     etl.run()
+    list.

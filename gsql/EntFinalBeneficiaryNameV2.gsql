@@ -1,0 +1,25 @@
+CREATE QUERY EntFinalBeneficiaryNameV2(VERTEX<GS> name, BOOL flag=TRUE) FOR GRAPH graph_api {
+	SumAccum<float> @rate = 0;
+	SumAccum<int> @level = 0;
+	MapAccum<VERTEX, EDGE> @invested;
+	Int step;
+
+	a = {GS.*};
+
+	Start(ANY) = {name};
+	Start = SELECT t FROM a:t WHERE t == name ACCUM t.@rate = 1;
+	PRINT Start AS nodes;
+
+	step = 1;
+	WHILE step <= 10 AND Start.size() > 0
+	DO
+        Start = SELECT tgt
+            FROM Start -((REV_IPEES|REV_IPEER|REV_BEE):e)-> :tgt
+            ACCUM
+                tgt.@rate += Start.@rate * e.rate, tgt.@level += step, tgt.@invested += (Start -> e);
+
+		PRINT Start AS nodes;
+
+		step = step + 1;
+	END;
+}

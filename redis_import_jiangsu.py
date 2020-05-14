@@ -25,6 +25,9 @@ if __name__ == '__main__':
             count += 1
             row = line.strip().split(',')
             items.append((row[1], row[0]))
+            if row[2].strip():
+                items.append((row[2], row[0]))
+                count += 1
             if count % 100000 == 0:
                 p.apply_async(func=task, args=(items, r))
                 items = []

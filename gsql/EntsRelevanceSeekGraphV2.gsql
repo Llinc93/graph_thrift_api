@@ -1,0 +1,31 @@
+CREATE QUERY EntsRelevanceSeekGraphV2(VERTEX<GS> sname, STRING ename, INT level, STRING ipees="EXTRA", STRING rev_ipees="EXTRA", STRING ipeer="EXTRA", STRING rev_ipeer="EXTRA", STRING leet="EXTRA", STRING rev_leet="EXTRA", STRING leee="EXTRA", STRING rev_leee="EXTRA", STRING lel="EXTRA", STRING rev_lel="EXTRA", STRING opep="EXTRA", STRING rev_opep="EXTRA", STRING red="EXTRA", STRING rev_red="EXTRA", STRING spe="EXTRA", STRING rev_spe="EXTRA", STRING web="EXTRA", STRING rev_web="EXTRA", STRING bee="EXTRA", STRING rev_bee="EXTRA") FOR GRAPH {
+	SetAccum<VERTEX> @@nodes;
+	SumAccum<INT> @outdegree;
+	OrAccum @@res_flag;
+	MapAccum<VERTEX, EDGE> @related;
+	Int step;
+
+	@@res_flag += FALSE;
+
+	a = {GS.*};
+	Start = {ANY};
+
+	Start = SELECT tgt FROM a:tgt WHERE tgt == sname ACCUM tgt.@outdegree = 0;
+	PRINT Start AS nodes;
+
+	step = 1;
+	WHILE step <= level AND Start.size() > 0
+	DO
+		Start = SELECT tgt
+		    FROM Start -((ipees|rev_ipees|ipeer|rev_ipeer|leet|rev_leet|leee|rev_leee|lel|rev_lel|opep|rev_opep|red|rev_red|spe|rev_spe|web|rev_web|bee|rev_bee):e)-> :tgt WHERE tgt.id != Start.id
+            ACCUM
+                @@links += e, tgt.@outdegree = tgt.outdegree(ipees) + tgt.outdegree(rev_ipees) + tgt.outdegree(ipeer) + tgt.outdegree(rev_ipeer) + tgt.outdegree(leet) + tgt.outdegree(rev_leet) + tgt.outdegree(leee) + tgt.outdegree(rev_leee) + tgt.outdegree(lel) + tgt.outdegree(rev_lel) + tgt.outdegree(opep) + tgt.outdegree(rev_opep) + tgt.outdegree(red) + tgt.outdegree(rev_red) + tgt.outdegree(spe) + tgt.outdegree(rev_spe) + tgt.outdegree(web) + tgt.outdegree(rev_web) + tgt.outdegree(bee) + tgt.outdegree(rev_bee),
+            CASE
+                WHEN tgt.name == ename THEN @@res_flag += TRUE;
+            END;
+
+		step = step + 1;
+		PRINT Start AS nodes;
+	END;
+	PRINT @@res_flag;
+}

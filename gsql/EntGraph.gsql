@@ -1,5 +1,4 @@
-EntGraph:
-CREATE QUERY EntGraph(STRING name, Int level, STRING node_type, STRING ipees="EXTRA", STRING rev_ipees="EXTRA", STRING ipeer="EXTRA", STRING rev_ipeer="EXTRA", STRING leet="EXTRA", STRING rev_leet="EXTRA", STRING leee="EXTRA", STRING rev_leee="EXTRA", STRING lel="EXTRA", STRING rev_lel="EXTRA", STRING opep="EXTRA", STRING rev_opep="EXTRA", STRING red="EXTRA", STRING rev_red="EXTRA", STRING spe="EXTRA", STRING rev_spe="EXTRA", STRING web="EXTRA", STRING rev_web="EXTRA", STRING bee="EXTRA", STRING rev_bee="EXTRA") FOR GRAPH {
+CREATE QUERY EntGraph(STRING name, Int level, STRING node_type, BOOL flag, STRING ipees="EXTRA", STRING rev_ipees="EXTRA", STRING ipeer="EXTRA", STRING rev_ipeer="EXTRA", STRING leet="EXTRA", STRING rev_leet="EXTRA", STRING leee="EXTRA", STRING rev_leee="EXTRA", STRING lel="EXTRA", STRING rev_lel="EXTRA", STRING opep="EXTRA", STRING rev_opep="EXTRA", STRING red="EXTRA", STRING rev_red="EXTRA", STRING spe="EXTRA", STRING rev_spe="EXTRA", STRING web="EXTRA", STRING rev_web="EXTRA", STRING bee="EXTRA", STRING rev_bee="EXTRA") FOR GRAPH {
 	ListAccum<edge> @@links;
 	SumAccum<INT> @outdegree=0;
 	Int step;
@@ -7,7 +6,12 @@ CREATE QUERY EntGraph(STRING name, Int level, STRING node_type, STRING ipees="EX
 	a = {node_type.*};
 	Start = {ANY};
 
-	Start = SELECT t FROM a:t WHERE t.name == name ACCUM t.@outdegree = 0;
+    IF flag
+    THEN
+	    Start = SELECT t FROM a:t WHERE t.id == name ACCUM t.@outdegree = 0;
+	ELSE
+	    Start = SELECT t FROM a:t WHERE t.name == name ACCUM t.@outdegree = 0;
+	END;
 	PRINT Start AS nodes, @@links AS links;
 
 	step = 1;
@@ -17,12 +21,6 @@ CREATE QUERY EntGraph(STRING name, Int level, STRING node_type, STRING ipees="EX
 			CASE
 				WHEN tgt.name != name THEN tgt.@outdegree = tgt.outdegree(ipees) + tgt.outdegree(rev_ipees) + tgt.outdegree(ipeer) + tgt.outdegree(rev_ipeer) + tgt.outdegree(leet) + tgt.outdegree(rev_leet) + tgt.outdegree(leee) + tgt.outdegree(rev_leee) + tgt.outdegree(lel) + tgt.outdegree(rev_lel) + tgt.outdegree(opep) + tgt.outdegree(rev_opep) + tgt.outdegree(red) + tgt.outdegree(rev_red) + tgt.outdegree(spe) + tgt.outdegree(rev_spe) + tgt.outdegree(web) + tgt.outdegree(rev_web) + tgt.outdegree(bee) + tgt.outdegree(rev_bee)
 			END;
-
-		IF Start.size() == 0
-		THEN
-			BREAK;
-		END;
-
 		step = step + 1;
 		PRINT Start AS nodes, @@links AS links;
 		@@links.clear();

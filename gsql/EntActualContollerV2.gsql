@@ -1,19 +1,14 @@
-EntActualContoller:
-CREATE QUERY EntActualContoller(STRING name, BOOL flag=TRUE) FOR GRAPH graph_api {
+CREATE QUERY EntActualContollerV2(VERTEX<GS> name, BOOL flag=TRUE) FOR GRAPH graph_api {
 	ListAccum<edge> @@links;
 	OrAccum @top;
 	SumAccum<float> @rate = 0;
+	SumAccum<int> @level = 0;
 	Int step;
 
 	a = {GS.*};
-	Start = {ANY};
 
-	IFflag
-	THEN
-		Start = SELECT t FROM a:t WHERE t.name == name ACCUM t.@rate = 1;
-	ELSE
-		Start = SELECT t FROM a:t WHERE t.uniscid == name ACCUM t.@rate = 1;
-	END;
+	Start(ANY) = {name};
+	Start = SELECT t FROM a:t WHERE t == name ACCUM t.@rate = 1;
 	PRINT Start AS nodes, @@links AS links;
 
 	step = 1;
@@ -24,13 +19,14 @@ CREATE QUERY EntActualContoller(STRING name, BOOL flag=TRUE) FOR GRAPH graph_api
 			Start = SELECT tgt
 				FROM Start -((REV_IPEES|REV_IPEER|REV_BEE):e)-> :tgt
 				ACCUM
-					@@links += e, tgt.@top += TRUE, tgt.@rate += Start.@rate * e.rate;
+					@@links += e, tgt.@top += TRUE, tgt.@rate += Start.@rate * e.rate, tgt.@level += step;
 		ELSE
 			Start = SELECT tgt
 				FROM Start -((REV_IPEES|REV_IPEER|REV_BEE):e)-> :tgt
 				ACCUM
-					@@links += e, tgt.@top += FALSE, tgt.@rate += Start.@rate * e.rate;
+					@@links += e, tgt.@top += FALSE, tgt.@rate += Start.@rate * e.rate, tgt.@level += step;
 		END;
+
 
 		PRINT Start AS nodes, @@links AS links;
 
