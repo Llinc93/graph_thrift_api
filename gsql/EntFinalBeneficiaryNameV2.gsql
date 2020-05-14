@@ -1,4 +1,4 @@
-CREATE QUERY EntFinalBeneficiaryNameV2(VERTEX<GS> name, BOOL flag=TRUE) FOR GRAPH graph_api {
+CREATE QUERY EntFinalBeneficiaryNameV2(VERTEX<GS> name) FOR GRAPH graph_api {
 	SumAccum<float> @rate = 0;
 	SumAccum<int> @level = 0;
 	MapAccum<VERTEX, EDGE> @invested;

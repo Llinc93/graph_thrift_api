@@ -1,13 +1,37 @@
 import json
 import time
+import hashlib
 import traceback
-from flask import Blueprint, request
+from flask import Blueprint, request, g
 
 from model import tiger_graph
 from parse import tiger_graph_parse
 
 
 MOD = Blueprint('mod', __name__)
+
+
+url_dict = {
+    '/getFinalBeneficiaryName': "",
+    '/getEntActualContoller': '',
+    '/getEntGraphG': '',
+    'getEntsRelevanceSeekGraphG': '',
+}
+
+@MOD.before_request
+def read_redis():
+    '''
+    判断是否有缓存
+    :return:
+    '''
+    url = request.path
+    if url == :
+        pass
+    elif url == :
+        pass
+    elif url ==
+    name = hashlib.md5()
+    redis_client = tiger_graph.RedisClient()
 
 
 @MOD.route('/getFinalBeneficiaryName', methods=['POST'])
@@ -20,21 +44,26 @@ def get_final_beneficiary_name():
      - entName
     """
     try:
-        s = time.time()
+        start = time.time()
         entName = request.form.get('entName')
         uscCode = request.form.get('uscCode')
         min_ratio = float(request.form.get('min_ratio', 0))
         redis_client = tiger_graph.RedisClient()
-        lcid = redis_client.r.get(entName)
+        if entName:
+            lcid = redis_client.r.get(entName)
+        else:
+            lcid = redis_client.r.get(uscCode)
+        if not lcid:
+            return json.dumps({'data': [], 'success': 0}, ensure_ascii=False)
 
-        raw_data = tiger_graph.get_final_beneficiary_name(name=lcid, uniscid=uscCode)
-        e = time.time()
-        print('查询耗时', e - s)
+        raw_data = tiger_graph.get_final_beneficiary_name(name=lcid)
         if raw_data['error']:
             raise ValueError
 
         data = tiger_graph_parse.get_final_beneficiary_name_v2(raw_data, min_ratio)
-        print('总耗时', time.time() - s)
+        ent = time.time()
+        if ent - start > 10:
+            redis_client.r.set()
         return json.dumps({'data': data, 'success': 0}, ensure_ascii=False)
     except json.JSONDecodeError:
         return json.dumps({'nodes': [], 'success': 103, 'links': [], 'msg': '数据量超出限制，请缩小查询条件'}, ensure_ascii=False)
@@ -59,9 +88,14 @@ def get_ent_actual_contoller():
         min_ratio = float(request.form.get('min_ratio', 0))
 
         redis_client = tiger_graph.RedisClient()
-        lcid = redis_client.r.get(entName)
+        if entName:
+            lcid = redis_client.r.get(entName)
+        else:
+            lcid = redis_client.r.get(uscCode)
+        if not lcid:
+            return json.dumps({'data': [], 'success': 0}, ensure_ascii=False)
 
-        raw_data = tiger_graph.get_ent_actual_controller(name=lcid, uniscid=uscCode)
+        raw_data = tiger_graph.get_ent_actual_controller(name=lcid)
         e = time.time()
         print('查询耗时', e - s)
         if raw_data['error']:

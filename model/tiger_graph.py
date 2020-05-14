@@ -67,20 +67,18 @@ def task_test(params):
 
     return nodes, links, False
 
-def get_ent_actual_controller(name=None, uniscid=None):
+def get_ent_actual_controller(name=None):
     '''获取实际控股人'''
     params = {
-        'name': name if name else uniscid,
-        'flag': True if name else False,
+        'name': name,
     }
     ret = requests.get(url=config.EntActualController, params=params)
     return ret.json()
 
-def get_final_beneficiary_name(name=None, uniscid=None):
+def get_final_beneficiary_name(name=None):
     '''获取实际控股人'''
     params = {
-        'name': name if name else uniscid,
-        'flag': True if name else False,
+        'name': name,
     }
     ret = requests.get(url=config.EntFinalBeneficiaryName, params=params)
     return ret.json()
