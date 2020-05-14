@@ -4,7 +4,7 @@ from multiprocessing import Pool
 
 
 def task(items, r):
-    for lcid, name in items:
+    for name, lcid in items:
         r.set(name, lcid)
     return None
 
@@ -22,10 +22,10 @@ if __name__ == '__main__':
     items = []
     with open(file, 'r', encoding='utf8') as f:
         for line in f:
-            count += 1
             row = line.strip().split(',')
             items.append((row[1], row[0]))
-            if row[2].strip():
+            count += 1
+            if row[2].strip() and row[2] != 'null':
                 items.append((row[2], row[0]))
                 count += 1
             if count % 100000 == 0:

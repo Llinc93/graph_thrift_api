@@ -1,10 +1,3 @@
-# neo4j
-NEO4J_URL = 'http://localhost:17474'
-# NEO4J_URL = 'http://47.93.228.56:9920'
-NEO4J_USER = 'neo4j'
-NEO4J_PASSWD = '123456'
-
-
 # relation map
 RELATIONSHIP_MAP = {
     'IPEE': '投资',
@@ -66,17 +59,12 @@ LINK_NAME = {
 }
 
 # TigerGraph
-#EntActualController = 'http://172.27.2.5:9000/query/graph_api/EntActualContoller'
-# EntFinalBeneficiaryName = 'http://172.27.2.2:9000/query/graph_api/EntFinalBeneficiaryName'
-EntGraphUrl = 'http://172.27.2.5:9000/query/graph_api/EntGraph'
-#EntsDegreeCompare = 'http://172.27.2.5:9000/query/graph_api/EntsDegreeCompare'
-#EntRelevanceSeekGraphUrl = 'http://172.27.2.5:9000/query/graph_api/EntsRelevanceSeekGraph'
-
 EntActualController = 'http://172.27.2.5:9000/query/graph_api/EntActualContollerV2'
 EntFinalBeneficiaryName = 'http://172.27.2.2:9000/query/graph_api/EntFinalBeneficiaryNameV2'
-#EntGraphUrl = 'http://172.27.2.5:9000/query/graph_api/EntGraphV2' todo
+EntGraphUrl = 'http://172.27.2.5:9000/query/graph_api/EntGraph'
 EntsDegreeCompare = 'http://172.27.2.5:9000/query/graph_api/EntsDegreeCompareV2'
 EntRelevanceSeekGraphUrl = 'http://172.27.2.5:9000/query/graph_api/EntsRelevanceSeekGraphV2'
+
 # FLASK、GUNICORN
 HOST = '0.0.0.0'
 PORT = 8140

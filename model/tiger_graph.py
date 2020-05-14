@@ -4,10 +4,8 @@ import time
 import json
 import hashlib
 import requests
-from copy import deepcopy
 from itertools import combinations
 from threading import Thread
-from collections import defaultdict
 
 import config
 
@@ -34,7 +32,7 @@ def task_test(params):
     ret = requests.get(url=config.EntRelevanceSeekGraphUrl, params=params)
     raw_data = ret.json()
     e1 = time.time()
-    print(f'查询时间\t{e1 - s}s')
+    #print(f'查询时间\t{e1 - s}s')
 
     if raw_data['error']:
         return [], [], True
@@ -110,43 +108,6 @@ def get_ent_graph(name, node_type, level, attIds):
     ret = requests.get(url=config.EntGraphUrl, params=params)
     return ret.json()
 
-def get_ent_relevance_seek_graph(names, attIds, level):
-    params = {
-        'sname': '',
-        'ename': '',
-        'level': level,
-    }
-    for attid in attIds.split(';'):
-        params.update(config.ATTIDS_MAP[attid])
-
-    threads = []
-    entnames = combinations(names.split(';'), 2)
-    for sname, ename in entnames:
-        s = time.time()
-
-        params['sname'] = sname
-        params['ename'] = ename
-        sname, ename = requests.get(url=config.EntsDegreeCompare, params=params).json()['results'][0]['nodes']
-        if int(sname['attributes']['@outdegree']) > int(ename['attributes']['@outdegree']):
-            params['sname'] = ename['attributes']['name']
-            params['ename'] = sname['attributes']['name']
-        else:
-            params['sname'] = sname['attributes']['name']
-            params['ename'] = ename['attributes']['name']
-        print('度数比较耗时', time.time() - s)
-        t = MyThread(params)
-        threads.append(t)
-        t.start()
-
-    data = []
-    for t in threads:
-        t.join()
-        nodes, links, flag = t.ret
-        if flag:
-            raise ValueError('查询TigerGraph，错误')
-        data.append((nodes, links))
-    return data
-
 
 def get_ent_relevance_seek_graph_v2(names, attIds, level):
     params = {
@@ -171,7 +132,7 @@ def get_ent_relevance_seek_graph_v2(names, attIds, level):
         else:
             params['sname'] = sname['v_id']
             params['ename'] = ename['attributes']['name']
-        print('test度数比较耗时', time.time() - s)
+        #print('test度数比较耗时', time.time() - s)
         t = MyThread(params)
         threads.append(t)
         t.start()
@@ -185,6 +146,3 @@ def get_ent_relevance_seek_graph_v2(names, attIds, level):
             # raise ValueError('查询TigerGraph，错误')
         data.append((nodes, links))
     return data
-
-if __name__ == '__main__':
-    get_ent_relevance_seek_graph('1;2;3', 'R101', 3)
