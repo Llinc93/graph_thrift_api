@@ -18,9 +18,9 @@ def extract_from_neo4j(csv_path, index, neo4j_uri, username, password):
     s = time.time()
     wf = open(csv_path, 'w', encoding='utf8')
     if index != 9:
-        command = 'match (n:GS) -[:IPEE|:BEE* %s .. %s]-> (m:GS) where not (:GS) -[:IPEE|:BEE]-> (n) return distinct m.ID as nid'
+        command = 'match (n:GS) -[:IPEER|:IPEES|:BEE* %s .. %s]-> (m:GS) where not (:GS) -[:IPEE|:BEE]-> (n) return distinct m.ID as nid'
     else:
-        command = 'match (n:GS) -[:IPEE|:BEE* %s .. %s]-> (m:GS) return distinct m.ID as nid'
+        command = 'match (n:GS) -[:IPEER|:IPEES|:BEE* %s .. %s]-> (m:GS) return distinct m.ID as nid'
 
     graph = py2neo.Graph(uri=neo4j_uri, username=username, password=password)
     ret = graph.run(command % (index, index)).data()
@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
     path = '/opt/graph_thrift_api/data'
     tmp_name = 'ent_level_{}.csv'
-    neo4j_uri = 'http://172.27.2.2:7474'
+    neo4j_uri = 'http://172.27.2.5:17474'
     username = 'neo4j'
     password = '123456'
 

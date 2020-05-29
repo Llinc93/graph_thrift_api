@@ -1,31 +1,13 @@
 
 # 说明
 
-demon java代码示例
----
 
-# thrift
-
-+ java:  
++ API 启动
 ```
-thrift --gen java java.thrift
+  gunicorn -c gunicorn_conf.py main:app
 ```
 
-+ python:  
-``` 
-thrift --gen py interface.thrift
++ API 停止
 ```
----
-
-+ python依赖  
-```
-pip3 install -r requirements.txt  
-````
-+ python thrift主程序 
-``` 
-  python3 main_server.py
-```
-+ python thrift客户端示例
-``` 
-  python3 client.py
+ps -ef|grep 'gunicorn -c gunicorn_conf.py main:app'| awk '{print $2}'| xwargs kill -9
 ```
