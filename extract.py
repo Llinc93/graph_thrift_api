@@ -17,8 +17,8 @@ def extract_from_neo4j(csv_path, index, neo4j_uri, username, password):
     print(f'进程{os.getpid()}：正在查询第{index}层企业节点')
     s = time.time()
     wf = open(csv_path, 'w', encoding='utf8')
-    if index != 9:
-        command = 'match (n:GS) -[:IPEER|:IPEES|:BEE* %s .. %s]-> (m:GS) where not (:GS) -[:IPEE|:BEE]-> (n) return distinct m.ID as nid'
+    if index != 10:
+        command = 'match (n:GS) -[:IPEER|:IPEES|:BEE* %s .. %s]-> (m:GS) where not (:GS) -[:IPEES|:IPEER|:BEE]-> (n) return distinct m.ID as nid'
     else:
         command = 'match (n:GS) -[:IPEER|:IPEES|:BEE* %s .. %s]-> (m:GS) return distinct m.ID as nid'
 
@@ -48,7 +48,7 @@ if __name__ == '__main__':
     if not os.path.exists(path):
         os.makedirs(path)
 
-    for index in range(3, 10):
+    for index in range(3, 11):
         csv_path = os.path.join(path, tmp_name.format(index))
         p.apply_async(func=extract_from_neo4j, args=(csv_path, index, neo4j_uri, username, password))
 
@@ -56,20 +56,3 @@ if __name__ == '__main__':
     p.join()
     print(f'提取企业节点完成，一共耗时{time.time() - s}秒！')
     print('End!')
-    # for index in range(3, 10):
-    #     wf = open(os.path.join(path, tmp_name.format(index)), 'a', encoding='utf8')
-    #     if index != 9:
-    #         command = 'match (n:GS) -[:IPEE|:BEE* %s .. %s]-> (m:GS) where not (:GS) -[:IPEE|:BEE]-> (n) return distinct m.ID as nid'
-    #     else:
-    #         command = 'match (n:GS) -[:IPEE|:BEE* %s .. %s]-> (m:GS) return distinct m.ID as nid'
-    #
-    #     graph = py2neo.Graph(uri=neo4j_uri, username=username, password=password)
-    #     ret = graph.run(command % (index, index)).data()
-    #
-    #     count = 0
-    #     for i in ret:
-    #         count += 1
-    #         wf.write(','.join([i['nid'], str(index), '\n']))
-    #     wf.close()
-    #     print(f'{index}层企业查询完毕: {count}')
-    # print('End')

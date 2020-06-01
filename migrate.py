@@ -1,37 +1,38 @@
 import os
 import csv
+import sys
 import hashlib
 from collections import defaultdict
 
 
-class Filter(object):
+class Migrate(object):
 
     files = [
-        ('/home/csvdata/基本信息企业节点.csv', r'/home/neo4j/import/基本信息企业节点.csv', 'GS'),
-        ('/home/csvdata/人员节点-投资.csv', r'/home/neo4j/import/人员节点-投资.csv', 'GR'),
-        ('/home/csvdata/人员节点-高管.csv', r'/home/neo4j/import/人员节点-高管.csv', 'GR'),
-        ('/home/csvdata/企业投资_0309.csv', r'/home/neo4j/import/企业投资.csv', 'IPEES'),
-        ('/home/csvdata/自然人投资_0309.csv', r'/home/neo4j/import/自然人投资.csv', 'IPEER'),
-        ('/home/csvdata/企业分支.csv', r'/home/neo4j/import/企业分支.csv', 'BEE'),
-        ('/home/csvdata/主要管理人员.csv', r'/home/neo4j/import/主要管理人员.csv', 'SPE'),
+        ('/home/csvdata/基本信息企业节点.csv', r'/home/neo4j_test/import/基本信息企业节点.csv', 'GS'),
+        ('/home/csvdata/人员节点-投资.csv', r'/home/neo4j_test/import/人员节点-投资.csv', 'GR'),
+        ('/home/csvdata/人员节点-高管.csv', r'/home/neo4j_test/import/人员节点-高管.csv', 'GR'),
+        ('/home/csvdata/企业投资_0309.csv', r'/home/neo4j_test/import/企业投资.csv', 'IPEES'),
+        ('/home/csvdata/自然人投资_0309.csv', r'/home/neo4j_test/import/自然人投资.csv', 'IPEER'),
+        ('/home/csvdata/企业分支.csv', r'/home/neo4j_test/import/企业分支.csv', 'BEE'),
+        ('/home/csvdata/主要管理人员.csv', r'/home/neo4j_test/import/主要管理人员.csv', 'SPE'),
 
-        ('/home/csvdata/专利关系.csv', r'/home/neo4j/import/专利关系.csv', 'OPEP'),
-        ('/home/csvdata/专利节点.csv', r'/home/neo4j/import/专利节点.csv', 'PP'),
+        ('/home/csvdata/专利关系.csv', r'/home/neo4j_test/import/专利关系.csv', 'OPEP'),
+        ('/home/csvdata/专利节点.csv', r'/home/neo4j_test/import/专利节点.csv', 'PP'),
 
-        ('/home/csvdata/诉讼关系.csv', r'/home/neo4j/import/诉讼关系.csv', 'LEL'),
-        ('/home/csvdata/诉讼节点.csv', r'/home/neo4j/import/诉讼节点.csv', 'LL'),
+        ('/home/csvdata/诉讼关系.csv', r'/home/neo4j_test/import/诉讼关系.csv', 'LEL'),
+        ('/home/csvdata/诉讼节点.csv', r'/home/neo4j_test/import/诉讼节点.csv', 'LL'),
 
-        ('/home/csvdata/招投标关系.csv', r'/home/neo4j/import/招投标关系.csv', 'WEB'),
-        ('/home/csvdata/招投标节点.csv', r'/home/neo4j/import/招投标节点.csv', 'GB'),
+        ('/home/csvdata/招投标关系.csv', r'/home/neo4j_test/import/招投标关系.csv', 'WEB'),
+        ('/home/csvdata/招投标节点.csv', r'/home/neo4j_test/import/招投标节点.csv', 'GB'),
 
-        ('/home/csvdata/相同办公地.csv', r'/home/neo4j/import/相同办公地.csv', 'RED'),
-        ('/home/csvdata/办公地节点.csv', r'/home/neo4j/import/办公地节点.csv', 'DD'),
+        ('/home/csvdata/相同办公地.csv', r'/home/neo4j_test/import/相同办公地.csv', 'RED'),
+        ('/home/csvdata/办公地节点.csv', r'/home/neo4j_test/import/办公地节点.csv', 'DD'),
 
-        ('/home/csvdata/相同联系方式-电话0306.csv', r'/home/neo4j/import/相同联系方式-电话.csv', 'LEE1'),
-        ('/home/csvdata/电话节点.csv', r'/home/neo4j/import/电话节点.csv', 'TT'),
+        ('/home/csvdata/相同联系方式-电话0306.csv', r'/home/neo4j_test/import/相同联系方式-电话.csv', 'LEE1'),
+        ('/home/csvdata/电话节点.csv', r'/home/neo4j_test/import/电话节点.csv', 'TT'),
 
-        ('/home/csvdata/相同联系方式-邮箱0306.csv', r'/home/neo4j/import/相同联系方式-邮箱.csv', 'LEE2'),
-        ('/home/csvdata/邮箱节点.csv', r'/home/neo4j/import/邮箱节点.csv', 'EE'),
+        ('/home/csvdata/相同联系方式-邮箱0306.csv', r'/home/neo4j_test/import/相同联系方式-邮箱.csv', 'LEE2'),
+        ('/home/csvdata/邮箱节点.csv', r'/home/neo4j_test/import/邮箱节点.csv', 'EE'),
     ]
 
     def __init__(self):
@@ -363,4 +364,5 @@ class Filter(object):
 
 
 if __name__ == '__main__':
-    Filter().run()
+    csv_dir = sys.argv[1]
+    Migrate(csv_dir).run()

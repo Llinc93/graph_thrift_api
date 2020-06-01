@@ -2,7 +2,7 @@ import copy, time
 from itertools import combinations
 from collections import defaultdict
 
-from parse.my_thread import MyThread, MyThreadAPOC
+from parse.my_thread import MyThreadAPOC
 from model.ent_graph import neo4j_client
 
 
@@ -87,89 +87,6 @@ class Parse():
         # 'R144': {'n': '', 'r': '', 'd': 3},     # 历史管理人员其他公司任职
     }
 
-    # def get_term_v3(self, attIds):
-    #     '''
-    #     根据传入的条件获取节点类型和关系类型，并获取过滤条件
-    #     1. 传入条件过滤
-    #     2. 判断方向
-    #     3. 获取过滤条件
-    #         1. 同一方向的单向, 均为1，或均为2
-    #         2. 不同方向的单向， 1和2
-    #         3. 全部不定向， 均为3
-    #         4. 单向、不定向混合， 1和3， 2和3
-    #     :param attIds:
-    #     :return:
-    #     '''
-    #     filter = []
-    #     # step1 传入条件过滤
-    #     # if 'R103' in attIds and 'R104' not in attIds:
-    #     #     attIds.remove('R103')
-    #     #     filter.append('R104')
-    #
-    #     # if 'R105' in attIds and 'R106' not in attIds:
-    #     #     attIds.remove('R105')
-    #     #     filter.append('R106')
-    #
-    #     # if 'R142' in attIds and 'R141' not in attIds:
-    #     #     attIds.remove('R142')
-    #     #     filter.append('R141')
-    #
-    #     # if 'R144' in attIds and 'R143' not in attIds:
-    #     #     attIds.remove('R144')
-    #     #     filter.append('R143')
-    #
-    #     # step2 判断方向，并获取节点和关系
-    #     d = {}
-    #     nodes = set()
-    #     links = set()
-    #     for attId in attIds:
-    #         attid = self.CONDITION_MAP.get(attId)
-    #         if not attid:
-    #             continue
-    #         n = attid['n']
-    #         r = attid['r']
-    #
-    #         if isinstance(n, list):
-    #             nodes = nodes.union(set(n))
-    #             label = f'{"_".join(n)}_{r}'
-    #         else:
-    #             nodes.add(n)
-    #             label = f'{n}_{r}'
-    #         links.add(r)
-    #
-    #         if label in d:
-    #             d[label]['value'].add(self.CONDITION_MAP[attId]['d'])
-    #         else:
-    #             d[label] = {'value': set([self.CONDITION_MAP[attId]['d']]), 'attid': attId}
-    #
-    #     if not d:
-    #         return None, None, None, None
-    #
-    #     # step3 根据方向，获取过滤条件
-    #     direct = ''
-    #     key_action = []
-    #     value_action = []
-    #     for key, value in d.items():
-    #         key_action.append(key)
-    #         value_action.append(sum(value['value']))
-    #
-    #     # 1. 同一方向的单向, 均为1，或均为2, 不需要过滤
-    #     if value_action.count(1) == len(value_action):
-    #         direct = 'in'
-    #     elif value_action.count(2) == len(value_action):
-    #         direct = 'out'
-    #     # 2. 全部不定向， 均为3， 不需要过滤
-    #     elif value_action.count(3) == len(value_action):
-    #         direct = 'full'
-    #     # 3. 不同方向的单向, 1和2, 没有不定向, A1和B3;单向、不定向混合， 1和3， 2和3
-    #     else:
-    #         direct = 'full'
-    #         for index in range(len(value_action)):
-    #             if value_action[index] != 3:
-    #                 filter.append(self.filter_map[d[key_action[index]]['attid']])
-    #
-    #     return nodes, links, filter, direct
-
     def get_relationshipFilter(self, attIds):
         '''
         根据attIds确定relationshipFilter
@@ -231,28 +148,52 @@ class Parse():
             relationshipFilter.append('<SPE')
 
         # 分支
-        if 'R107' in attIds or 'R108' in attIds:
+        if 'R107' in attIds and 'R108' in attIds:
+            relationshipFilter.append('BEE')
+        elif 'R107' in attIds:
+            relationshipFilter.append('BEE>')
+        elif 'R108' in attIds:
             relationshipFilter.append('BEE')
 
         # 中标
-        if 'R109' in attIds or 'R110' in attIds:
+        if 'R109' in attIds and 'R110' in attIds:
             relationshipFilter.append('WEB')
+        elif 'R109' in attIds:
+            relationshipFilter.append('WEB>')
+        elif 'R110' in attIds:
+            relationshipFilter.append('<WEB')
 
         # 办公地
-        if 'R111' in attIds or 'R112' in attIds:
+        if 'R111' in attIds and 'R112' in attIds:
             relationshipFilter.append('RED')
+        elif 'R111' in attIds:
+            relationshipFilter.append('RED>')
+        elif 'R112' in attIds:
+            relationshipFilter.append('<RED')
 
         # 相同联系方式
-        if 'R113' in attIds or 'R114' in attIds:
+        if 'R113' in attIds and 'R114' in attIds:
             relationshipFilter.append('LEE')
+        elif 'R113' in attIds:
+            relationshipFilter.append('<LEE')
+        elif 'R114' in attIds:
+            relationshipFilter.append('LEE>')
 
         # 专利
         if 'R115' in attIds or 'R116' in attIds:
             relationshipFilter.append('OPEP')
+        elif 'R115' in attIds:
+            relationshipFilter.append('<OPEP')
+        elif 'R116' in attIds:
+            relationshipFilter.append('OPEP>')
 
         # 诉讼
         if 'R117' in attIds or 'R118' in attIds:
             relationshipFilter.append('LEL')
+        elif 'R117' in attIds:
+            relationshipFilter.append('<LEL')
+        elif 'R118' in attIds:
+            relationshipFilter.append('LEL>')
 
         return '|'.join(relationshipFilter)
 
@@ -281,8 +222,8 @@ class Parse():
                     continue
 
                 # 分支关系，比例为1
-                if links[index]['label'] == 'BEE':
-                    links[index]['RATE'] = 1
+                # if links[index]['label'] == 'BEE':
+                #     links[index]['RATE'] = 1
 
                 if links[index]['ID'] not in tmp_links.keys():
                     tmp_links[links[index]['ID']] = {'id': nodes[index + 1]['ID'], 'pid': nodes[index]['ID'], 'number': links[index]['RATE'], 'type': links[index]['label']}
@@ -383,7 +324,7 @@ class Parse():
             ring_detection = defaultdict(int)
             for node in tmp_nodes:
                 ring_detection[node['ID']] += 1
-            if list(filter(lambda x:x[1] > 1, ring_detection.items())):
+            if list(filter(lambda x: x[1] > 1, ring_detection.items())):
                 continue
 
             while len(tmp_nodes):
@@ -575,6 +516,27 @@ class Parse():
             }
         return action
 
+    def get_nodeAttrib(self, node):
+        '''
+        构造attrib
+        :param node:
+        :return:
+        '''
+        action = {'id': node['ID'], 'name': node['NAME'], 'type': node['label']}
+        if node['label'] in ['PP', 'LL', 'DD', 'EE', 'TT', 'GR', 'GB']:
+            action['attibuteMap'] = {'extendNumber': node['extendNumber']['value'][0] if node.get('extendNumber') else 0}
+        else:
+            action['attibuteMap'] = {
+                'extendNumber': node['extendNumber']['value'][0] if node.get('extendNumber') else 0,
+                'industry_class': node['INDUSTRY'],
+                'business_age': node['ESDATE'][:4],
+                'province': node['PROVINCE'],
+                'registered_capital': node['REGCAP'],
+                'regcapcur': node['RECCAPCUR'],
+                'business_status': node['ENTSTATUS'],
+            }
+        return action
+
     def get_link_attrib(self, link):
         action = {'id': link['ID'], 'name': self.RELATION_MAP[link['label']], 'from': link['pid'], 'to': link['id'], 'type': link['label']}
         if link['label'] in ['IPEE', 'IPEER', 'IPEES']:
@@ -650,32 +612,6 @@ class Parse():
             tmp_links.append(link)
         return tmp_nodes, tmp_links
 
-    # def parse_v3(self, graph, filter, level, entname):
-    #     '''
-    #     解析neo4j返回的结果
-    #     :param graph:
-    #     :return:
-    #     '''
-    #     nodes = []
-    #     links = []
-    #     nodes_set = set()
-    #     links_set = set()
-    #     for path in graph:
-    #         if filter:
-    #             path = self.filter_graph(path, filter, level, entname)
-    #         for node in path['n']:
-    #             if node['ID'] not in nodes_set:
-    #                 node = self.get_node_attrib(node)
-    #                 nodes.append(node)
-    #                 nodes_set.add(node['id'])
-    #         for link in path['r']:
-    #             if link['ID'] not in links_set:
-    #                 link = self.get_link_attrib(link)
-    #                 links.append(link)
-    #                 links_set.add(link['id'])
-    #     nodes, links = self.common_relationship_filter(nodes, links)
-    #     return nodes, links
-
     def parse_v5(self, graph, level):
         '''
         解析neo4j返回的结果并计算extendNumber
@@ -718,39 +654,36 @@ class Parse():
         nodes, links = self.common_relationship_filter(nodes, links, extendnumbers)
         return nodes, links
 
-    # def parallel_query(self, entName, level, nodes, links, filter, direct):
-    #     threads = []
-    #
-    #     # 序列之间的两两组合(Cn2),查询结果取并集
-    #     entNames = sorted(entName.split(';'))
-    #     for ent_names in combinations(entNames, 2):
-    #         t = MyThread(ent_names, level, nodes, links, filter, direct)
-    #         threads.append(t)
-    #
-    #     for i in threads:
-    #         i.start()
-    #
-    #     for i in threads:
-    #         i.join()
-    #
-    #     nodes = {}
-    #     links = {}
-    #     for i in threads:
-    #         if not i.result:
-    #             continue
-    #
-    #         tmp_nodes, tmp_links = parse.parse_v3(i.result, filter, level, i.ent_names[-1])
-    #         for node in tmp_nodes:
-    #             if node['id'] not in nodes:
-    #                 nodes[node['id']] = node
-    #             else:
-    #                 nodes[node['id']]['extendnumber'] = 0
-    #
-    #         for link in tmp_links:
-    #             if link['id'] not in links:
-    #                 links[link['id']] = link
-    #     nodes, links = self.common_relationship_filter(nodes.values(), links.values())
-    #     return nodes, links
+    def ent_graph_parse(self, graph, level, relationshipFilter):
+        '''
+        解析neo4j返回的结果并计算extendNumber
+        :param graph:
+        :return:
+        '''
+        nodes = []
+        links = []
+        nodes_set = set()
+        links_set = set()
+
+        for path in graph:
+            tmp_links = path['r']
+            tmp_nodes = path['n']
+
+            if len(tmp_links) == level:
+                tmp_nodes[-1]['extendNumber'] = neo4j_client.get_extendNumber(tmp_nodes[-1], relationshipFilter)
+
+            for link in tmp_links:
+                if link['ID'] not in links_set:
+                    link = self.get_link_attrib(link)
+                    links.append(link)
+                    links_set.add(link['id'])
+
+            for node in tmp_nodes:
+                if node['ID'] not in nodes_set:
+                    node = self.get_nodeAttrib(node)
+                    nodes.append(node)
+                    nodes_set.add(node['id'])
+        return nodes, links
 
     def parallel_query(self, entName, level, relationshipFilter):
         threads = []
@@ -796,6 +729,50 @@ class Parse():
         for node in nodes:
             node['attibuteMap']['extendNumber'] = extendnumbers[names.index(node['id'])] - extendnumber[node['id']]
         return list(nodes), list(links)
+
+    def ent_relevance_seek_graph(self, entName, level, relationshipFilter):
+        threads = []
+        nodes = []
+        links = []
+        nodes_set = set()
+        links_set = set()
+        extendnumber = defaultdict(int)
+
+        # 序列之间的两两组合(Cn2),查询结果取并集
+        entNames = list(set(sorted(entName.split(';'))))
+        for i in range(len(entNames)):
+            t = MyThreadAPOC(i, entNames, level, relationshipFilter)
+            threads.append(t)
+
+        for i in threads:
+            i.start()
+
+        for i in threads:
+            i.join()
+
+            if not i.result:
+                continue
+
+            for path in i.result:
+
+                if len(path['r']) == level:
+                    if path['n'][-1]['ID'] not in nodes_set:
+                        path['n'][-1]['extendNumber'] = neo4j_client.get_extendNumber(path['n'][-1], relationshipFilter)
+
+                for node in path['n']:
+                    if node['ID'] not in nodes_set:
+                        nodes.append(self.get_nodeAttrib(node))
+                        nodes_set.add(node['ID'])
+
+                for link in path['r']:
+                    if link['ID'] not in links_set:
+                        links.append(self.get_link_attrib(link))
+                        extendnumber[link['id']] += 1
+                        extendnumber[link['pid']] += 1
+                        links_set.add(link['ID'])
+
+        return list(nodes), list(links)
+
 
 parse = Parse()
 

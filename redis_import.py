@@ -9,7 +9,7 @@ r.flushdb()
 node_level_path = '/opt/graph_thrift_api/data/ent_level_{}.csv'
 
 s = time.time()
-for index in range(3, 10):
+for index in range(3, 11):
     with open(node_level_path.format(index), 'r', encoding='utf8') as f:
         for line in f:
             lcid, level, tmp = line.strip().split(',')
