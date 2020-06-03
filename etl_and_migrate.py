@@ -382,10 +382,10 @@ class EtlMigrate(object):
 
     def get_id(self, row):
         if isinstance(row, list):
-            action = ','.join(row).encode('utf8')
+            action = ','.join(row)
         else:
             action = row
-        return hashlib.md5(row).hexdigest()
+        return hashlib.md5(action.encode('utf8')).hexdigest()
 
 
 def task(read, write, header, label, desc, migrate_class):
