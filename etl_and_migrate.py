@@ -380,8 +380,12 @@ class EtlMigrate(object):
         print(f'{desc} {write}\t数量: {number}')
         return None
 
-    def get_id(self, name):
-        return hashlib.md5(','.join(name).encode('utf8')).hexdigest()
+    def get_id(self, row):
+        if isinstance(row, list):
+            action = ','.join(row).encode('utf8')
+        else:
+            action = row
+        return hashlib.md5(row).hexdigest()
 
 
 def task(read, write, header, label, desc, migrate_class):
