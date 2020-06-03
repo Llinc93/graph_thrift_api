@@ -167,7 +167,7 @@ class EtlMigrate(object):
         else:
             tmp = [row[1], row[0], 'OPEP']
             rowkey = hashlib.md5(','.join(tmp).encode('utf8')).hexdigest()
-            return [row[1], rowkey, row[1], row[0], 'OPEP', row[0], ':TYPE']
+            return [row[1], rowkey, row[1], row[0], 'OPEP', row[0], ':OPEP']
 
     def LL(self, row, md5_id=None):
         '''
@@ -369,7 +369,7 @@ class EtlMigrate(object):
     def write(self, read, write, header, label, desc):
         read_f = open(read, 'r', encoding='utf8', newline='')
         write_f = open(write, 'w', encoding='utf8')
-        writer = csv.writer(write_f)
+        writer = csv.writer(write_f, quoting=csv.QUOTE_ALL)
         raw = 0
         number = 0
         data = set()
@@ -496,6 +496,6 @@ if __name__ == '__main__':
                  "--relationships=import/red.csv " \
                  "--relationships=import/leet.csv " \
                  "--relationships=import/leee.csv " \
-                 "--ignore-missing-nodes --ignore-duplicate-nodes --high-io=true'"
+                 "--ignore-missing-nodes --ignore-duplicate-nodes --high-io=true --multiline-fields=true'"
     os.system(import_cmd)
     os.system('docker restart neo4j-1')
