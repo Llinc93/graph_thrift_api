@@ -185,7 +185,7 @@ class EtlMigrate(object):
                 text = ','.join(row)
             return flag, text
         else:
-            return [self.get_id(row[0]), row[0], 'LL', 'LL']
+            return [self.get_id(row), row[0], 'LL', 'LL']
 
     def LEL(self, row, md5_id=None):
         '''
@@ -224,7 +224,7 @@ class EtlMigrate(object):
                 text = ','.join(row)
             return flag, text
         else:
-            return [self.get_id(row[0]), row[0], 'GB', 'GB']
+            return [self.get_id(row), row[0], 'GB', 'GB']
 
     def WEB(self, row, md5_id=None):
         '''
@@ -263,7 +263,7 @@ class EtlMigrate(object):
                 text = ','.join(row)
             return flag, text
         else:
-            return [self.get_id(row[0]), row[0], 'DD', 'DD']
+            return [self.get_id(row), row[0], 'DD', 'DD']
 
     def RED(self, row, md5_id=None):
         '''
@@ -324,7 +324,7 @@ class EtlMigrate(object):
         else:
             tmp = [row[1], row[0], row[2], 'LEE']
             rowkey = hashlib.md5(','.join(tmp).encode('utf8')).hexdigest()
-            return [row[1], rowkey, row[1], md5_id, 'LEE', md5_id, row[2], 'LEE']
+            return [row[1], rowkey, row[1], row[0], 'LEE', row[0], row[2], 'LEE']
 
     def EE(self, row, md5_id=None):
         '''
@@ -399,7 +399,7 @@ class EtlMigrate(object):
         return None
 
     def get_id(self, name):
-        return hashlib.md5(name.encode('utf8')).hexdigest()
+        return hashlib.md5(','.join(name).encode('utf8')).hexdigest()
 
 
 def task(read, write, header, label, desc, migrate_class):
