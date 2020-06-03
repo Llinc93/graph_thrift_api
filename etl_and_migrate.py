@@ -2,7 +2,7 @@ import os
 import csv
 import hashlib
 import subprocess
-from multiprocessing import Pool
+from multiprocessing import Pool, cpu_count
 
 
 class EtlMigrate(object):
@@ -465,7 +465,7 @@ if __name__ == '__main__':
         ('/home/csv/ee-0602.csv', r'/home/neo4j-1/import/ee.csv', EE_header, 'EE', '邮箱节点'),
     ]
 
-    p = Pool(10)
+    p = Pool(cpu_count() - 1)
     for read, write, header, label, desc in files:
         p.apply_async(func=task, args=(read, write, header, label, desc, EtlMigrate))
 
