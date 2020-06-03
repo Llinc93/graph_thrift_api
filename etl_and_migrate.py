@@ -35,11 +35,11 @@ class Filter(object):
     LEEE_header = ['ID:START_ID(ENT-ID)', 'ID', 'pid', 'id', 'label', 'ID:END_ID(EMAIL-ID)', 'DOMAIN', ':TYPE']
 
     files = [
-        # ('/home/csv/gs-0602.csv', r'/home/neo4j-1/import/gs.csv', GS_header, 'GS', '企业节点'),
-        # ('/home/csv/gri-0602.csv', r'/home/neo4j-1/import/gri.csv', GR_header, 'GR', '人员节点'),
-        # ('/home/csv/grs-0602.csv', r'/home/neo4j-1/import/grs.csv', GR_header, 'GR', '人员节点'),
-        # ('/home/csv/ipees-0602.csv', r'/home/neo4j-1/import/ipees.csv', IPEES_header, 'IPEES', '投资'),
-        # ('/home/csv/ipeer-0602.csv', r'/home/neo4j-1/import/ipeer.csv', IPEER_header, 'IPEER', '投资'),
+        ('/home/csv/gs-0602.csv', r'/home/neo4j-1/import/gs.csv', GS_header, 'GS', '企业节点'),
+        ('/home/csv/gri-0602.csv', r'/home/neo4j-1/import/gri.csv', GR_header, 'GR', '人员节点'),
+        ('/home/csv/grs-0602.csv', r'/home/neo4j-1/import/grs.csv', GR_header, 'GR', '人员节点'),
+        ('/home/csv/ipees-0602.csv', r'/home/neo4j-1/import/ipees.csv', IPEES_header, 'IPEES', '投资'),
+        ('/home/csv/ipeer-0602.csv', r'/home/neo4j-1/import/ipeer.csv', IPEER_header, 'IPEER', '投资'),
         ('/home/csv/bee-0602.csv', r'/home/neo4j-1/import/bee.csv', BEE_header, 'BEE', '人员任职'),
         ('/home/csv/spe-0602.csv', r'/home/neo4j-1/import/spe.csv', SPE_header, 'SPE', '专利节点'),
 
@@ -430,6 +430,9 @@ class Filter(object):
         data = set()
         for line in csv.reader(read_f):
             raw += 1
+            if raw == 1:
+                writer.writerow(header)
+                continue
 
             # step1 过滤
             flag, text = getattr(self, label)(line)
