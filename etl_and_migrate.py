@@ -2,9 +2,10 @@ import os
 import csv
 import hashlib
 import subprocess
+from multiprocessing import Pool
 
 
-class Filter(object):
+class EtlMigrate(object):
 
     GS_header = ['ID:ID(ENT-ID)', 'NAME', 'UNISCID', 'ESDATE', 'INDUSTRY', 'PROVINCE', 'REGCAP', 'RECCAPCUR',
                  'ENTSTATUS', 'label', ':LABEL']
@@ -449,21 +450,90 @@ class Filter(object):
 
         read_f.close()
         write_f.close()
-        print(f'{read}\t数量: {raw}')
-        print(f'{write}\t数量: {number}')
+        print(f'{desc} {read}\t数量: {raw}')
+        print(f'{desc} {write}\t数量: {number}')
         return None
+
+    def get_id(self, name):
+        return hashlib.md5(name.encode('utf8')).hexdigest()
 
     def run(self):
         for read, write, header, label, desc in self.files:
             self.write(read, write, header, label, desc)
         return None
 
-    def get_id(self, name):
-        return hashlib.md5(name.encode('utf8')).hexdigest()
+
+def task(read, write, header, label, desc, migrate_class):
+    migrate_class().write(read, write, header, label, desc)
+    return None
 
 
 if __name__ == '__main__':
-    Filter().run()
+
+    GS_header = ['ID:ID(ENT-ID)', 'NAME', 'UNISCID', 'ESDATE', 'INDUSTRY', 'PROVINCE', 'REGCAP', 'RECCAPCUR',
+                 'ENTSTATUS', 'label', ':LABEL']
+    GR_header = ['ID:ID(P-ID)', 'NAME', 'label', ':LABEL']
+
+    IPEER_header = ['ID:START_ID(P-ID)', 'RATE', 'RATE_TYPE', 'ID', 'pid', 'id', 'label', 'ID:END_ID(ENT-ID)', ':TYPE']
+    IPEES_header = ['ID:START_ID(ENT-ID)', 'RATE', 'RATE_TYPE', 'ID', 'pid', 'id', 'label', 'ID:END_ID(ENT-ID)',
+                    ':TYPE']
+    BEE_header = ['ID:END_ID(ENT-ID)', 'ID', 'pid', 'id', 'label', 'RATE', 'ID:START_ID(ENT-ID)', ':TYPE']
+    SPE_header = ['ID:END_ID(ENT-ID)', 'POSITION', 'ID', 'pid', 'id', 'label', 'ID:START_ID(P-ID)', ':TYPE']
+
+    PP_header = ['ID:ID(FZL-ID)', 'NAME', 'label', ':LABEL']
+    OPEP_header = ['ID:START_ID(ENT-ID)', 'ID', 'pid', 'id', 'label', 'ID:END_ID(FZL-ID)', ':TYPE']
+
+    LL_header = ['ID:ID(FFL-ID)', 'NAME', 'label', ':LABEL']
+    LEL_header = ['ID:END_ID(FFL-ID)', 'ID', 'pid', 'id', 'label', 'ID:START_ID(ENT-ID)', ':TYPE']
+
+    GB_header = ['ID:ID(FZE-ID)', 'NAME', 'label', ':LABEL']
+    WEB_header = ['ID:START_ID(ENT-ID)', 'ID', 'pid', 'id', 'label', 'ID:END_ID(FZE-ID)', ':TYPE']
+
+    DD_header = ['ID:ID(ADDR-ID)', 'NAME', 'label', ':LABEL']
+    RED_header = ['ID:START_ID(ENT-ID)', 'ID', 'pid', 'id', 'label', 'ID:END_ID(ADDR-ID)', ':TYPE']
+
+    TT_header = ['ID:ID(TEL-ID)', 'NAME', 'label', ':LABEL']
+    LEET_header = ['ID:START_ID(ENT-ID)', 'ID', 'pid', 'id', 'label', 'ID:END_ID(TEL-ID)', 'DOMAIN', ':TYPE']
+
+    EE_header = ['ID:ID(EMAIL-ID)', 'NAME', 'label', ':LABEL']
+    LEEE_header = ['ID:START_ID(ENT-ID)', 'ID', 'pid', 'id', 'label', 'ID:END_ID(EMAIL-ID)', 'DOMAIN', ':TYPE']
+
+    files = [
+        ('/home/csv/gs-0602.csv', r'/home/neo4j-1/import/gs.csv', GS_header, 'GS', '企业节点'),
+        ('/home/csv/gri-0602.csv', r'/home/neo4j-1/import/gri.csv', GR_header, 'GR', '人员节点'),
+        ('/home/csv/grs-0602.csv', r'/home/neo4j-1/import/grs.csv', GR_header, 'GR', '人员节点'),
+        ('/home/csv/ipees-0602.csv', r'/home/neo4j-1/import/ipees.csv', IPEES_header, 'IPEES', '投资'),
+        ('/home/csv/ipeer-0602.csv', r'/home/neo4j-1/import/ipeer.csv', IPEER_header, 'IPEER', '投资'),
+        ('/home/csv/bee-0602.csv', r'/home/neo4j-1/import/bee.csv', BEE_header, 'BEE', '人员任职'),
+        ('/home/csv/spe-0602.csv', r'/home/neo4j-1/import/spe.csv', SPE_header, 'SPE', '专利节点'),
+
+        ('/home/csv/opep-0602.csv', r'/home/neo4j-1/import/opep.csv', OPEP_header, 'OPEP', '专利关系'),
+        ('/home/csv/pp-0602.csv', r'/home/neo4j-1/import/pp.csv', PP_header, 'PP', '专利关系'),
+
+        ('/home/csv/lel-0602.csv', r'/home/neo4j-1/import/lel.csv', LEL_header, 'LEL', '诉讼关系'),
+        ('/home/csv/ll-0602.csv', r'/home/neo4j-1/import/ll.csv', LL_header, 'LL', '诉讼节点'),
+
+        ('/home/csv/web-0602.csv', r'/home/neo4j-1/import/web.csv', WEB_header, 'WEB', '招投标关系'),
+        ('/home/csv/gb-0602.csv', r'/home/neo4j-1/import/gb.csv', GB_header, 'GB', '招投标节点'),
+
+        ('/home/csv/red-0602.csv', r'/home/neo4j-1/import/red.csv', RED_header, 'RED', '相同办公地'),
+        ('/home/csv/dd-0602.csv', r'/home/neo4j-1/import/dd.csv', DD_header, 'DD', '办公地节点'),
+
+        ('/home/csv/leet-0602.csv', r'/home/neo4j-1/import/leet.csv', LEET_header, 'LEET', '相同联系方式'),
+        ('/home/csv/tt-0602.csv', r'/home/neo4j-1/import/tt.csv', TT_header, 'TT', '电话节点'),
+
+        ('/home/csv/leee-0602.csv', r'/home/neo4j-1/import/leee.csv', LEEE_header, 'LEEE', '相同联系方式'),
+        ('/home/csv/ee-0602.csv', r'/home/neo4j-1/import/ee.csv', EE_header, 'EE', '邮箱节点'),
+    ]
+
+    p = Pool(10)
+    for read, write, header, label, desc in files:
+        p.apply_async(func=task, args=(read, write, header, label, desc, EtlMigrate))
+
+    p.close()
+    p.join()
+
+    # EtlMigrate().run()
 
     # 删除原有的数据库，导入新的数据库
     rm_cmd = f'rm -rf /home/neo4j-1/data/databases/graph.db/*'
