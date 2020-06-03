@@ -547,7 +547,7 @@ class Parse():
             }
         elif link['label'] == 'SPE':
             action['attibuteMap'] = {'position': link['POSITION']}
-        elif link['label'] == 'LEE':
+        elif link['label'] in ['LEET', 'LEEE']:
             action['attibuteMap'] = {'domain': link['DOMAIN']}
         elif link['label'] == 'IHPEEN':
             pass
