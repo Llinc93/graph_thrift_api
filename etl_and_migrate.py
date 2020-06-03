@@ -1,8 +1,7 @@
 import os
 import csv
 import hashlib
-from copy import deepcopy
-from collections import defaultdict
+import subprocess
 
 
 class Filter(object):
@@ -462,3 +461,31 @@ class Filter(object):
 
 if __name__ == '__main__':
     Filter().run()
+
+    # 删除原有的数据库，导入新的数据库
+    rm_cmd = f'rm -rf /home/neo4j-1/data/databases/graph.db/*'
+    rm_code, rm_ret = subprocess.getstatusoutput(rm_cmd)
+
+    import_cmd = "docker exec -it neo4j-1 /bin/bash -c 'bin/neo4j-admin import " \
+                 "--nodes=import/gs.csv " \
+                 "--nodes=import/gri.csv " \
+                 "--nodes=import/grs.csv " \
+                 "--nodes=import/pp.csv " \
+                 "--nodes=import/ll.csv " \
+                 "--nodes=import/gb.csv " \
+                 "--nodes=import/dd.csv " \
+                 "--nodes=import/tt.csv " \
+                 "--nodes=import/ee.csv " \
+                 "--relationships=import/ipees.csv " \
+                 "--relationships=import/ipeer.csv " \
+                 "--relationships=import/bee.csv " \
+                 "--relationships=import/spe.csv " \
+                 "--relationships=import/opep.csv " \
+                 "--relationships=import/lel.csv " \
+                 "--relationships=import/web.csv " \
+                 "--relationships=import/red.csv " \
+                 "--relationships=import/leet.csv " \
+                 "--relationships=import/leee.csv " \
+                 "--ignore-missing-nodes --ignore-duplicate-nodes --high-io=true'"
+    os.system(import_cmd)
+    os.system('docker restart neo4j-1')
