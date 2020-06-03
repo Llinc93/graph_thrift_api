@@ -35,11 +35,11 @@ class Filter(object):
     LEEE_header = ['ID:START_ID(ENT-ID)', 'ID', 'pid', 'id', 'label', 'ID:END_ID(EMAIL-ID)', 'DOMAIN', ':TYPE']
 
     files = [
-        ('/home/csv/gs-0602.csv', r'/home/neo4j-1/import/gs.csv', GS_header, 'GS', '企业节点'),
-        ('/home/csv/gri-0602.csv', r'/home/neo4j-1/import/gri.csv', GR_header, 'GR', '人员节点'),
-        ('/home/csv/grs-0602.csv', r'/home/neo4j-1/import/grs.csv', GR_header, 'GR', '人员节点'),
-        ('/home/csv/ipees-0602.csv', r'/home/neo4j-1/import/ipees.csv', IPEES_header, 'IPEES', '投资'),
-        ('/home/csv/ipeer-0602.csv', r'/home/neo4j-1/import/ipeer.csv', IPEER_header, 'IPEER', '投资'),
+        # ('/home/csv/gs-0602.csv', r'/home/neo4j-1/import/gs.csv', GS_header, 'GS', '企业节点'),
+        # ('/home/csv/gri-0602.csv', r'/home/neo4j-1/import/gri.csv', GR_header, 'GR', '人员节点'),
+        # ('/home/csv/grs-0602.csv', r'/home/neo4j-1/import/grs.csv', GR_header, 'GR', '人员节点'),
+        # ('/home/csv/ipees-0602.csv', r'/home/neo4j-1/import/ipees.csv', IPEES_header, 'IPEES', '投资'),
+        # ('/home/csv/ipeer-0602.csv', r'/home/neo4j-1/import/ipeer.csv', IPEER_header, 'IPEER', '投资'),
         ('/home/csv/bee-0602.csv', r'/home/neo4j-1/import/bee.csv', BEE_header, 'BEE', '人员任职'),
         ('/home/csv/spe-0602.csv', r'/home/neo4j-1/import/spe.csv', SPE_header, 'SPE', '专利节点'),
 
@@ -161,7 +161,7 @@ class Filter(object):
                 text = ','.join(row)
             return flag, text
         else:
-            tmp = [row[0], row[1], 1, 'BEE']
+            tmp = [row[0], row[1], 'BEE']
             rowkey = hashlib.md5(','.join(tmp).encode('utf8')).hexdigest()
             return [row[0], rowkey, row[1], row[0], 'BEE', 1, row[1], 'BEE']
 
