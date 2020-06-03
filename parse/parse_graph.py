@@ -524,10 +524,10 @@ class Parse():
         '''
         action = {'id': node['ID'], 'name': node['NAME'], 'type': node['label']}
         if node['label'] in ['PP', 'LL', 'DD', 'EE', 'TT', 'GR', 'GB']:
-            action['attibuteMap'] = {'extendNumber': node['extendNumber']['value'][0] if node.get('extendNumber') else 0}
+            action['attributeMap'] = {'extendNumber': node['extendNumber'][0]['value'][0] if node.get('extendNumber') else 0}
         else:
-            action['attibuteMap'] = {
-                'extendNumber': node['extendNumber']['value'][0] if node.get('extendNumber') else 0,
+            action['attributeMap'] = {
+                'extendNumber': node['extendNumber'][0]['value'][0] if node.get('extendNumber') else 0,
                 'industry_class': node['INDUSTRY'],
                 'business_age': node['ESDATE'][:4],
                 'province': node['PROVINCE'],
@@ -612,48 +612,6 @@ class Parse():
             tmp_links.append(link)
         return tmp_nodes, tmp_links
 
-    def parse_v5(self, graph, level):
-        '''
-        解析neo4j返回的结果并计算extendNumber
-        :param graph:
-        :return:
-        '''
-        nodes = []
-        links = []
-        nodes_set = set()
-        links_set = set()
-        extendnumbers = {}
-
-        for path in graph:
-            if len(path['r']) > level and len(path['n']) > 2 and path['n'][0] != path['n'][-1]:
-                if path['n'][level]['ID'] in extendnumbers:
-                    extendnumbers[path['n'][level]['ID']].add(path['r'][level]['ID'])
-                else:
-                    extendnumbers[path['n'][level]['ID']] = {path['r'][level]['ID']}
-
-        for path in graph:
-            tmp_links = path['r']
-            tmp_nodes = path['n']
-
-            if len(tmp_links) > level:
-                tmp_links = tmp_links[0: level]
-                tmp_nodes = tmp_nodes[0: level]
-
-            for link in tmp_links:
-                if link['ID'] not in links_set:
-                    link = self.get_link_attrib(link)
-                    links.append(link)
-                    links_set.add(link['id'])
-
-            for node in tmp_nodes:
-                if node['ID'] not in nodes_set:
-                    node = self.get_node_attrib(node, extendnumbers)
-                    nodes.append(node)
-                    nodes_set.add(node['id'])
-
-        nodes, links = self.common_relationship_filter(nodes, links, extendnumbers)
-        return nodes, links
-
     def ent_graph_parse(self, graph, level, relationshipFilter):
         '''
         解析neo4j返回的结果并计算extendNumber
@@ -730,7 +688,7 @@ class Parse():
             node['attibuteMap']['extendNumber'] = extendnumbers[names.index(node['id'])] - extendnumber[node['id']]
         return list(nodes), list(links)
 
-    def ent_relevance_seek_graph(self, entName, level, relationshipFilter):
+    def ent_relevance_seek_graph(self, entNames, level, relationshipFilter):
         threads = []
         nodes = []
         links = []
@@ -739,7 +697,7 @@ class Parse():
         extendnumber = defaultdict(int)
 
         # 序列之间的两两组合(Cn2),查询结果取并集
-        entNames = list(set(sorted(entName.split(';'))))
+        # entNames = list(set(sorted(entName.split(';'))))
         for i in range(len(entNames)):
             t = MyThreadAPOC(i, entNames, level, relationshipFilter)
             threads.append(t)
