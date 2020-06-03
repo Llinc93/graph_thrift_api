@@ -20,7 +20,7 @@ class EtlMigrate(object):
             if '' in action or len(row) != 9:
                 flag = False
             else:
-                text = ','.join(action)
+                text = self.get_id(action)
             return flag, text
         else:
             row.append('GS')
@@ -39,7 +39,7 @@ class EtlMigrate(object):
             if '' in row or len(row) != 2:
                 flag = False
             else:
-                text = ','.join(row)
+                text = self.get_id(row)
             return flag, text
         else:
             row.append('GR')
@@ -61,12 +61,10 @@ class EtlMigrate(object):
             if '' in row or len(row) != 4:
                 flag = False
             else:
-                text = ','.join(tmp)
+                text = self.get_id(tmp)
             return flag, text
         else:
-            tmp = [row[0], row[1] if row[1] else 0, row[-1], row[2], 'IPEES']
-            rowkey = hashlib.md5(','.join(tmp).encode('utf8')).hexdigest()
-            return [row[0], row[1] if row[1] else 0, row[-1], rowkey, row[0], row[2], 'IPEES', row[2], 'IPEES']
+            return [row[0], row[1] if row[1] else 0, row[-1], md5_id, row[0], row[2], 'IPEES', row[2], 'IPEES']
 
     def IPEER(self, row, md5_id=None):
         '''
@@ -83,12 +81,10 @@ class EtlMigrate(object):
             if '' in row or len(row) != 4:
                 flag = False
             else:
-                text = ','.join(tmp)
+                text = self.get_id(tmp)
             return flag, text
         else:
-            tmp = [row[0], row[1] if row[1] else 0, row[-1], row[2], 'IPEES']
-            rowkey = hashlib.md5(','.join(tmp).encode('utf8')).hexdigest()
-            return [row[0], row[1] if row[1] else 0, row[-1], rowkey, row[0], row[2], 'IPEER', row[2], 'IPEER']
+            return [row[0], row[1] if row[1] else 0, row[-1], md5_id, row[0], row[2], 'IPEER', row[2], 'IPEER']
 
     def BEE(self, row, md5_id=None):
         '''
@@ -103,12 +99,10 @@ class EtlMigrate(object):
             if '' in row or len(row) != 2:
                 flag = False
             else:
-                text = ','.join(row)
+                text = self.get_id(row)
             return flag, text
         else:
-            tmp = [row[0], row[1], 'BEE']
-            rowkey = hashlib.md5(','.join(tmp).encode('utf8')).hexdigest()
-            return [row[0], rowkey, row[1], row[0], 'BEE', 1, row[1], 'BEE']
+            return [row[0], md5_id, row[1], row[0], 'BEE', 1, row[1], 'BEE']
 
     def SPE(self, row, md5_id=None):
         '''
@@ -123,12 +117,10 @@ class EtlMigrate(object):
             if '' in row or 'null' in row or len(row) != 3:
                 flag = False
             else:
-                text = ','.join(row)
+                text = self.get_id(row)
             return flag, text
         else:
-            tmp = [row[0], row[2], row[1], 'SPE']
-            rowkey = hashlib.md5(','.join(tmp).encode('utf8')).hexdigest()
-            return [row[0], row[2], rowkey, row[1], row[0], 'SPE', row[1], 'SPE']
+            return [row[0], row[2], md5_id, row[1], row[0], 'SPE', row[1], 'SPE']
 
     def PP(self, row, md5_id=None):
         '''
@@ -143,7 +135,7 @@ class EtlMigrate(object):
             if '' in row or len(row) != 2:
                 flag = False
             else:
-                text = ','.join(row)
+                text = self.get_id(row)
             return flag, text
         else:
             return [row[1], row[0], 'PP', 'PP']
@@ -162,12 +154,10 @@ class EtlMigrate(object):
             if '' in row or 'null' in row or len(row) != 2:
                 flag = False
             else:
-                text = ','.join(row)
+                text = self.get_id(row)
             return flag, text
         else:
-            tmp = [row[1], row[0], 'OPEP']
-            rowkey = hashlib.md5(','.join(tmp).encode('utf8')).hexdigest()
-            return [row[1], rowkey, row[1], row[0], 'OPEP', row[0], ':OPEP']
+            return [row[1], md5_id, row[1], row[0], 'OPEP', row[0], 'OPEP']
 
     def LL(self, row, md5_id=None):
         '''
@@ -182,10 +172,10 @@ class EtlMigrate(object):
             if '' in row or len(row) != 1:
                 flag = False
             else:
-                text = ','.join(row)
+                text = self.get_id(row)
             return flag, text
         else:
-            return [self.get_id(row), row[0], 'LL', 'LL']
+            return [md5_id, row[0], 'LL', 'LL']
 
     def LEL(self, row, md5_id=None):
         '''
@@ -201,12 +191,11 @@ class EtlMigrate(object):
             if '' in row or 'null' in row or len(row) != 2:
                 flag = False
             else:
-                text = ','.join(row)
+                text = self.get_id(row)
             return flag, text
         else:
-            tmp = [row[0], row[1], 'LEL']
-            rowkey = hashlib.md5(','.join(tmp).encode('utf8')).hexdigest()
-            return [md5_id, rowkey, row[1], md5_id, 'LEL', row[1], 'LEL']
+            end_id = self.get_id(row[0])
+            return [row[1], md5_id, row[1], end_id, 'LEL', end_id, 'LEL']
 
     def GB(self, row, md5_id=None):
         '''
@@ -221,10 +210,10 @@ class EtlMigrate(object):
             if '' in row or len(row) != 1:
                 flag = False
             else:
-                text = ','.join(row)
+                text = self.get_id(row)
             return flag, text
         else:
-            return [self.get_id(row), row[0], 'GB', 'GB']
+            return [md5_id, row[0], 'GB', 'GB']
 
     def WEB(self, row, md5_id=None):
         '''
@@ -240,12 +229,11 @@ class EtlMigrate(object):
             if '' in row or 'null' in row or len(row) != 2:
                 flag = False
             else:
-                text = ','.join(row)
+                text = self.get_id(row)
             return flag, text
         else:
-            tmp = [row[1], row[0], 'WEB']
-            rowkey = hashlib.md5(','.join(tmp).encode('utf8')).hexdigest()
-            return [row[1], rowkey, row[1], md5_id, 'WEB', md5_id, 'WEB']
+            end_id = self.get_id(row[0])
+            return [row[1], md5_id, row[1], end_id, 'WEB', end_id, 'WEB']
 
     def DD(self, row, md5_id=None):
         '''
@@ -260,10 +248,10 @@ class EtlMigrate(object):
             if '' in row or len(row) != 1:
                 flag = False
             else:
-                text = ','.join(row)
+                text = self.get_id(row)
             return flag, text
         else:
-            return [self.get_id(row), row[0], 'DD', 'DD']
+            return [md5_id, row[0], 'DD', 'DD']
 
     def RED(self, row, md5_id=None):
         '''
@@ -279,12 +267,11 @@ class EtlMigrate(object):
             if '' in row or 'null' in row or len(row) != 2:
                 flag = False
             else:
-                text = ','.join(row)
+                text = self.get_id(row)
             return flag, text
         else:
-            tmp = [row[1], row[0], 'OPEP']
-            rowkey = hashlib.md5(','.join(tmp).encode('utf8')).hexdigest()
-            return [row[1], rowkey, row[1], md5_id, 'OPEPFF', md5_id, 'OPEP']
+            end_id = self.get_id(row[0])
+            return [row[1], md5_id, row[1], end_id, 'RED', end_id, 'RED']
 
     def TT(self, row, md5_id=None):
         '''
@@ -299,7 +286,7 @@ class EtlMigrate(object):
             if '' in row or '0' in row or '-' in row or '无' in row or '--' in row or '无无' in row or '0000' in row or '1' in row or len(row) != 1:
                 flag = False
             else:
-                text = ','.join(row)
+                text = self.get_id(row)
             return flag, text
         else:
             return [row[0], row[0], 'TT', 'TT']
@@ -319,12 +306,10 @@ class EtlMigrate(object):
             if '' in action or '0' in action or '-' in action or '无' in action or '--' in action or '无无' in action or '0000' in action or '1' in action or len(row) != 3:
                 flag = False
             else:
-                text = ','.join(row)
+                text = self.get_id(row)
             return flag, text
         else:
-            tmp = [row[1], row[0], row[2], 'LEE']
-            rowkey = hashlib.md5(','.join(tmp).encode('utf8')).hexdigest()
-            return [row[1], rowkey, row[1], row[0], 'LEE', row[0], row[2], 'LEE']
+            return [row[1], md5_id, row[1], row[0], 'LEE', row[0], row[2], 'LEE']
 
     def EE(self, row, md5_id=None):
         '''
@@ -340,7 +325,7 @@ class EtlMigrate(object):
             if '.' not in row[0] or '@' not in row[0] or len(row) != 1:
                 flag = False
             else:
-                text = ','.join(row)
+                text = self.get_id(row)
             return flag, text
         else:
             return [row[0], row[0], 'EE', 'EE']
@@ -359,12 +344,10 @@ class EtlMigrate(object):
             if '.' not in row[0] or '@' not in row[0] or len(row) != 3:
                 flag = False
             else:
-                text = ','.join(row)
+                text = self.get_id(row)
             return flag, text
         else:
-            tmp = [row[1], row[0], row[2], 'LEE']
-            rowkey = hashlib.md5(','.join(tmp).encode('utf8')).hexdigest()
-            return [row[1], rowkey, row[1], row[0], 'LEE', row[0], row[2], 'LEE']
+            return [row[1], md5_id, row[1], row[0], 'LEE', row[0], row[2], 'LEE']
 
     def write(self, read, write, header, label, desc):
         read_f = open(read, 'r', encoding='utf8', newline='')
@@ -380,12 +363,11 @@ class EtlMigrate(object):
                 continue
 
             # step1 过滤
-            flag, text = getattr(self, label)(line)
+            flag, md5_id = getattr(self, label)(line)
             if not flag:
                 continue
 
             # step2 去重
-            md5_id = hashlib.md5(text.encode('utf8')).hexdigest()
             if md5_id not in data:
                 row = getattr(self, label)(line, md5_id)
                 writer.writerow(row)
@@ -423,7 +405,7 @@ if __name__ == '__main__':
     OPEP_header = ['ID:START_ID(ENT-ID)', 'ID', 'pid', 'id', 'label', 'ID:END_ID(FZL-ID)', ':TYPE']
 
     LL_header = ['ID:ID(FFL-ID)', 'NAME', 'label', ':LABEL']
-    LEL_header = ['ID:END_ID(FFL-ID)', 'ID', 'pid', 'id', 'label', 'ID:START_ID(ENT-ID)', ':TYPE']
+    LEL_header = ['ID:START_ID(ENT-ID)', 'ID', 'pid', 'id', 'label', 'ID:END_ID(FFL-ID)', ':TYPE']
 
     GB_header = ['ID:ID(FZE-ID)', 'NAME', 'label', ':LABEL']
     WEB_header = ['ID:START_ID(ENT-ID)', 'ID', 'pid', 'id', 'label', 'ID:END_ID(FZE-ID)', ':TYPE']
@@ -439,29 +421,23 @@ if __name__ == '__main__':
 
     files = [
         ('/home/csv/gs-0602.csv', r'/home/neo4j-1/import/gs.csv', GS_header, 'GS', '企业节点'),
-        ('/home/csv/gri-0602.csv', r'/home/neo4j-1/import/gri.csv', GR_header, 'GR', '人员节点'),
-        ('/home/csv/grs-0602.csv', r'/home/neo4j-1/import/grs.csv', GR_header, 'GR', '人员节点'),
-        ('/home/csv/ipees-0602.csv', r'/home/neo4j-1/import/ipees.csv', IPEES_header, 'IPEES', '投资'),
-        ('/home/csv/ipeer-0602.csv', r'/home/neo4j-1/import/ipeer.csv', IPEER_header, 'IPEER', '投资'),
-        ('/home/csv/bee-0602.csv', r'/home/neo4j-1/import/bee.csv', BEE_header, 'BEE', '人员任职'),
-        ('/home/csv/spe-0602.csv', r'/home/neo4j-1/import/spe.csv', SPE_header, 'SPE', '专利节点'),
-
+        ('/home/csv/gri-0602.csv', r'/home/neo4j-1/import/gri.csv', GR_header, 'GR', '人员节点-投资'),
+        ('/home/csv/grs-0602.csv', r'/home/neo4j-1/import/grs.csv', GR_header, 'GR', '人员节点-任职'),
+        ('/home/csv/ipees-0602.csv', r'/home/neo4j-1/import/ipees.csv', IPEES_header, 'IPEES', '企业投资'),
+        ('/home/csv/ipeer-0602.csv', r'/home/neo4j-1/import/ipeer.csv', IPEER_header, 'IPEER', '自然人投资'),
+        ('/home/csv/bee-0602.csv', r'/home/neo4j-1/import/bee.csv', BEE_header, 'BEE', '分支关系'),
+        ('/home/csv/spe-0602.csv', r'/home/neo4j-1/import/spe.csv', SPE_header, 'SPE', '任职关系'),
         ('/home/csv/opep-0602.csv', r'/home/neo4j-1/import/opep.csv', OPEP_header, 'OPEP', '专利关系'),
-        ('/home/csv/pp-0602.csv', r'/home/neo4j-1/import/pp.csv', PP_header, 'PP', '专利关系'),
-
+        ('/home/csv/pp-0602.csv', r'/home/neo4j-1/import/pp.csv', PP_header, 'PP', '专利节点'),
         ('/home/csv/lel-0602.csv', r'/home/neo4j-1/import/lel.csv', LEL_header, 'LEL', '诉讼关系'),
         ('/home/csv/ll-0602.csv', r'/home/neo4j-1/import/ll.csv', LL_header, 'LL', '诉讼节点'),
-
         ('/home/csv/web-0602.csv', r'/home/neo4j-1/import/web.csv', WEB_header, 'WEB', '招投标关系'),
         ('/home/csv/gb-0602.csv', r'/home/neo4j-1/import/gb.csv', GB_header, 'GB', '招投标节点'),
-
         ('/home/csv/red-0602.csv', r'/home/neo4j-1/import/red.csv', RED_header, 'RED', '相同办公地'),
         ('/home/csv/dd-0602.csv', r'/home/neo4j-1/import/dd.csv', DD_header, 'DD', '办公地节点'),
-
-        ('/home/csv/leet-0602.csv', r'/home/neo4j-1/import/leet.csv', LEET_header, 'LEET', '相同联系方式'),
+        ('/home/csv/leet-0602.csv', r'/home/neo4j-1/import/leet.csv', LEET_header, 'LEET', '相同联系方式-电话'),
         ('/home/csv/tt-0602.csv', r'/home/neo4j-1/import/tt.csv', TT_header, 'TT', '电话节点'),
-
-        ('/home/csv/leee-0602.csv', r'/home/neo4j-1/import/leee.csv', LEEE_header, 'LEEE', '相同联系方式'),
+        ('/home/csv/leee-0602.csv', r'/home/neo4j-1/import/leee.csv', LEEE_header, 'LEEE', '相同联系方式-邮箱'),
         ('/home/csv/ee-0602.csv', r'/home/neo4j-1/import/ee.csv', EE_header, 'EE', '邮箱节点'),
     ]
 
