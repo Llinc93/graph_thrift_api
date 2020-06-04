@@ -209,7 +209,8 @@ def getEntsRelevanceSeekGraphG():
 
         start = time.time()
         # 查找缓存
-        sort_name = ';'.join(sorted(entName.split(';')))
+        names = sorted(entName.split(';'))
+        sort_name = ';'.join(names)
         # redis_client = RedisClient()
         # name = hashlib.md5(f'getEntsRelevanceSeekGraphG,{sort_name},{attIds},{level}'.encode('utf8'))
         # if redis_client.r.exists(name):
@@ -220,7 +221,7 @@ def getEntsRelevanceSeekGraphG():
         if not relationshipFilter:
             return json.dumps({'nodes': [], 'success': 0, 'links': []}, ensure_ascii=False)
 
-        data, flag = neo4j_client.get_ent_relevance_seek_graph(sort_name, level, relationshipFilter)
+        data, flag = neo4j_client.get_ent_relevance_seek_graph(names, level, relationshipFilter)
 
         if not flag:
             return json.dumps({'nodes': [], 'success': 0, 'links': []}, ensure_ascii=False)
