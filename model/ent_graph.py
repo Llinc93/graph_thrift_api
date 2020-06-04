@@ -128,7 +128,7 @@ class Neo4jClient(object):
         :return:
         '''
         flag = True
-        command = "MATCH (p:GS {NAME: '%s'}) MATCH (end:GS) WHERE end.NAME IN %s WITH p, collect(end) AS endNodes CALL apoc.path.expandConfig(p, {relationshipFilter: %s, minLevel: 1, maxLevel: %s, endNodes: endNodes}) YIELD path RETURN path"
+        command = "MATCH (p:GS {NAME: '%s'}) MATCH (end:GS) WHERE end.NAME IN %s WITH p, collect(end) AS endNodes CALL apoc.path.expandConfig(p, {relationshipFilter: '%s', minLevel: 1, maxLevel: %s, endNodes: endNodes}) YIELD path RETURN nodes(path) as n, relationships(path) as r"
         print(command % (entnames[0], entnames[1:], relationshipFilter, level))
         rs = self.graph.run(command % (entnames[0], entnames[1:], relationshipFilter, level))
         info = rs.data()
