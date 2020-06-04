@@ -130,7 +130,8 @@ def getEntGraphG():
         if not flag:
             return json.dumps({'nodes': [], 'success': 0, 'links': []}, ensure_ascii=False)
 
-        nodes, links = parse.ent_graph_parse(data, level, relationshipFilter)
+        # nodes, links = parse.ent_graph_parse(data, level, relationshipFilter)
+        nodes, links = parse.ent_graph_parse(data, level)
         end = time.time()
         res = json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
         print(f'getEntGraphG: {end -start}s')

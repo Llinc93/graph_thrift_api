@@ -643,7 +643,7 @@ class Parse():
     #                 nodes_set.add(node['id'])
     #     return nodes, links
 
-    def ent_graph_prase(self, graph, level):
+    def ent_graph_parse(self, graph, level):
         nodes = []
         links = []
         nodes_set = set()
