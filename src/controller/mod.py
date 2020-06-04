@@ -66,7 +66,7 @@ def getEntActualContoller():
         redis_client = RedisClient()
 
         # 查找缓存
-        name = hashlib.md5(f'getEntActualContoller,{lcid},{min_ratio}'.encode('utf8'))
+        name = hashlib.md5(f'getEntActualContoller,{lcid},{min_ratio}'.encode('utf8')).hexdigest()
         if redis_client.r.exists(name):
             cache = redis_client.r.get(name)
             return cache
@@ -116,7 +116,7 @@ def getEntGraphG():
 
         # 查找缓存
         redis_client = RedisClient()
-        name = hashlib.md5(f'getEntGraphG,{keyword},{attIds},{level},{nodeType}'.encode('utf8'))
+        name = hashlib.md5(f'getEntGraphG,{keyword},{attIds},{level},{nodeType}'.encode('utf8')).hexdigest()
         if redis_client.r.exists(name):
             cache = redis_client.r.get(name)
             return cache
@@ -213,7 +213,7 @@ def getEntsRelevanceSeekGraphG():
         names = sorted(entName.split(';'))
         sort_name = ';'.join(names)
         redis_client = RedisClient()
-        name = hashlib.md5(f'getEntsRelevanceSeekGraphG,{sort_name},{attIds},{level}'.encode('utf8'))
+        name = hashlib.md5(f'getEntsRelevanceSeekGraphG,{sort_name},{attIds},{level}'.encode('utf8')).hexdigest()
         if redis_client.r.exists(name):
             cache = redis_client.r.get(name)
             return cache
@@ -232,7 +232,7 @@ def getEntsRelevanceSeekGraphG():
         end = time.time()
         res = json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
         print(f'getEntsRelevanceSeekGraphG: {end - start}s')
-        if ent - start > 10:
+        if end - start > 10:
             redis_client.r.set(name, res)
         return res
     except json.JSONDecodeError:
