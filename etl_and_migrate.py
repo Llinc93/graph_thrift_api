@@ -106,7 +106,7 @@ class EtlMigrate(object):
 
     def SPE(self, row, md5_id=None):
         '''
-        LCID, PID, POSITION
+        LCID, POSITION, PID
         :param row:
         :return:
         '''
@@ -120,7 +120,7 @@ class EtlMigrate(object):
                 text = self.get_id(row)
             return flag, text
         else:
-            return [row[0], row[2], md5_id, row[1], row[0], 'SPE', row[1], 'SPE']
+            return [row[0], row[1], md5_id, row[2], row[0], 'SPE', row[2], 'SPE']
 
     def PP(self, row, md5_id=None):
         '''

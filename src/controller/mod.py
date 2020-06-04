@@ -2,7 +2,7 @@ import json
 import time
 import hashlib
 import traceback
-from flask import Blueprint, request
+from flask import Blueprint, request, send_file
 
 from model.ent_graph import neo4j_client
 # from model.ent_graph import RedisClient
@@ -111,7 +111,7 @@ def getEntGraphG():
         nodeType = request.form['nodeType']
 
         start = time.time()
-        if int(level) > 3 or int(level) <= 0:
+        if level> 3 or level <= 0:
             raise ValueError
 
         # 查找缓存
@@ -125,12 +125,12 @@ def getEntGraphG():
         if not relationshipFilter:
             return json.dumps({'nodes': [], 'success': 0, 'links': []}, ensure_ascii=False)
 
-        data, flag = neo4j_client.get_ent_graph_g(keyword, level, nodeType, relationshipFilter)
+        data, flag = neo4j_client.get_ent_graph_g(keyword, level + 1, nodeType, relationshipFilter)
 
         if not flag:
             return json.dumps({'nodes': [], 'success': 0, 'links': []}, ensure_ascii=False)
 
-        nodes, links = parse.ent_graph_parse(data, int(level), relationshipFilter)
+        nodes, links = parse.ent_graph_parse(data, level, relationshipFilter)
         end = time.time()
         res = json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
         print(f'getEntGraphG: {end -start}s')
