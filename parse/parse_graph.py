@@ -688,72 +688,97 @@ class Parse():
             node['attibuteMap']['extendNumber'] = extendnumbers[names.index(node['id'])] - extendnumber[node['id']]
         return list(nodes), list(links)
 
-    def ent_relevance_seek_graph(self, entNames, level, relationshipFilter):
-        threads = []
+    # def ent_relevance_seek_graph(self, entNames, level, relationshipFilter):
+    #     threads = []
+    #
+    #     extendnumber = defaultdict(int)
+    #
+    #     # 序列之间的两两组合(Cn2),查询结果取并集
+    #     # entNames = list(set(sorted(entName.split(';'))))
+    #     for i in range(len(entNames)):
+    #         t = MyThreadAPOC(i, entNames, level, relationshipFilter)
+    #         threads.append(t)
+    #
+    #     for i in threads:
+    #         i.start()
+    #
+    #     links_dict = dict()
+    #     nodes_dict = dict()
+    #     for i in threads:
+    #         i.join()
+    #
+    #         if not i.result:
+    #             continue
+    #
+    #         nodes = []
+    #         links = []
+    #         nodes_set = set()
+    #         links_set = set()
+    #         for path in i.result:
+    #
+    #             if len(path['r']) == level:
+    #                 if path['n'][-1]['ID'] not in nodes_set:
+    #                     path['n'][-1]['extendNumber'] = neo4j_client.get_extendNumber(path['n'][-1], relationshipFilter)
+    #
+    #             for node in path['n']:
+    #                 if node['ID'] not in nodes_set:
+    #                     nodes_set.add(node['ID'])
+    #                     nodes.append(node)
+    #
+    #             for link in path['r']:
+    #                 if link['ID'] not in links_set:
+    #                     links_set.add(link['ID'])
+    #                     links.append(link)
+    #
+    #         for link in links:
+    #             if link['ID'] in links_dict:
+    #                 links_dict[link['ID']]['count'] += 1
+    #             else:
+    #                 links_dict[link['ID']] = {
+    #                     "count": 1,
+    #                     "value": self.get_link_attrib(link)
+    #                 }
+    #
+    #         for node in nodes:
+    #             if node['ID'] in nodes_dict:
+    #                 nodes_dict[node['ID']]['count'] += 1
+    #             else:
+    #                 nodes_dict[node['ID']] = {
+    #                     "count": 1,
+    #                     "value": self.get_nodeAttrib(node)
+    #                 }
+    #
+    #     return [node['value'] for node in nodes_dict.values() if node['count'] > 1], [link['value'] for link in links_dict.values() if link['count'] > 1]
 
-        extendnumber = defaultdict(int)
+    def ent_relevance_seek_graph(self, graph, level, relationshipFilter):
+        '''
+        解析neo4j返回的结果
+        '''
+        nodes = []
+        links = []
+        nodes_set = set()
+        links_set = set()
 
-        # 序列之间的两两组合(Cn2),查询结果取并集
-        # entNames = list(set(sorted(entName.split(';'))))
-        for i in range(len(entNames)):
-            t = MyThreadAPOC(i, entNames, level, relationshipFilter)
-            threads.append(t)
+        for path in graph:
+            tmp_nodes = path['n']
+            tmp_links = path['r']
 
-        for i in threads:
-            i.start()
+            for link in tmp_links:
+                if link['ID'] not in links_set:
+                    link = self.get_link_attrib(link)
+                    links.append(link)
+                    links_set.add(link['id'])
 
-        links_dict = dict()
-        nodes_dict = dict()
-        for i in threads:
-            i.join()
+            for node in tmp_nodes:
+                if node['ID'] not in nodes_set:
+                    node = self.get_nodeAttrib(node)
+                    nodes.append(node)
+                    nodes_set.add(node['id'])
 
-            if not i.result:
-                continue
-
-            nodes = []
-            links = []
-            nodes_set = set()
-            links_set = set()
-            for path in i.result:
-
-                if len(path['r']) == level:
-                    if path['n'][-1]['ID'] not in nodes_set:
-                        path['n'][-1]['extendNumber'] = neo4j_client.get_extendNumber(path['n'][-1], relationshipFilter)
-
-                for node in path['n']:
-                    if node['ID'] not in nodes_set:
-                        nodes_set.add(node['ID'])
-
-                for link in path['r']:
-                    if link['ID'] not in links_set:
-                        links_set.add(link['ID'])
-
-            for link in links:
-                if link['ID'] in links_dict:
-                    links_dict[link['ID']]['count'] += 1
-                else:
-                    links_dict[link['ID']] = {
-                        "count": 1,
-                        "value": self.get_link_attrib(link)
-                    }
-
-            for node in nodes:
-                if node['ID'] in nodes_dict:
-                    nodes_dict[node['ID']]['count'] += 1
-                else:
-                    nodes_dict[node['ID']] = {
-                        "count": 1,
-                        "value": self.get_nodeAttrib(node)
-                    }
-
-        return [node['value'] for node in nodes_dict.values() if node['count'] > 1], [link['value'] for link in links_dict.values() if link['count'] > 1]
+        return nodes, links
 
 
 parse = Parse()
 
-if __name__ == '__main__':
-    import time
 
-    s = time.time()
-    parse.parallel_query('1;2;3;4;5')
-    print(time.time() - s)
+

@@ -87,7 +87,7 @@ class Neo4jClient(object):
         rs.close()
         return info
 
-    def get_ent_graph_g_v4(self, entname, level, node_type, relationshipFilter):
+    def get_ent_graph_g(self, entname, level, node_type, relationshipFilter):
         '''
         企业族谱
             match (n:{node_type} {NAME: '{entname}'}) call apoc.path.expand(n, '<IPEE|BEE|<SPE', '', 1, {level}) yield path
@@ -119,12 +119,30 @@ class Neo4jClient(object):
         rs.close()
         return info, flag
 
-    def get_extendnumber(self, entnames, relationshipFilter):
-        command = "match (n) where n.ID in %s call apoc.neighbors.byhop.count(n, '%s', 1) yield value return value"
-        rs = self.graph.run(command % (entnames, relationshipFilter))
+    def get_ent_relevance_seek_graph(self, entnames, level, relationshipFilter):
+        '''
+        关联探寻
+        :param entname:
+        :param level:
+        :param relationshipFilter:
+        :return:
+        '''
+        flag = True
+        command = "MATCH (p:GS {NAME: '%s'}) MATCH (end:GS) WHERE end.NAME IN %s WITH p, collect(end) AS endNodes CALL apoc.path.expandConfig(p, {relationshipFilter: %s, minLevel: 1, maxLevel: %s, endNodes: endNodes}) YIELD path RETURN path"
+        print(command % (entnames[0], entnames[1:], relationshipFilter, level))
+        rs = self.graph.run(command % (entnames[0], entnames[1:], relationshipFilter, level))
         info = rs.data()
+        if not info:
+            flag = False
         rs.close()
-        return info
+        return info, flag
+
+    # def get_extendnumber(self, entnames, relationshipFilter):
+    #     command = "match (n) where n.ID in %s call apoc.neighbors.byhop.count(n, '%s', 1) yield value return value"
+    #     rs = self.graph.run(command % (entnames, relationshipFilter))
+    #     info = rs.data()
+    #     rs.close()
+    #     return info
 
     def get_extendNumber(self, node, relationshipFilter):
         command = "match (n:%s {ID: '%s'}) call apoc.neighbors.byhop.count(n, '%s', 1) yield value return value"
@@ -135,24 +153,3 @@ class Neo4jClient(object):
 
 
 neo4j_client = Neo4jClient()
-
-
-if __name__ == '__main__':
-    import time
-
-    ent = ['江苏荣马城市建设有限公司', '江苏臻天机科技有限公司', '南京晨光集团有限公司', '江苏建科建设监理有限公司', '苏州勇德云服饰有限公司']
-    for i in ent:
-        s1 = time.time()
-        command1 = "match p = () -[:IPEES|:IPEER|:BEE|:SPE* 1 .. 6]- (n:GS {NAME: '%s'}) return p"
-        neo4j_client.graph.run(command1 % i)
-        ret1 = time.time() - s1
-        print(f'cypher:\t{i}\t', ret1)
-
-        s2 = time.time()
-        command2 = "match (n:GS {NAME: '%s'}) call apoc.path.expand(n, 'IPEER|IPEES|BEE|SPE', '', 1, 6) yield path return path"
-        neo4j_client.graph.run(command2 % i)
-        ret2 = time.time() - s2
-        print(f'cypher:\t{i}\t', ret2)
-
-        print(ret1-ret2)
-        print()

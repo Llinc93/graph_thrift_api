@@ -125,7 +125,7 @@ def getEntGraphG():
         if not relationshipFilter:
             return json.dumps({'nodes': [], 'success': 0, 'links': []}, ensure_ascii=False)
 
-        data, flag = neo4j_client.get_ent_graph_g_v4(keyword, level, nodeType, relationshipFilter)
+        data, flag = neo4j_client.get_ent_graph_g(keyword, level, nodeType, relationshipFilter)
 
         if not flag:
             return json.dumps({'nodes': [], 'success': 0, 'links': []}, ensure_ascii=False)
@@ -140,6 +140,53 @@ def getEntGraphG():
     except:
         traceback.print_exc()
         return json.dumps({'nodes': [], 'success': 102, 'links': []}, ensure_ascii=False)
+
+
+# @MOD.route('/getEntsRelevanceSeekGraphG', methods=['POST'])
+# def getEntsRelevanceSeekGraphG():
+#     """
+#     企业关联探寻
+#     entName 企业名称
+#     attIds 过滤关系
+#     level 层级，最大6层
+#
+#     Parameters:
+#      - entName
+#      - attIds
+#      - level
+#     """
+#     try:
+#         entName = request.form['entName']
+#         attIds = request.form['attIds']
+#         level = int(request.form['level'])
+#
+#         start = time.time()
+#         # 查找缓存
+#         sort_name = ';'.join(sorted(entName.split(';')))
+#         # redis_client = RedisClient()
+#         # name = hashlib.md5(f'getEntsRelevanceSeekGraphG,{sort_name},{attIds},{level}'.encode('utf8'))
+#         # if redis_client.r.exists(name):
+#         #     cache = redis_client.r.get(name)
+#         #     return cache
+#
+#         relationshipFilter = parse.get_relationshipFilter(attIds)
+#         if not relationshipFilter:
+#             return json.dumps({'nodes': [], 'success': 0, 'links': []}, ensure_ascii=False)
+#
+#         # nodes, links = parse.parallel_query(entName, int(level), relationshipFilter)
+#         entName = sorted(entName.split(';'))
+#         nodes, links = parse.ent_relevance_seek_graph(entName, int(level), relationshipFilter)
+#         end = time.time()
+#         res = json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
+#         print(f'getEntsRelevanceSeekGraphG: {end - start}s')
+#         # if ent - start > 10:
+#         #     redis_client.r.set(name, res)
+#         return res
+#     except json.JSONDecodeError:
+#         return json.dumps({'nodes': [], 'success': 103, 'links': [], 'msg': '数据量超出限制，请缩小查询条件'}, ensure_ascii=False)
+#     except:
+#         traceback.print_exc()
+#         return json.dumps({'nodes': [], 'success': 103, 'links': []}, ensure_ascii=False)
 
 
 @MOD.route('/getEntsRelevanceSeekGraphG', methods=['POST'])
@@ -173,9 +220,13 @@ def getEntsRelevanceSeekGraphG():
         if not relationshipFilter:
             return json.dumps({'nodes': [], 'success': 0, 'links': []}, ensure_ascii=False)
 
-        # nodes, links = parse.parallel_query(entName, int(level), relationshipFilter)
-        entName = sorted(entName.split(';'))
-        nodes, links = parse.ent_relevance_seek_graph(entName, int(level), relationshipFilter)
+        data, flag = neo4j_client.get_ent_relevance_seek_graph(sort_name, level, relationshipFilter)
+
+        if not flag:
+            return json.dumps({'nodes': [], 'success': 0, 'links': []}, ensure_ascii=False)
+
+        nodes, links = parse.ent_relevance_seek_graph(data, int(level), relationshipFilter)
+
         end = time.time()
         res = json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
         print(f'getEntsRelevanceSeekGraphG: {end - start}s')
@@ -187,5 +238,3 @@ def getEntsRelevanceSeekGraphG():
     except:
         traceback.print_exc()
         return json.dumps({'nodes': [], 'success': 103, 'links': []}, ensure_ascii=False)
-
-
