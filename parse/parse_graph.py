@@ -690,10 +690,7 @@ class Parse():
 
     def ent_relevance_seek_graph(self, entNames, level, relationshipFilter):
         threads = []
-        nodes = []
-        links = []
-        nodes_set = set()
-        links_set = set()
+
         extendnumber = defaultdict(int)
 
         # 序列之间的两两组合(Cn2),查询结果取并集
@@ -705,12 +702,18 @@ class Parse():
         for i in threads:
             i.start()
 
+        links_dict = dict()
+        nodes_dict = dict()
         for i in threads:
             i.join()
 
             if not i.result:
                 continue
 
+            nodes = []
+            links = []
+            nodes_set = set()
+            links_set = set()
             for path in i.result:
 
                 if len(path['r']) == level:
@@ -719,17 +722,31 @@ class Parse():
 
                 for node in path['n']:
                     if node['ID'] not in nodes_set:
-                        nodes.append(self.get_nodeAttrib(node))
                         nodes_set.add(node['ID'])
 
                 for link in path['r']:
                     if link['ID'] not in links_set:
-                        links.append(self.get_link_attrib(link))
-                        extendnumber[link['id']] += 1
-                        extendnumber[link['pid']] += 1
                         links_set.add(link['ID'])
 
-        return list(nodes), list(links)
+            for link in links:
+                if link['ID'] in links_dict:
+                    links_dict[link['ID']]['count'] += 1
+                else:
+                    links_dict[link['ID']] = {
+                        "count": 1,
+                        "value": self.get_link_attrib(link)
+                    }
+
+            for node in nodes:
+                if node['ID'] in nodes_dict:
+                    nodes_dict[node['ID']]['count'] += 1
+                else:
+                    nodes_dict[node['ID']] = {
+                        "count": 1,
+                        "value": self.get_nodeAttrib(node)
+                    }
+
+        return [node['value'] for node in nodes_dict.values() if node['count'] > 1], [link['value'] for link in links_dict.values() if link['count'] > 1]
 
 
 parse = Parse()

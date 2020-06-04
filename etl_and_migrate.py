@@ -172,6 +172,7 @@ class EtlMigrate(object):
             if '' in row or len(row) != 1:
                 flag = False
             else:
+                row.append('LL')
                 text = self.get_id(row)
             return flag, text
         else:
@@ -194,7 +195,7 @@ class EtlMigrate(object):
                 text = self.get_id(row)
             return flag, text
         else:
-            end_id = self.get_id(row[0])
+            end_id = self.get_id([row[0], 'LL'])
             return [row[1], md5_id, row[1], end_id, 'LEL', end_id, 'LEL']
 
     def GB(self, row, md5_id=None):
@@ -210,6 +211,7 @@ class EtlMigrate(object):
             if '' in row or len(row) != 1:
                 flag = False
             else:
+                row.append('GB')
                 text = self.get_id(row)
             return flag, text
         else:
@@ -229,10 +231,11 @@ class EtlMigrate(object):
             if '' in row or 'null' in row or len(row) != 2:
                 flag = False
             else:
+                row.append('WEB')
                 text = self.get_id(row)
             return flag, text
         else:
-            end_id = self.get_id(row[0])
+            end_id = self.get_id([row[0], 'GB'])
             return [row[1], md5_id, row[1], end_id, 'WEB', end_id, 'WEB']
 
     def DD(self, row, md5_id=None):
@@ -248,6 +251,7 @@ class EtlMigrate(object):
             if '' in row or len(row) != 1:
                 flag = False
             else:
+                row.append('DD')
                 text = self.get_id(row)
             return flag, text
         else:
@@ -267,10 +271,11 @@ class EtlMigrate(object):
             if '' in row or 'null' in row or len(row) != 2:
                 flag = False
             else:
+                row.append('RED')
                 text = self.get_id(row)
             return flag, text
         else:
-            end_id = self.get_id(row[0])
+            end_id = self.get_id([row[0], 'DD'])
             return [row[1], md5_id, row[1], end_id, 'RED', end_id, 'RED']
 
     def TT(self, row, md5_id=None):
@@ -286,10 +291,11 @@ class EtlMigrate(object):
             if '' in row or '0' in row or '-' in row or '无' in row or '--' in row or '无无' in row or '0000' in row or '1' in row or len(row) != 1:
                 flag = False
             else:
+                row.append('TT')
                 text = self.get_id(row)
             return flag, text
         else:
-            return [row[0], row[0], 'TT', 'TT']
+            return [md5_id, row[0], 'TT', 'TT']
 
     def LEET(self, row, md5_id=None):
         '''
@@ -306,10 +312,12 @@ class EtlMigrate(object):
             if '' in action or '0' in action or '-' in action or '无' in action or '--' in action or '无无' in action or '0000' in action or '1' in action or len(row) != 3:
                 flag = False
             else:
+                row.append('LEE')
                 text = self.get_id(row)
             return flag, text
         else:
-            return [row[1], md5_id, row[1], row[0], 'LEE', row[0], row[2], 'LEE']
+            end_id = self.get_id([row[0], 'TT'])
+            return [row[1], md5_id, row[1], end_id, 'LEE', end_id, row[2], 'LEE']
 
     def EE(self, row, md5_id=None):
         '''
@@ -325,10 +333,11 @@ class EtlMigrate(object):
             if '.' not in row[0] or '@' not in row[0] or len(row) != 1:
                 flag = False
             else:
+                row.append('EE')
                 text = self.get_id(row)
             return flag, text
         else:
-            return [row[0], row[0], 'EE', 'EE']
+            return [md5_id, row[0], 'EE', 'EE']
 
     def LEEE(self, row, md5_id=None):
         '''
@@ -344,10 +353,12 @@ class EtlMigrate(object):
             if '.' not in row[0] or '@' not in row[0] or len(row) != 3:
                 flag = False
             else:
+                row.append('LEEE')
                 text = self.get_id(row)
             return flag, text
         else:
-            return [row[1], md5_id, row[1], row[0], 'LEE', row[0], row[2], 'LEE']
+            end_id = self.get_id([row[0], 'EE'])
+            return [row[1], md5_id, row[1], end_id, 'LEE', end_id, row[2], 'LEE']
 
     def write(self, read, write, header, label, desc):
         read_f = open(read, 'r', encoding='utf8', newline='')
