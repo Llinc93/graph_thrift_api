@@ -6,7 +6,7 @@ import config
 
 class RedisClient(object):
     def __init__(self):
-        pool = redis.ConnectionPool(host='localhost', port=6379, db=7, decode_responses=True)
+        pool = redis.ConnectionPool(host='localhost', port=6379, db=1, decode_responses=True)
         self.r = redis.Redis(connection_pool=pool)
 
 
