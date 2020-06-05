@@ -75,3 +75,5 @@ HOST = '0.0.0.0'
 PORT = 8140
 DEBUG = True
 
+# 缓存设置
+CACHE_FLAG = True

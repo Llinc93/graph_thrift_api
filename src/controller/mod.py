@@ -4,6 +4,7 @@ import hashlib
 import traceback
 from flask import Blueprint, request, send_file
 
+from config import CACHE_FLAG
 from model.ent_graph import neo4j_client
 from model.ent_graph import RedisClient
 from parse.parse_graph import parse
@@ -63,13 +64,13 @@ def getEntActualContoller():
         if not lcid:
             return json.dumps({'data': {'nodes': [], 'links': []}, 'success': 0}, ensure_ascii=False)
 
-        redis_client = RedisClient()
-
         # 查找缓存
-        name = hashlib.md5(f'getEntActualContoller,{lcid},{min_ratio}'.encode('utf8')).hexdigest()
-        if redis_client.r.exists(name):
-            cache = redis_client.r.get(name)
-            return cache
+        if CACHE_FLAG:
+            redis_client = RedisClient()
+            name = hashlib.md5(f'getEntActualContoller,{lcid},{min_ratio}'.encode('utf8')).hexdigest()
+            if redis_client.r.exists(name):
+                cache = redis_client.r.get(name)
+                return cache
 
         level = neo4j_client.get_level(lcid=lcid)
         data = neo4j_client.get_ent_actual_controller(entname=entName, usccode=uscCode, level=level)
@@ -81,7 +82,7 @@ def getEntActualContoller():
         end = time.time()
         res = json.dumps({'data': {'nodes': nodes, 'links': links}, 'success': 0}, ensure_ascii=False)
         print(f'getEntActualContoller: {end - start}s')
-        if end - start > 10:
+        if end - start > 10 and CACHE_FLAG:
             redis_client.r.set(name, res)
         return res
      except:
@@ -114,12 +115,13 @@ def getEntGraphG():
         if level> 3 or level <= 0:
             raise ValueError
 
-        # 查找缓存
-        redis_client = RedisClient()
-        name = hashlib.md5(f'getEntGraphG,{keyword},{attIds},{level},{nodeType}'.encode('utf8')).hexdigest()
-        if redis_client.r.exists(name):
-            cache = redis_client.r.get(name)
-            return cache
+        if CACHE_FLAG:
+            # 查找缓存
+            redis_client = RedisClient()
+            name = hashlib.md5(f'getEntGraphG,{keyword},{attIds},{level},{nodeType}'.encode('utf8')).hexdigest()
+            if redis_client.r.exists(name):
+                cache = redis_client.r.get(name)
+                return cache
 
         relationshipFilter = parse.get_relationshipFilter(attIds)
         if not relationshipFilter:
@@ -135,7 +137,7 @@ def getEntGraphG():
         end = time.time()
         res = json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
         print(f'getEntGraphG: {end -start}s')
-        if end - start > 10:
+        if end - start > 10 and CACHE_FLAG:
             redis_client.r.set(name, res)
         return res
     except:
@@ -211,12 +213,14 @@ def getEntsRelevanceSeekGraphG():
         start = time.time()
         # 查找缓存
         names = sorted(entName.split(';'))
-        sort_name = ';'.join(names)
-        redis_client = RedisClient()
-        name = hashlib.md5(f'getEntsRelevanceSeekGraphG,{sort_name},{attIds},{level}'.encode('utf8')).hexdigest()
-        if redis_client.r.exists(name):
-            cache = redis_client.r.get(name)
-            return cache
+
+        if CACHE_FLAG:
+            sort_name = ';'.join(names)
+            redis_client = RedisClient()
+            name = hashlib.md5(f'getEntsRelevanceSeekGraphG,{sort_name},{attIds},{level}'.encode('utf8')).hexdigest()
+            if redis_client.r.exists(name):
+                cache = redis_client.r.get(name)
+                return cache
 
         relationshipFilter = parse.get_relationshipFilter(attIds)
         if not relationshipFilter:
@@ -232,7 +236,7 @@ def getEntsRelevanceSeekGraphG():
         end = time.time()
         res = json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
         print(f'getEntsRelevanceSeekGraphG: {end - start}s')
-        if end - start > 10:
+        if end - start > 10 and CACHE_FLAG:
             redis_client.r.set(name, res)
         return res
     except json.JSONDecodeError:
