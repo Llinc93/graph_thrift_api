@@ -524,9 +524,9 @@ class Parse():
         '''
         action = {'id': node['ID'], 'name': node['NAME'], 'type': node['label']}
         if node['label'] in ['PP', 'LL', 'DD', 'EE', 'TT', 'GR', 'GB']:
-            action['attributeMap'] = {'extendNumber': node['extendNumber'][0]['value'][0] if node.get('extendNumber') else 0}
+            action['attibuteMap'] = {'extendNumber': node['extendNumber'][0]['value'][0] if node.get('extendNumber') else 0}
         else:
-            action['attributeMap'] = {
+            action['attibuteMap'] = {
                 'extendNumber': node['extendNumber'][0]['value'][0] if node.get('extendNumber') else 0,
                 'industry_class': node['INDUSTRY'],
                 'business_age': node['ESDATE'][:4],

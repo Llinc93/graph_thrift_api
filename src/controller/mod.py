@@ -212,10 +212,10 @@ def getEntsRelevanceSeekGraphG():
 
         start = time.time()
         # 查找缓存
-        names = sorted(entName.split(';'))
+        names = entName.split(';')
 
         if CACHE_FLAG:
-            sort_name = ';'.join(names)
+            sort_name = ';'.join(sorted(names))
             redis_client = RedisClient()
             name = hashlib.md5(f'getEntsRelevanceSeekGraphG,{sort_name},{attIds},{level}'.encode('utf8')).hexdigest()
             if redis_client.r.exists(name):
