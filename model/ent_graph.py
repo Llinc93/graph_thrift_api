@@ -145,7 +145,7 @@ class Neo4jClient(object):
     #     return info
 
     def get_extendNumber(self, node, relationshipFilter):
-        command = "match (n:%s {ID: '%s'}) call apoc.neighbors.byhop.count(n, '%s', 1) yield value return value"
+        command = "match (n:%s {ID: '%s'}) call apoc.neighbors.athop.count(n, '%s', 1) yield value return value"
         rs = self.graph.run(command % (node['label'], node['ID'], relationshipFilter))
         info = rs.data()
         rs.close()

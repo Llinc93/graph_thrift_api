@@ -1,6 +1,5 @@
 # neo4j
 NEO4J_URL = 'http://localhost:7474'
-# NEO4J_URL = 'http://47.93.228.56:9920'
 NEO4J_USER = 'neo4j'
 NEO4J_PASSWD = '123456'
 
@@ -65,10 +64,6 @@ LINK_NAME = {
     'SHPEN': '历史任职',
 }
 
-# TigerGraph
-EntActualController = 'http://172.27.2.5:9000/query/graph_api/EntActualContoller'
-EntGraphUrl = 'http://172.27.2.5:9000/query/graph_api/EntGraph'
-EntRelevanceSeekGraphUrl = 'http://172.27.2.5:9000/query/graph_api/EntsRelevanceSeekGraph'
 
 # FLASK、GUNICORN
 HOST = '0.0.0.0'

@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
     path = '/opt/graph_thrift_api/data'
     tmp_name = 'ent_level_{}.csv'
-    neo4j_uri = 'http://172.27.2.5:17474'
+    neo4j_uri = 'http://localhost:7474'
     username = 'neo4j'
     password = '123456'
 

@@ -618,30 +618,39 @@ class Parse():
     #     :param graph:
     #     :return:
     #     '''
-    #     nodes = []
-    #     links = []
+    #     nodes = {}
+    #     links = {}
     #     nodes_set = set()
     #     links_set = set()
+    #     tmp_extendNumbers = defaultdict(int)
     #
     #     for path in graph:
     #         tmp_links = path['r']
     #         tmp_nodes = path['n']
     #
     #         if len(tmp_links) == level:
-    #             tmp_nodes[-1]['extendNumber'] = neo4j_client.get_extendNumber(tmp_nodes[-1], relationshipFilter)
+    #             tmp_extendNumbers[tmp_nodes[-1]['ID']] += 1
+    #             # tmp_nodes[-1]['extendNumber'] = neo4j_client.get_extendNumber(tmp_nodes[-1], relationshipFilter)
     #
     #         for link in tmp_links:
     #             if link['ID'] not in links_set:
     #                 link = self.get_link_attrib(link)
-    #                 links.append(link)
+    #                 # links.append(link)
+    #                 links[link['ID']] = link
     #                 links_set.add(link['id'])
     #
     #         for node in tmp_nodes:
     #             if node['ID'] not in nodes_set:
     #                 node = self.get_nodeAttrib(node)
-    #                 nodes.append(node)
+    #                 # nodes.append(node)
+    #                 nodes[node['ID']] = node
     #                 nodes_set.add(node['id'])
-    #     return nodes, links
+    #
+    #     extendNumbers = neo4j_client.get_extendNumber(tmp_extendNumbers, relationshipFilter)
+    #     for key, value in extendNumbers:
+    #         nodes[key]['attibuteMap']['extendNumber'] = value - tmp_extendNumbers[key]
+    #
+    #     return list(nodes.values()), list(links.values())
 
     def ent_graph_parse(self, graph, level):
         nodes = []
