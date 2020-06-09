@@ -49,6 +49,7 @@ class EtlMigrate(object):
     def IPEES(self, row, md5_id=None):
         '''
         LCID_INV, RATE, LCID, RATE_TYPE
+        'ID:START_ID(ENT-ID)', 'RATE', 'RATE_TYPE', 'ID', 'pid', 'id', 'label', 'ID:END_ID(ENT-ID)', ':TYPE'
         :param row:
         :param md5_id:
         :return:
@@ -69,6 +70,7 @@ class EtlMigrate(object):
     def IPEER(self, row, md5_id=None):
         '''
         PID_INV, RATE, LCID, RATE_TYPE
+        'ID:START_ID(P-ID)', 'RATE', 'RATE_TYPE', 'ID', 'pid', 'id', 'label', 'ID:END_ID(ENT-ID)', ':TYPE'
         :param row:
         :param md5_id:
         :return:
@@ -89,6 +91,7 @@ class EtlMigrate(object):
     def BEE(self, row, md5_id=None):
         '''
         B_LCID, P_LCID
+        'ID:END_ID(ENT-ID)', 'ID', 'pid', 'id', 'label', 'RATE', 'ID:START_ID(ENT-ID)', ':TYPE'
         :param row:
         :return:
         '''
@@ -107,6 +110,7 @@ class EtlMigrate(object):
     def SPE(self, row, md5_id=None):
         '''
         LCID, POSITION, PID
+        'ID:END_ID(ENT-ID)', 'POSITION', 'ID', 'pid', 'id', 'label', 'ID:START_ID(P-ID)', ':TYPE'
         :param row:
         :return:
         '''
@@ -125,6 +129,7 @@ class EtlMigrate(object):
     def PP(self, row, md5_id=None):
         '''
         FZL_MC, FZL_SQH
+        'ID:ID(FZL-ID)', 'NAME', 'label', ':LABEL'
         :param row:
         :return:
         '''
@@ -143,6 +148,7 @@ class EtlMigrate(object):
     def OPEP(self, row, md5_id=None):
         '''
         FZL_SQH, LCID
+        'ID:START_ID(ENT-ID)', 'ID', 'pid', 'id', 'label', 'ID:END_ID(FZL-ID)', ':TYPE'
         :param row:
         :param md5_id:
         :return:
@@ -162,6 +168,7 @@ class EtlMigrate(object):
     def LL(self, row, md5_id=None):
         '''
         FFL_TITLE
+        'ID:ID(FFL-ID)', 'NAME', 'label', ':LABEL'
         :param row:
         :return:
         '''
@@ -181,6 +188,7 @@ class EtlMigrate(object):
     def LEL(self, row, md5_id=None):
         '''
         FFL_TITLE, LCID
+        'ID:START_ID(ENT-ID)', 'ID', 'pid', 'id', 'label', 'ID:END_ID(FFL-ID)', ':TYPE'
         :param row:
         :param md5_id:
         :return:
@@ -201,6 +209,7 @@ class EtlMigrate(object):
     def GB(self, row, md5_id=None):
         '''
         FZE_TITLE
+        'ID:ID(FZE-ID)', 'NAME', 'label', ':LABEL'
         :param row:
         :return:
         '''
@@ -220,6 +229,7 @@ class EtlMigrate(object):
     def WEB(self, row, md5_id=None):
         '''
         FZE_TITLE, LCID
+        'ID:START_ID(ENT-ID)', 'ID', 'pid', 'id', 'label', 'ID:END_ID(FZE-ID)', ':TYPE'
         :param row:
         :param md5_id:
         :return:
@@ -241,6 +251,7 @@ class EtlMigrate(object):
     def DD(self, row, md5_id=None):
         '''
         ADDR
+        'ID:ID(ADDR-ID)', 'NAME', 'label', ':LABEL'
         :param row:
         :return:
         '''
@@ -260,6 +271,7 @@ class EtlMigrate(object):
     def RED(self, row, md5_id=None):
         '''
         ADDR, LCID
+        'ID:START_ID(ENT-ID)', 'ID', 'pid', 'id', 'label', 'ID:END_ID(ADDR-ID)', ':TYPE'
         :param row:
         :param md5_id:
         :return:
@@ -281,6 +293,7 @@ class EtlMigrate(object):
     def TT(self, row, md5_id=None):
         '''
         TEL
+        'ID:ID(TEL-ID)', 'NAME', 'label', ':LABEL'
         :param row:
         :return:
         '''
@@ -300,6 +313,7 @@ class EtlMigrate(object):
     def LEET(self, row, md5_id=None):
         '''
         TEL, LCID, DOMAIN
+        'ID:START_ID(ENT-ID)', 'ID', 'pid', 'id', 'label', 'ID:END_ID(TEL-ID)', 'DOMAIN', ':TYPE'
         :param row:
         :param md5_id:
         :return:
@@ -322,6 +336,7 @@ class EtlMigrate(object):
     def EE(self, row, md5_id=None):
         '''
         EMAIL
+        'ID:ID(EMAIL-ID)', 'NAME', 'label', ':LABEL'
         :param row:
         :param md5_id:
         :return:
@@ -342,6 +357,7 @@ class EtlMigrate(object):
     def LEEE(self, row, md5_id=None):
         '''
         EMAIL, LCID, DOMAIN
+        'ID:START_ID(ENT-ID)', 'ID', 'pid', 'id', 'label', 'ID:END_ID(EMAIL-ID)', 'DOMAIN', ':TYPE'
         :param row: 
         :param md5_id: 
         :return: 
@@ -435,25 +451,25 @@ if __name__ == '__main__':
     LEEE_header = ['ID:START_ID(ENT-ID)', 'ID', 'pid', 'id', 'label', 'ID:END_ID(EMAIL-ID)', 'DOMAIN', ':TYPE']
 
     files = [
-        ('/home/csv/gs-0602.csv', r'/home/neo4j-1/import/gs.csv', GS_header, 'GS', '企业节点'),
-        ('/home/csv/gri-0602.csv', r'/home/neo4j-1/import/gri.csv', GR_header, 'GR', '人员节点-投资'),
-        ('/home/csv/grs-0602.csv', r'/home/neo4j-1/import/grs.csv', GR_header, 'GR', '人员节点-任职'),
-        ('/home/csv/ipees-0602.csv', r'/home/neo4j-1/import/ipees.csv', IPEES_header, 'IPEES', '企业投资'),
-        ('/home/csv/ipeer-0602.csv', r'/home/neo4j-1/import/ipeer.csv', IPEER_header, 'IPEER', '自然人投资'),
-        ('/home/csv/bee-0602.csv', r'/home/neo4j-1/import/bee.csv', BEE_header, 'BEE', '分支关系'),
-        ('/home/csv/spe-0602.csv', r'/home/neo4j-1/import/spe.csv', SPE_header, 'SPE', '任职关系'),
-        ('/home/csv/opep-0602.csv', r'/home/neo4j-1/import/opep.csv', OPEP_header, 'OPEP', '专利关系'),
-        ('/home/csv/pp-0602.csv', r'/home/neo4j-1/import/pp.csv', PP_header, 'PP', '专利节点'),
-        ('/home/csv/lel-0602.csv', r'/home/neo4j-1/import/lel.csv', LEL_header, 'LEL', '诉讼关系'),
-        ('/home/csv/ll-0602.csv', r'/home/neo4j-1/import/ll.csv', LL_header, 'LL', '诉讼节点'),
-        ('/home/csv/web-0602.csv', r'/home/neo4j-1/import/web.csv', WEB_header, 'WEB', '招投标关系'),
-        ('/home/csv/gb-0602.csv', r'/home/neo4j-1/import/gb.csv', GB_header, 'GB', '招投标节点'),
-        ('/home/csv/red-0602.csv', r'/home/neo4j-1/import/red.csv', RED_header, 'RED', '相同办公地'),
-        ('/home/csv/dd-0602.csv', r'/home/neo4j-1/import/dd.csv', DD_header, 'DD', '办公地节点'),
-        ('/home/csv/leet-0602.csv', r'/home/neo4j-1/import/leet.csv', LEET_header, 'LEET', '相同联系方式-电话'),
-        ('/home/csv/tt-0602.csv', r'/home/neo4j-1/import/tt.csv', TT_header, 'TT', '电话节点'),
-        ('/home/csv/leee-0602.csv', r'/home/neo4j-1/import/leee.csv', LEEE_header, 'LEEE', '相同联系方式-邮箱'),
-        ('/home/csv/ee-0602.csv', r'/home/neo4j-1/import/ee.csv', EE_header, 'EE', '邮箱节点'),
+        ('/home/csvdata/基本信息企业节点.csv', r'/home/neo4j-1/import/gs.csv', GS_header, 'GS', '企业节点'),
+        ('/home/csvdata/人员节点-投资.csv', r'/home/neo4j-1/import/gri.csv', GR_header, 'GR', '人员节点-投资'),
+        ('/home/csvdata/人员节点-高管.csv', r'/home/neo4j-1/import/grs.csv', GR_header, 'GR', '人员节点-任职'),
+        ('/home/csvdata/企业投资.csv', r'/home/neo4j-1/import/ipees.csv', IPEES_header, 'IPEES', '企业投资'),
+        ('/home/csvdata/自然人投资.csv', r'/home/neo4j-1/import/ipeer.csv', IPEER_header, 'IPEER', '自然人投资'),
+        ('/home/csvdata/企业分支.csv', r'/home/neo4j-1/import/bee.csv', BEE_header, 'BEE', '分支关系'),
+        ('/home/csvdata/主要管理人员.csv', r'/home/neo4j-1/import/spe.csv', SPE_header, 'SPE', '任职关系'),
+        ('/home/csvdata/专利关系.csv', r'/home/neo4j-1/import/opep.csv', OPEP_header, 'OPEP', '专利关系'),
+        ('/home/csvdata/专利节点.csv', r'/home/neo4j-1/import/pp.csv', PP_header, 'PP', '专利节点'),
+        ('/home/csvdata/诉讼关系.csv', r'/home/neo4j-1/import/lel.csv', LEL_header, 'LEL', '诉讼关系'),
+        ('/home/csvdata/诉讼节点.csv', r'/home/neo4j-1/import/ll.csv', LL_header, 'LL', '诉讼节点'),
+        ('/home/csvdata/招投标关系.csv', r'/home/neo4j-1/import/web.csv', WEB_header, 'WEB', '招投标关系'),
+        ('/home/csvdata/招投标节点.csv', r'/home/neo4j-1/import/gb.csv', GB_header, 'GB', '招投标节点'),
+        ('/home/csvdata/相同办公地.csv', r'/home/neo4j-1/import/red.csv', RED_header, 'RED', '相同办公地'),
+        ('/home/csvdata/办公地.csv', r'/home/neo4j-1/import/dd.csv', DD_header, 'DD', '办公地节点'),
+        ('/home/csvdata/相同联系方式-电话.csv', r'/home/neo4j-1/import/leet.csv', LEET_header, 'LEET', '相同联系方式-电话'),
+        ('/home/csvdata/电话节点.csv', r'/home/neo4j-1/import/tt.csv', TT_header, 'TT', '电话节点'),
+        ('/home/csvdata/相同联系方式-邮箱.csv', r'/home/neo4j-1/import/leee.csv', LEEE_header, 'LEEE', '相同联系方式-邮箱'),
+        ('/home/csvdata/邮箱节点.csv', r'/home/neo4j-1/import/ee.csv', EE_header, 'EE', '邮箱节点'),
     ]
 
     p = Pool(cpu_count() - 1)
