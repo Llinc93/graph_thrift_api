@@ -465,7 +465,7 @@ if __name__ == '__main__':
         ('/home/csvdata/招投标关系.csv', r'/home/neo4j-1/import/web.csv', WEB_header, 'WEB', '招投标关系'),
         ('/home/csvdata/招投标节点.csv', r'/home/neo4j-1/import/gb.csv', GB_header, 'GB', '招投标节点'),
         ('/home/csvdata/相同办公地.csv', r'/home/neo4j-1/import/red.csv', RED_header, 'RED', '相同办公地'),
-        ('/home/csvdata/办公地.csv', r'/home/neo4j-1/import/dd.csv', DD_header, 'DD', '办公地节点'),
+        ('/home/csvdata/办公地节点.csv', r'/home/neo4j-1/import/dd.csv', DD_header, 'DD', '办公地节点'),
         ('/home/csvdata/相同联系方式-电话.csv', r'/home/neo4j-1/import/leet.csv', LEET_header, 'LEET', '相同联系方式-电话'),
         ('/home/csvdata/电话节点.csv', r'/home/neo4j-1/import/tt.csv', TT_header, 'TT', '电话节点'),
         ('/home/csvdata/相同联系方式-邮箱.csv', r'/home/neo4j-1/import/leee.csv', LEEE_header, 'LEEE', '相同联系方式-邮箱'),
