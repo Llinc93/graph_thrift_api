@@ -148,3 +148,48 @@ def get_ents_relevance_seek_graph_g():
     except Exception:
         traceback.print_exc()
         return json.dumps({'nodes': [], 'success': 103, 'links': []}, ensure_ascii=False)
+
+
+@MOD.route('/getFinalBeneficiaryName', methods=['POST'])
+def get_final_beneficiary_name():
+    """
+    企业最终受益人信息
+    :return:
+    """
+    try:
+        start = time.time()
+
+        ent_name = request.form.get('entName')
+        usc_code = request.form.get('uscCode')
+        min_ratio = float(request.form.get('min_ratio', 0))
+
+        if not min_ratio:
+            min_ratio = 0
+
+        lcid = neo4j_client.get_lcid(entname=ent_name, usccode=usc_code)
+        if not lcid:
+            return json.dumps({'data': [], 'success': 0}, ensure_ascii=False)
+
+        # 查找缓存
+        name = hashlib.md5(f'getEntActualContoller,{lcid},{min_ratio}'.encode('utf8')).hexdigest()
+        if CACHE_FLAG and redis_client.r.exists(name):
+            cache = redis_client.r.get(name)
+            return cache
+
+        level = neo4j_client.get_level(lcid=lcid)
+        raw_data = neo4j_client.get_final_beneficiary_name(lcid=lcid, level=level)
+        if not raw_data:
+            return json.dumps({'data': [], 'success': 0}, ensure_ascii=False)
+
+        data = parse.get_final_beneficiary_name(raw_data, min_rate=min_ratio, lcid=lcid)
+        if not data:
+            return json.dumps({'data': {'nodes': [], 'links': []}, 'success': 0}, ensure_ascii=False)
+        res = json.dumps({'data': data, 'success': 0}, ensure_ascii=False)
+
+        end = time.time()
+        print(f'getEntActualContoller: {end - start}s')
+        if end - start > 10 and CACHE_FLAG:
+            redis_client.r.set(name, res)
+        return res
+    except Exception:
+        return json.dumps({'dara': '', 'success': 104}, ensure_ascii=False)

@@ -1,5 +1,11 @@
 import copy
 from collections import defaultdict
+import sys
+sys.setrecursionlimit(100000)
+import json
+from py2neo import Graph
+from collections import defaultdict
+
 
 
 class Parse(object):
@@ -259,102 +265,120 @@ class Parse(object):
     def get_final_beneficiary_name(graph, min_rate, lcid):
         """
         根据neo4j的结果，计算受益所有人
+            action = {
+                "number": 0 if sub['ID'] == lcid else nodes[sub['ID']],
+                "number_c": float(link['RATE']) if link else None,
+                "children": None if sub['ID'] == lcid else [],
+                "lastnode": 0 if parent else 1,
+                "name": sub['NAME'],
+                "pid": parent['ID'] if parent else None,
+                "id": sub['ID'],
+                "type": sub['label'],
+                "attr": 2 if sub['ID'] == lcid else 1,
+            }
         :param graph:
         :param min_rate:
         :param lcid:
         :return:
         """
-        pids = defaultdict(set)
-        actions = {}
-        sub_ids = set()
-        graph2 = copy.deepcopy(graph)
 
-        nodes = defaultdict(float)
-        links = []
-        for path in graph:
-            tmp_nodes = path['n']
-            tmp_links = path['r']
-            tmp_path = []
-            tmp_number = 1
-            while len(tmp_nodes):
-                sub = tmp_nodes.pop()
-                link = tmp_links.pop() if tmp_links else sub['ID']
-                tmp_path.append(link)
-                if tmp_path in links:
-                    continue
+        def test(nodes, link_index, links, p_node, target, exists_ids):
+            '''
+            递归构造响应体格式
+            :param nodes:  节点列表
+            :param link_index: 关系嵌套顺序字典
+            :param links:  关系列表
+            :param p_node: 起点
+            :param target: 目标节点
+            :param exists_node:  已出现节点列表
+            :return:
+            '''
+            data = []
+            exists_ids.append(p_node['ID'])
+            number_total = 0
 
-                if sub['ID'] == lcid:
-                    nodes[sub['ID']] = 0
-                else:
-                    nodes[sub['ID']] += tmp_number
-                if link and not isinstance(link, str):
-                    if link['label'] == 'BEE':
-                        link['RATE'] = 1
-                    tmp_number *= float(link['RATE'])
-
-        for path in graph2:
-            tmp_nodes = path['n']
-            tmp_links = path['r']
-
-            ring_detection = defaultdict(int)
-            for node in tmp_nodes:
-                ring_detection[node['ID']] += 1
-            if list(filter(lambda x: x[1] > 1, ring_detection.items())):
-                continue
-
-            while len(tmp_nodes):
-                sub = tmp_nodes.pop()
-                parent = tmp_nodes[-1] if tmp_nodes else None
-                link = tmp_links.pop() if tmp_links else None
-
-                if link and link['label'] == 'BEE':
-                    link['RATE'] = 1
-
-                if parent:
-                    con = (sub['ID'], parent['ID'])
-                    sub_ids.add(sub['ID'])
-                else:
-                    con = (sub['ID'], None)
-                if con in actions:
-                    continue
-
-                action = {
-                    "number": 0 if sub['ID'] == lcid else nodes[sub['ID']],
-                    "number_c": float(link['RATE']) if link else None,
-                    "children": None if sub['ID'] == lcid else [],
-                    "lastnode": 0 if parent else 1,
-                    "name": sub['NAME'],
-                    "pid": parent['ID'] if parent else None,
-                    "id": sub['ID'],
-                    "type": sub['label'],
-                    "attr": 2 if sub['ID'] == lcid else 1,
+            for s_node_id in link_index[p_node['ID']]:
+                snode = nodes[s_node_id]
+                s_node = {
+                    "number": 0,
+                    "number_c": float(links[(p_node['ID'], snode['ID'])]['RATE']),
+                    "children": None,
+                    "lastnode": 0,
+                    "name": snode['NAME'],
+                    "pid": p_node['ID'],
+                    "id": snode['ID'],
+                    "type": snode['label'],
+                    "attr": 1,
                 }
-                actions[con] = action
-                pids[action['pid']] .add(action['id'])
+                if s_node_id == target['ID']:
+                    s_node['attr'] = 2
+                    data.append(s_node)
+                    number_total += 1 * s_node['number_c']
+                    continue
 
-        top = []
-        for sid, pid in actions.keys():
-            if pid is None and sid not in sub_ids:
-                top.append(actions[(sid, pid)])
-            actions[(sid, pid)]['children'] = [actions[i, sid] for i in pids[sid]]
+                if s_node_id in exists_ids:
+                    continue
 
-        flag = False
-        data = []
-        for item in top:
-            if item['number'] < min_rate:
+                children, number = test(nodes, link_index, links, snode, target, deepcopy(exists_ids))
+                s_node['children'] = children
+                s_node['number'] = number
+                number_total += s_node['number_c'] * number
+                data.append(s_node)
+            return data, number_total
+
+        inside = defaultdict(int)
+        outside = {}
+        nodes = {}
+        links = {}
+        link_index = defaultdict(set)
+        for index, path in enumerate(graph, 1):
+            repeat = set()
+            flag = False
+            for item in path['n']:
+                if item['ID'] in repeat:
+                    flag = True
+                    break
+                else:
+                    repeat.add(item['ID'])
+            if flag:
                 continue
 
-            if item['number'] > 0.25 and item['type'] == 'GR':
-                flag = True
-            else:
-                item['lastnode'] = 0
+            outside[path['n'][0]['ID']] = path['n'][0]
+            nodes[path['n'][0]['ID']] = path['n'][0]
+            for item in path['n'][1:]:
+                inside[item['ID']] += 1
+                nodes[item['ID']] = item
 
-            data.append(item)
+            for link in path['r']:
+                links[(link['pid'], link['id'])] = link
+                link_index[link['pid']].add(link['id'])
 
-        if not flag:
-            for item in data:
-                if item['type'] == 'GS':
-                    item['lastnode'] = 1
+            # print(index, [i['name'] for i in path['n']], len(path['n']) - 1)
+        else:
+            target = path['n'][-1]
+
+        # 按照min_ratio筛选最终控制人
+        data = []
+        for key, value in outside.items():
+            if key in inside:
+                continue
+            exists = []
+            # print(value)
+            children, number = test(nodes, link_index, links, value, target, exists)
+            if number < min_rate and value['label'] == 'GR':
+                continue
+            action = {
+                "number": number,
+                "number_c": None,
+                "children": children,
+                "lastnode": 1,
+                "name": value['NAME'],
+                "pid": None,
+                "id": value['ID'],
+                "type": value['label'],
+                "attr": 1,
+            }
+            data.append(action)
         return data
 
     @staticmethod

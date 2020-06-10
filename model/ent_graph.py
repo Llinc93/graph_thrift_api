@@ -71,7 +71,7 @@ class Neo4jClient(object):
         rs.close()
         return info
 
-    def get_final_beneficiary_name(self, entname, usccode, level):
+    def get_final_beneficiary_name(self, lcid, level):
         """
         企业最终控制人接口
         :param entname:
@@ -79,12 +79,9 @@ class Neo4jClient(object):
         :param level:
         :return:
         """
-        if entname:
-            command = "match p = (n) -[r:IPEER|:IPEES|:BEE* 1 .. %s]-> (m:GS {NAME: '%s'}) foreach(n in nodes(p) | set n.label=labels(n)[0]) foreach(link in relationships(p) | set link.ID=id(link)) foreach(link in relationships(p) | set link.label=type(link)) return distinct [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
-            rs = self.graph.run(command % (level, entname))
-        else:
-            command = "match p = (n) -[r:IPEER|:IPEES|:BEE* 1 .. %s]-> (m:GS {UNISCID: '%s'}) foreach(n in nodes(p) | set n.label=labels(n)[0]) foreach(link in relationships(p) | set link.ID=id(link)) foreach(link in relationships(p) | set link.label=type(link)) return distinct [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
-            rs = self.graph.run(command % (level, usccode))
+        command = "match p = (n) -[r:TIPEES* 1 .. %s]-> (m:GS {ID: '%s'}) return distinct " \
+                  "[node in nodes(p) | properties(node)] as n, [link in relationships(p) | properties(link)] as r"
+        rs = self.graph.run(command % (level, lcid))
         info = rs.data()
         rs.close()
         return info
