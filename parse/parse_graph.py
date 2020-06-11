@@ -1,23 +1,10 @@
 import copy
 from collections import defaultdict
 
+import config
+
 
 class Parse(object):
-
-    RELATION_MAP = {
-        'IPEE': '投资',
-        'IPEES': '投资',
-        'IPEER': '投资',
-        'SPE': '任职',
-        'BEE': '分支机构',
-        'WEB': '招投标',
-        'RED': '相同办公地',
-        'LEE': '共同联系方式',
-        'OPEP': '共有专利',
-        'LEL': '诉讼',
-        'IHPEEN': '历史投资',
-        'SHPEN': '历史任职',
-    }
 
     @staticmethod
     def get_relationship_filter(attIds):
@@ -155,10 +142,6 @@ class Parse(object):
             for index in range(len(links)):
                 if nodes[index]['ID'] == 'null' or nodes[index+1]['ID'] == 'null':
                     continue
-
-                # 分支关系，比例为1
-                # if links[index]['label'] == 'BEE':
-                #     links[index]['RATE'] = 1
 
                 if links[index]['ID'] not in tmp_links.keys():
                     tmp_links[links[index]['ID']] = {
@@ -404,10 +387,11 @@ class Parse(object):
             }
         return action
 
-    def get_link_attrib(self, link):
+    @staticmethod
+    def get_link_attrib(link):
         action = {
             'id': link['ID'],
-            'name': self.RELATION_MAP[link['label']],
+            'name': config.RELATION_MAP[link['label']],
             'from': link['pid'],
             'to': link['id'],
             'type': link['label']

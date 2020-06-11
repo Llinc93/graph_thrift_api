@@ -2,7 +2,7 @@ import json
 import time
 import hashlib
 import traceback
-from flask import Blueprint, request
+from flask import Blueprint, request, current_app
 
 from config import CACHE_FLAG
 from model.ent_graph import neo4j_client
@@ -46,12 +46,13 @@ def get_ent_actual_controller():
         res = json.dumps({'data': {'nodes': nodes, 'links': links}, 'success': 0}, ensure_ascii=False)
 
         end = time.time()
-        print(f'getEntActualContoller: {end - start}s')
+        # print(f'getEntActualContoller: {end - start}s')
         if end - start > 10 and CACHE_FLAG:
             redis_client.r.set(name, res)
         return res
     except Exception:
-        traceback.print_exc()
+        exc = traceback.format_exc()
+        current_app.logger.error(f'getEntActualContoller:\t{exc}')
         return json.dumps({'data': '', 'success': 101}, ensure_ascii=False)
 
 
@@ -89,12 +90,13 @@ def get_ent_graph_g():
         res = json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
 
         end = time.time()
-        print(f'getEntGraphG: {end -start}s')
+        # print(f'getEntGraphG: {end -start}s')
         if end - start > 10 and CACHE_FLAG:
             redis_client.r.set(name, res)
         return res
     except Exception:
-        traceback.print_exc()
+        exc = traceback.format_exc()
+        current_app.logger.error(f'getEntGraphG:\t{exc}')
         return json.dumps({'nodes': [], 'success': 102, 'links': []}, ensure_ascii=False)
 
 
@@ -139,12 +141,15 @@ def get_ents_relevance_seek_graph_g():
         res = json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
 
         end = time.time()
-        print(f'getEntsRelevanceSeekGraphG: {end - start}s')
+        # print(f'getEntsRelevanceSeekGraphG: {end - start}s')
         if end - start > 10 and CACHE_FLAG:
             redis_client.r.set(name, res)
         return res
     except json.JSONDecodeError:
+        exc = traceback.format_exc()
+        current_app.logger.warning(f'getEntsRelevanceSeekGraphG:\t{exc}')
         return json.dumps({'nodes': [], 'success': 103, 'links': [], 'msg': '数据量超出限制，请缩小查询条件'}, ensure_ascii=False)
     except Exception:
-        traceback.print_exc()
+        exc = traceback.format_exc()
+        current_app.logger.error(exc)
         return json.dumps({'nodes': [], 'success': 103, 'links': []}, ensure_ascii=False)
