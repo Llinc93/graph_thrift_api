@@ -8,8 +8,8 @@ debug = True
 loglevel = 'debug'
 bind = "0.0.0.0:8140"
 pidfile = "gunicorn.pid"
-accesslog = "logs/access.log"
-errorlog = "logs/debug.log"
+accesslog = "log/access.log"
+errorlog = "log/debug.log"
 daemon = True
 timeout = 1800
 

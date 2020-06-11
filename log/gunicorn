@@ -1,0 +1,18 @@
+/opt/graph_thrift_api/log/debug.log{
+daily
+dateext
+dateformat -%Y-%m-%d
+dateyesterday
+rotate 90
+missingok
+notifempty
+}
+/opt/graph_thrift_api/log/access.log{
+daily
+dateext
+dateformat -%Y-%m-%d
+dateyesterday
+rotate 90
+missingok
+notifempty
+}
