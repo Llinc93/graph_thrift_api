@@ -7,7 +7,7 @@ import config
 
 class RedisClient(object):
     def __init__(self):
-        pool = redis.ConnectionPool(host='localhost', port=6379, db=1, decode_responses=True)
+        pool = redis.ConnectionPool(host=config.CACHE_REDIS_IP, port=config.CACHE_REDIS_PORT, db=config.CACHE_REDIS_DB, decode_responses=True)
         self.r = redis.Redis(connection_pool=pool)
 
 
@@ -16,7 +16,7 @@ class Neo4jClient(object):
     def __init__(self):
         self.graph = Graph(config.NEO4J_URL, username=config.NEO4J_USER, password=config.NEO4J_PASSWD)
 
-        self.pool = redis.ConnectionPool(host='localhost', port=6379, db=0, decode_responses=True)
+        self.pool = redis.ConnectionPool(host=config.REDIS_IP, port=config.REDIS_PORT, db=config.REDIS_DB, decode_responses=True)
         self.r = redis.Redis(connection_pool=self.pool)
 
     def get_level(self, lcid):

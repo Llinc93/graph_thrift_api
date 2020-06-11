@@ -26,5 +26,15 @@ PORT = 8140
 DEBUG = True
 
 
-# 缓存设置
+# 缓存开关：True(开启缓存)  False(关闭缓存)
 CACHE_FLAG = True
+
+
+# REDIS设置
+CACHE_REDIS_IP = 'localhost'
+CACHE_REDIS_PORT = '6379'
+CACHE_REDIS_DB = 1
+
+REDIS_IP = 'localhost'
+REDIS_PORT = '6379'
+REDIS_DB = 0

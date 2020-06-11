@@ -48,7 +48,7 @@ def get_ent_actual_controller():
         end = time.time()
         # print(f'getEntActualContoller: {end - start}s')
         if end - start > 10 and CACHE_FLAG:
-            redis_client.r.set(name, res)
+            redis_client.r.set(name, res, ex=604800)
         return res
     except Exception:
         exc = traceback.format_exc()
@@ -92,7 +92,7 @@ def get_ent_graph_g():
         end = time.time()
         # print(f'getEntGraphG: {end -start}s')
         if end - start > 10 and CACHE_FLAG:
-            redis_client.r.set(name, res)
+            redis_client.r.set(name, res, ex=604800)
         return res
     except Exception:
         exc = traceback.format_exc()
@@ -143,7 +143,7 @@ def get_ents_relevance_seek_graph_g():
         end = time.time()
         # print(f'getEntsRelevanceSeekGraphG: {end - start}s')
         if end - start > 10 and CACHE_FLAG:
-            redis_client.r.set(name, res)
+            redis_client.r.set(name, res, ex=604800)
         return res
     except json.JSONDecodeError:
         exc = traceback.format_exc()
