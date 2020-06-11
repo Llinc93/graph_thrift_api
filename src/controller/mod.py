@@ -137,7 +137,7 @@ def get_ents_relevance_seek_graph_g():
         if not flag:
             return json.dumps({'nodes': [], 'success': 0, 'links': []}, ensure_ascii=False)
 
-        nodes, links = parse.ent_relevance_seek_graph(data, int(level), relationship_filter)
+        nodes, links = parse.ent_relevance_seek_graph(data, level)
         res = json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
 
         end = time.time()
