@@ -2,7 +2,11 @@ certifi==2019.11.28
 chardet==3.0.4
 Click==7.0
 colorama==0.4.3
+ConcurrentLogHandler==0.9.1
 Flask==1.1.1
+gevent==1.4.0
+greenlet==0.4.15
+gunicorn==20.0.4
 idna==2.8
 itsdangerous==1.1.0
 Jinja2==2.11.1
