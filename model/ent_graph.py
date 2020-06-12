@@ -45,11 +45,11 @@ class Neo4jClient(object):
         """
         if entname:
             command = "match (n:GS {NAME: '%s'}) return n.ID as lcid"
-            current_app.logger.info(command % entname)
+            # current_app.logger.info(command % entname)
             rs = self.graph.run(command % entname).data()
         else:
             command = "match (n:GS {UNISCID: '%s'}) return n.ID as lcid"
-            current_app.logger.info(command % usccode)
+            # current_app.logger.info(command % usccode)
             rs = self.graph.run(command % usccode).data()
         lcid = rs[0] if rs else {'lcid': ''}
         return lcid['lcid']
@@ -65,12 +65,12 @@ class Neo4jClient(object):
         if entname:
             command = "match p = (n) -[r:IPEER|:IPEES|:BEE* 1 .. %s]-> (m:GS {NAME: '%s'}) return " \
                       "distinct [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
-            current_app.logger.info(command % (level, entname))
+            # current_app.logger.info(command % (level, entname))
             rs = self.graph.run(command % (level, entname))
         else:
             command = "match p = (n) -[r:IPEER|:IPEES|:BEE* 1 .. %s]-> (m:GS {UNISCID: '%s'}) return " \
                       "distinct [n in nodes(p) | properties(n)] as n, [r in relationships(p) | properties(r)] as r"
-            current_app.logger.info(command % (level, usccode))
+            # current_app.logger.info(command % (level, usccode))
             rs = self.graph.run(command % (level, usccode))
         
         info = rs.data()
@@ -96,7 +96,7 @@ class Neo4jClient(object):
         flag = True
         command = "match (n:%s {%s: '%s'}) call apoc.path.expand(n, '%s', '', 1, %s) yield path return " \
                   "[n in nodes(path) | properties(n)] as n, [r in relationships(path) | properties(r)] as r"
-        current_app.logger.info(command % (node_type, node_attribute, entname, relationship_filter, level))
+        # current_app.logger.info(command % (node_type, node_attribute, entname, relationship_filter, level))
         rs = self.graph.run(command % (node_type, node_attribute, entname, relationship_filter, level))
         info = rs.data()
         if not info:
@@ -117,7 +117,7 @@ class Neo4jClient(object):
                   "WITH p, collect(end) AS endNodes " \
                   "CALL apoc.path.expandConfig(p, {relationshipFilter: '%s', minLevel: 1, maxLevel: %s, " \
                   "endNodes: endNodes}) YIELD path RETURN nodes(path) as n, relationships(path) as r"
-        current_app.logger.info(command % (entnames[0], entnames[1:], relationship_filter, level))
+        # current_app.logger.info(command % (entnames[0], entnames[1:], relationship_filter, level))
         rs = self.graph.run(command % (entnames[0], entnames[1:], relationship_filter, level))
         info = rs.data()
         if not info:

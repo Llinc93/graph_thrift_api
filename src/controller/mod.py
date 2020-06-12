@@ -12,6 +12,11 @@ from parse.parse_graph import parse
 MOD = Blueprint('mod', __name__)
 
 
+@MOD.after_request
+def write_log(response):
+    current_app.logger.info(f"{request.headers.get('X-Real-Ip', request.remote_addr)}\t{request.url}\t{request.method}\t{response.status_code}")
+    return response
+
 @MOD.route('/getEntActualContoller', methods=['POST'])
 def get_ent_actual_controller():
     """
