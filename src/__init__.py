@@ -26,8 +26,8 @@ def create_app():
             },
             "access_file": {
                 "class": "logging.handlers.ConcurrentRotatingFileHandler",
-                "maxBytes": 1024,  # 打日志的大小，单位字节，这种写法是1M
-                "backupCount": 1,  # 备份多少份，经过测试，最少也要写1，不然控制不住大小
+                "maxBytes": 1024 * 1024 * 1024,  # 打日志的大小，单位字节，这种写法是1G
+                "backupCount": 1,  # 保留日志数量
                 "encoding": "utf-8",
                 "level": "INFO",
                 "formatter": "default",  # 对应下面的键

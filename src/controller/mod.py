@@ -23,6 +23,7 @@ def get_ent_actual_controller():
     企业实际控股人信息
     :return:
     """
+    ent_name = 'null'
     try:
         start = time.time()
         ent_name = request.form.get('entName')
@@ -57,7 +58,7 @@ def get_ent_actual_controller():
         return res
     except Exception:
         exc = traceback.format_exc()
-        current_app.logger.error(f'getEntActualContoller:\t{exc}')
+        current_app.logger.error(f'getEntActualContoller --- {ent_name}:\t{exc}')
         return json.dumps({'data': '', 'success': 101}, ensure_ascii=False)
 
 
@@ -67,6 +68,7 @@ def get_ent_graph_g():
     企业图谱
     :return:
     """
+    keyword = 'null'
     try:
         keyword = request.form['keyword']
         att_ids = request.form['attIds']
@@ -101,7 +103,7 @@ def get_ent_graph_g():
         return res
     except Exception:
         exc = traceback.format_exc()
-        current_app.logger.error(f'getEntGraphG:\t{exc}')
+        current_app.logger.error(f'getEntGraphG --- {keyword}:\t{exc}')
         return json.dumps({'nodes': [], 'success': 102, 'links': []}, ensure_ascii=False)
 
 
@@ -118,6 +120,7 @@ def get_ents_relevance_seek_graph_g():
      - attIds
      - level
     """
+    ent_name = 'null'
     try:
         start = time.time()
 
@@ -152,9 +155,9 @@ def get_ents_relevance_seek_graph_g():
         return res
     except json.JSONDecodeError:
         exc = traceback.format_exc()
-        current_app.logger.warning(f'getEntsRelevanceSeekGraphG:\t{exc}')
+        current_app.logger.warning(f'getEntsRelevanceSeekGraphG --- {ent_name}:\t{exc}')
         return json.dumps({'nodes': [], 'success': 103, 'links': [], 'msg': '数据量超出限制，请缩小查询条件'}, ensure_ascii=False)
     except Exception:
         exc = traceback.format_exc()
-        current_app.logger.error(exc)
+        current_app.logger.error(f'getEntsRelevanceSeekGraphG --- {ent_name}:\t{exc}')
         return json.dumps({'nodes': [], 'success': 103, 'links': []}, ensure_ascii=False)
