@@ -17,6 +17,7 @@ def write_log(response):
     current_app.logger.info(f"{request.headers.get('X-Real-Ip', request.remote_addr)}\t{request.url}\t{request.method}\t{response.status_code}")
     return response
 
+
 @MOD.route('/getEntActualContoller', methods=['POST'])
 def get_ent_actual_controller():
     """
@@ -52,7 +53,6 @@ def get_ent_actual_controller():
         res = json.dumps({'data': {'nodes': nodes, 'links': links}, 'success': 0}, ensure_ascii=False)
 
         end = time.time()
-        # print(f'getEntActualContoller: {end - start}s')
         if end - start > 10 and CACHE_FLAG:
             redis_client.r.set(name, res, ex=604800)
         return res
@@ -89,7 +89,8 @@ def get_ent_graph_g():
         if not relationship_filter:
             return json.dumps({'nodes': [], 'success': 0, 'links': []}, ensure_ascii=False)
 
-        data, flag = neo4j_client.get_ent_graph_g(keyword, level + 1, node_type, relationship_filter)
+        # data, flag = neo4j_client.get_ent_graph_g(keyword, level + 1, node_type, relationship_filter)
+        data, flag = neo4j_client.get_ent_graph_g_v2(keyword, level + 1, node_type, relationship_filter)
         if not flag:
             return json.dumps({'nodes': [], 'success': 0, 'links': []}, ensure_ascii=False)
 
@@ -137,19 +138,18 @@ def get_ents_relevance_seek_graph_g():
             cache = redis_client.r.get(name)
             return cache
 
-        relationship_filter = parse.get_relationship_filter(att_ids)
+        relationship_filter = parse.get_relationship_filter_v2(att_ids)
         if not relationship_filter:
             return json.dumps({'nodes': [], 'success': 0, 'links': []}, ensure_ascii=False)
 
-        data, flag = neo4j_client.get_ent_relevance_seek_graph(names, level, relationship_filter)
+        data, flag = neo4j_client.get_ent_relevance_seek_graph_v2(names, level, relationship_filter)
         if not flag:
             return json.dumps({'nodes': [], 'success': 0, 'links': []}, ensure_ascii=False)
 
-        nodes, links = parse.ent_relevance_seek_graph(data)
+        nodes, links = parse.ent_relevance_seek_graph_v2(data, att_ids)
         res = json.dumps({'nodes': nodes, 'success': 0, 'links': links}, ensure_ascii=False)
 
         end = time.time()
-        # print(f'getEntsRelevanceSeekGraphG: {end - start}s')
         if end - start > 10 and CACHE_FLAG:
             redis_client.r.set(name, res, ex=604800)
         return res

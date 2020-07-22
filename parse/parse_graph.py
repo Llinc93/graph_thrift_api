@@ -31,12 +31,12 @@ class Parse(object):
         'R118': 'LEL'     # 诉讼关联企业
         'R119': 'LEL',     # 人员关联专利
         'R120': '',     # 专利关联人员
-        'R139': '',     # 历史企业股东
-        'R140': '',      # 历史企业对外投资
-        'R141': '',     # 历史自然人股东
-        'R142': ''},     # 历史自然人对外投资
-        'R143': '',     # 历史公司管理人员
-        'R144': '',     # 历史管理人员其他公司任职
+        'R139': 'IHPEENS',     # 历史企业股东
+        'R140': 'IHPEENS',      # 历史企业对外投资
+        'R141': 'IHPEENR',     # 历史自然人股东
+        'R142': 'IHPEENR',     # 历史自然人对外投资
+        'R143': 'SHPEN',     # 历史公司管理人员
+        'R144': 'SHPEN',     # 历史管理人员其他公司任职
         :param attIds:
         :return:
         """
@@ -114,6 +114,117 @@ class Parse(object):
             relationship_filter.append('<LEL')
         elif 'R118' in attIds:
             relationship_filter.append('LEL>')
+
+        # 历史企业股东
+        if 'R139' in attIds or 'R140' in attIds:
+            relationship_filter.append('IHPEENS')
+        elif 'R139' in attIds:
+            relationship_filter.append('<IHPEENS')
+        elif 'R140' in attIds:
+            relationship_filter.append('IHPEENS>')
+
+        # 历史自然人股东
+        if 'R141' in attIds or 'R142' in attIds:
+            relationship_filter.append('IHPEENR')
+        elif 'R141' in attIds:
+            relationship_filter.append('<IHPEENR')
+        elif 'R142' in attIds:
+            relationship_filter.append('IHPEENR>')
+
+        # 历史任职
+        if 'R143' in attIds or 'R144' in attIds:
+            relationship_filter.append('SHPEN')
+        elif 'R143' in attIds:
+            relationship_filter.append('<SHPEN')
+        elif 'R144' in attIds:
+            relationship_filter.append('SHPEN>')
+
+        return '|'.join(relationship_filter)
+
+    @staticmethod
+    def get_relationship_filter_v2(attIds):
+        """
+        根据attIds确定relationshipFilter
+
+        'R101': 'IPEES>',   # 企业对外投资
+        'R102': '<IPEES',   # 企业股东
+        'R103': 'IPEER>',   # 自然人对外投资
+        'R104': '<IPEER',   # 自然人股东
+        'R105': 'SPE>',    # 管理人员其他公司任职
+        'R106': '<SPE',    # 公司管理人员
+        'R107': 'BEE',    # 分支机构
+        'R108': 'BRR',    # 总部
+        'R109': 'WEB',    # 企业关联中标
+        'R110': 'WEB',    # 中标关联企业
+        'R111': 'RED',    # 企业关联注册地
+        'R112': 'RED',    # 注册地关联企业
+        'R113': 'LEE',     # 企业关联邮箱 / 电话
+        'R114': 'LEE',     # 邮箱 / 电话关联企业
+        'R115': 'OPEP',     # 企业关联专利
+        'R116': 'OPEP',     # 专利关联企业
+        'R117': 'LEL',     # 诉讼关联企业
+        'R118': 'LEL'     # 诉讼关联企业
+        'R119': 'LEL',     # 人员关联专利
+        'R120': '',     # 专利关联人员
+        'R139': 'IHPEENS',     # 历史企业股东
+        'R140': 'IHPEENS',      # 历史企业对外投资
+        'R141': 'IHPEENR',     # 历史自然人股东
+        'R142': 'IHPEENR',     # 历史自然人对外投资
+        'R143': 'SHPEN',     # 历史公司管理人员
+        'R144': 'SHPEN',     # 历史管理人员其他公司任职
+        :param attIds:
+        :return:
+        """
+        relationship_filter = []
+        attIds = attIds.split(';')
+
+        # 企业投资
+        if 'R101' in attIds or 'R102' in attIds:
+            relationship_filter.append(':IPEES')
+
+        # 自然人投资
+        if 'R103' in attIds or 'R104' in attIds:
+            relationship_filter.append(':IPEER')
+
+        # 管理人员
+        if 'R105' in attIds or 'R106' in attIds:
+            relationship_filter.append(':SPE')
+
+        # 分支
+        if 'R107' in attIds or 'R108' in attIds:
+            relationship_filter.append(':BEE')
+
+        # 中标
+        if 'R109' in attIds or 'R110' in attIds:
+            relationship_filter.append(':WEB')
+
+        # 办公地
+        if 'R111' in attIds or 'R112' in attIds:
+            relationship_filter.append(':RED')
+
+        # 相同联系方式
+        if 'R113' in attIds or 'R114' in attIds:
+            relationship_filter.append(':LEE')
+
+        # 专利
+        if 'R115' in attIds or 'R116' in attIds:
+            relationship_filter.append(':OPEP')
+
+        # 诉讼
+        if 'R117' in attIds or 'R118' in attIds:
+            relationship_filter.append(':LEL')
+
+        # 历史企业股东
+        if 'R139' in attIds or 'R140' in attIds:
+            relationship_filter.append(':IHPEENS')
+
+        # 历史自然人股东
+        if 'R141' in attIds or 'R142' in attIds:
+            relationship_filter.append(':IHPEENR')
+
+        # 历史任职
+        if 'R143' in attIds or 'R144' in attIds:
+            relationship_filter.append(':SHPEN')
 
         return '|'.join(relationship_filter)
 
@@ -348,43 +459,22 @@ class Parse(object):
         :param extend_numbers:
         :return:
         """
-        action = {'id': node['ID'], 'name': node['NAME'], 'type': node['label']}
-        if node['label'] in ['PP', 'LL', 'DD', 'EE', 'TT', 'GR', 'GB']:
-            action['attibuteMap'] = {'extendNumber': len(extend_numbers.get(node['ID'], []))}
-        else:
-            action['attibuteMap'] = {
-                'extendNumber': len(extend_numbers.get(node['ID'], [])),
-                'industry_class': node['INDUSTRY'],
-                'business_age': node['ESDATE'][:4],
-                'province': node['PROVINCE'],
-                'registered_capital': node['REGCAP'],
-                'regcapcur': node['RECCAPCUR'],
-                'business_status': node['ENTSTATUS'],
+        action = {
+            'id': node['ID'],
+            'name': node['NAME'],
+            'type': node['label'],
+            'attibuteMap': {
+                'extendNumber': len(extend_numbers.get(node['ID'], []))
             }
-        return action
+        }
 
-    @staticmethod
-    def get_node_attrib2(node):
-        """
-        构造attrib
-        :param node:
-        :return:
-        """
-        action = {'id': node['ID'], 'name': node['NAME'], 'type': node['label']}
-        if node['label'] in ['PP', 'LL', 'DD', 'EE', 'TT', 'GR', 'GB']:
-            action['attibuteMap'] = {
-                    'extendNumber': node['extendNumber'][0]['value'][0] if node.get('extendNumber') else 0
-            }
-        else:
-            action['attibuteMap'] = {
-                'extendNumber': node['extendNumber'][0]['value'][0] if node.get('extendNumber') else 0,
-                'industry_class': node['INDUSTRY'],
-                'business_age': node['ESDATE'][:4],
-                'province': node['PROVINCE'],
-                'registered_capital': node['REGCAP'],
-                'regcapcur': node['RECCAPCUR'],
-                'business_status': node['ENTSTATUS'],
-            }
+        if node['label'] == 'GS':
+            action['attibuteMap']['industry_class'] = node['INDUSTRY']
+            action['attibuteMap']['business_age'] = node['ESDATE'][:4]
+            action['attibuteMap']['province'] = node['PROVINCE']
+            action['attibuteMap']['registered_capital'] = node['REGCAP']
+            action['attibuteMap']['regcapcur'] = node['RECCAPCUR']
+            action['attibuteMap']['business_status'] = node['ENTSTATUS']
         return action
 
     @staticmethod
@@ -401,16 +491,20 @@ class Parse(object):
             action['attibuteMap'] = {
                 'conratio': link['RATE'],
                 'holding_mode': link['RATE_TYPE'],
-                'type': 'IPEE'
             }
+            action['type'] = 'IPEE'
         elif link['label'] == 'SPE':
             action['attibuteMap'] = {'position': link['POSITION']}
         elif link['label'] in ['LEET', 'LEEE']:
             action['attibuteMap'] = {'domain': link['DOMAIN']}
-        elif link['label'] == 'IHPEEN':
-            pass
+        elif link['label'] in ['IHPEENR', 'IHPEENS']:
+            action['attibuteMap'] = {
+                'holding_mode': link['RATE_TYPE'],
+                'HIS_DATE': link['HIS_DATE'],
+            }
+            action['type'] = 'IHPEEN'
         elif link['label'] == 'SHPEN':
-            pass
+            action['attibuteMap'] = {'HIS_DATE': link['HIS_DATE']}
         else:
             action['attibuteMap'] = {}
         return action
@@ -530,9 +624,157 @@ class Parse(object):
 
             for node in tmp_nodes:
                 if node['ID'] not in nodes_set:
-                    node = self.get_node_attrib2(node)
+                    # node = self.get_node_attrib2(node)
+                    node = self.get_node_attrib(node, {})
                     nodes.append(node)
                     nodes_set.add(node['id'])
+
+        return nodes, links
+
+    @staticmethod
+    def get_direct(attIds):
+        """
+        根据attIds确定relationshipFilter
+
+        'R101': 'IPEES>',   # 企业对外投资
+        'R102': '<IPEES',   # 企业股东
+        'R103': 'IPEER>',   # 自然人对外投资
+        'R104': '<IPEER',   # 自然人股东
+        'R105': 'SPE>',    # 管理人员其他公司任职
+        'R106': '<SPE',    # 公司管理人员
+        'R107': 'BEE',    # 分支机构
+        'R108': 'BRR',    # 总部
+        'R109': 'WEB',    # 企业关联中标
+        'R110': 'WEB',    # 中标关联企业
+        'R111': 'RED',    # 企业关联注册地
+        'R112': 'RED',    # 注册地关联企业
+        'R113': 'LEE',     # 企业关联邮箱 / 电话
+        'R114': 'LEE',     # 邮箱 / 电话关联企业
+        'R115': 'OPEP',     # 企业关联专利
+        'R116': 'OPEP',     # 专利关联企业
+        'R117': 'LEL',     # 诉讼关联企业
+        'R118': 'LEL'     # 诉讼关联企业
+        'R119': 'LEL',     # 人员关联专利
+        'R120': '',     # 专利关联人员
+        'R139': 'IHPEENS',     # 历史企业股东
+        'R140': 'IHPEENS',      # 历史企业对外投资
+        'R141': 'IHPEENR',     # 历史自然人股东
+        'R142': 'IHPEENR',     # 历史自然人对外投资
+        'R143': 'SHPEN',     # 历史公司管理人员
+        'R144': 'SHPEN',     # 历史管理人员其他公司任职
+        :param attIds:
+        :return:
+        """
+        attIds = attIds.split(';')
+        link_degree = {}
+
+        # 企业投资
+        if 'R101' in attIds and 'R102' not in attIds:
+            link_degree['IPEES'] = 'out'
+        elif 'R101' not in attIds and 'R102' in attIds:
+            link_degree['IPEES'] = 'in'
+
+        # 自然人投资
+        if 'R103' in attIds and 'R104' not in attIds:
+            link_degree['IPEER'] = 'out'
+        elif 'R103' not in attIds and 'R104' in attIds:
+            link_degree['IPEER'] = 'in'
+
+        # 管理人员
+        if 'R105' in attIds and 'R106' not in attIds:
+            link_degree['SPE'] = 'out'
+        elif 'R105' not in attIds and 'R106' in attIds:
+            link_degree['SPE'] = 'in'
+
+        # 分支
+        if 'R107' in attIds and 'R108' not in attIds:
+            link_degree['SPE'] = 'out'
+        elif 'R107' not in attIds and 'R108' in attIds:
+            link_degree['SPE'] = 'in'
+
+        # 中标
+        if 'R109' in attIds and 'R110' not in attIds:
+            link_degree['SPE'] = 'out'
+        elif 'R109' not in attIds and 'R110' in attIds:
+            link_degree['SPE'] = 'in'
+
+        # 办公地
+        if 'R111' in attIds and 'R112' not in attIds:
+            link_degree['SPE'] = 'out'
+        elif 'R111' not in attIds and 'R112' in attIds:
+            link_degree['SPE'] = 'in'
+
+        # 相同联系方式
+        if 'R113' in attIds and 'R114' not in attIds:
+            link_degree['SPE'] = 'in'
+        elif 'R113' not in attIds and 'R114' in attIds:
+            link_degree['SPE'] = 'out'
+
+        # 专利
+        if 'R115' in attIds or 'R116' not in attIds:
+            link_degree['SPE'] = 'in'
+        elif 'R115' not in attIds or 'R116' in attIds:
+            link_degree['SPE'] = 'out'
+
+        # 诉讼
+        if 'R117' in attIds or 'R118' not in attIds:
+            link_degree['SPE'] = 'in'
+        elif 'R117' not in attIds or 'R118' in attIds:
+            link_degree['SPE'] = 'out'
+
+        # 历史企业股东
+        if 'R139' in attIds or 'R140' not in attIds:
+            link_degree['SPE'] = 'in'
+        elif 'R139' not in attIds or 'R140' in attIds:
+            link_degree['SPE'] = 'out'
+
+        # 历史自然人股东
+        if 'R141' in attIds or 'R142' not in attIds:
+            link_degree['SPE'] = 'in'
+        elif 'R141' not in attIds or 'R142' in attIds:
+            link_degree['SPE'] = 'out'
+
+        # 历史任职
+        if 'R143' in attIds or 'R144' not in attIds:
+            link_degree['SPE'] = 'in'
+        elif 'R143' not in attIds or 'R144' in attIds:
+            link_degree['SPE'] = 'out'
+
+        return link_degree
+
+    def ent_relevance_seek_graph_v2(self, graph, att_ids):
+        nodes = []
+        links = []
+        nodes_set = set()
+        links_set = set()
+        link_direct = self.get_direct(att_ids)
+
+        for path in graph:
+            previous = path['n'][0]
+            tmp_nodes = [previous]
+            tmp_links = []
+            for next, link in zip(path['n'][1:], path['r']):
+                if link['label'] in link_direct:
+                    if previous['ID'] == link['pid'] and next['ID'] == link['id']:
+                        direct = 'in'
+                    else:
+                        direct = 'out'
+                    if direct != link_direct[link['label']]:
+                        break
+                tmp_nodes.append(next)
+                tmp_links.append(link)
+                previous = next
+            else:
+                for node in tmp_nodes:
+                    if node['ID'] not in nodes_set:
+                        node = self.get_node_attrib(node, {})
+                        nodes.append(node)
+                        nodes_set.add(node['ID'])
+                for link in tmp_links:
+                    if link['ID'] not in links_set:
+                        link = self.get_link_attrib(link)
+                        links.append(link)
+                        links_set.add(link['ID'])
 
         return nodes, links
 

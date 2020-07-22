@@ -104,6 +104,33 @@ class Neo4jClient(object):
         rs.close()
         return info, flag
 
+    def get_ent_graph_g_v2(self, entname, level, node_type, relationship_filter):
+        """
+        企业族谱
+        :param entname:
+        :param level:
+        :param node_type:
+        :param relationship_filter:
+        :return:
+        """
+        if node_type != 'GS':
+            node_attribute = 'ID'
+        else:
+            if len(entname) == 32 and re.findall('[a-z0-9]', entname):
+                node_attribute = 'ID'
+            else:
+                node_attribute = 'NAME'
+        flag = True
+        command = "MATCH (p:GS {NAME: '%s'}) " \
+                  "CALL apoc.path.expandConfig(p, {relationshipFilter: '%s', minLevel: 1, maxLevel: %s, " \
+                  "bfs: false}) YIELD path RETURN nodes(path) as n, relationships(path) as r limit 10000"
+        rs = self.graph.run(command % (node_type, node_attribute, entname, relationship_filter, level))
+        info = rs.data()
+        if not info:
+            flag = False
+        rs.close()
+        return info, flag
+
     def get_ent_relevance_seek_graph(self, entnames, level, relationship_filter):
         """
         关联探寻
@@ -117,7 +144,25 @@ class Neo4jClient(object):
                   "WITH p, collect(end) AS endNodes " \
                   "CALL apoc.path.expandConfig(p, {relationshipFilter: '%s', minLevel: 1, maxLevel: %s, " \
                   "endNodes: endNodes}) YIELD path RETURN nodes(path) as n, relationships(path) as r"
-        # current_app.logger.info(command % (entnames[0], entnames[1:], relationship_filter, level))
+        rs = self.graph.run(command % (entnames[0], entnames[1:], relationship_filter, level))
+        info = rs.data()
+        if not info:
+            flag = False
+        rs.close()
+        return info, flag
+
+    def get_ent_relevance_seek_graph_v2(self, entnames, level, relationship_filter):
+        """
+        关联探寻
+        :param entnames:
+        :param level:
+        :param relationship_filter:
+        :return:
+        """
+        flag = True
+        command = "MATCH (p:GS {NAME: '%s'}) MATCH (end:GS) WHERE end.NAME IN %s " \
+                  "match path = allShortestPaths((n)-[r%s* .. %s]-(m)) " \
+                  "RETURN nodes(path) as n, relationships(path) as r"
         rs = self.graph.run(command % (entnames[0], entnames[1:], relationship_filter, level))
         info = rs.data()
         if not info:
