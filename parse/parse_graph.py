@@ -688,57 +688,57 @@ class Parse(object):
 
         # 分支
         if 'R107' in attIds and 'R108' not in attIds:
-            link_degree['SPE'] = 'out'
+            link_degree['BEE'] = 'out'
         elif 'R107' not in attIds and 'R108' in attIds:
-            link_degree['SPE'] = 'in'
+            link_degree['BEE'] = 'in'
 
         # 中标
         if 'R109' in attIds and 'R110' not in attIds:
-            link_degree['SPE'] = 'out'
+            link_degree['WEB'] = 'out'
         elif 'R109' not in attIds and 'R110' in attIds:
-            link_degree['SPE'] = 'in'
+            link_degree['WEB'] = 'in'
 
         # 办公地
         if 'R111' in attIds and 'R112' not in attIds:
-            link_degree['SPE'] = 'out'
+            link_degree['RED'] = 'out'
         elif 'R111' not in attIds and 'R112' in attIds:
-            link_degree['SPE'] = 'in'
+            link_degree['RED'] = 'in'
 
         # 相同联系方式
         if 'R113' in attIds and 'R114' not in attIds:
-            link_degree['SPE'] = 'in'
+            link_degree['LEE'] = 'in'
         elif 'R113' not in attIds and 'R114' in attIds:
-            link_degree['SPE'] = 'out'
+            link_degree['LEE'] = 'out'
 
         # 专利
-        if 'R115' in attIds or 'R116' not in attIds:
-            link_degree['SPE'] = 'in'
-        elif 'R115' not in attIds or 'R116' in attIds:
-            link_degree['SPE'] = 'out'
+        if 'R115' in attIds and 'R116' not in attIds:
+            link_degree['OPEP'] = 'in'
+        elif 'R115' not in attIds and 'R116' in attIds:
+            link_degree['OPEP'] = 'out'
 
         # 诉讼
-        if 'R117' in attIds or 'R118' not in attIds:
-            link_degree['SPE'] = 'in'
-        elif 'R117' not in attIds or 'R118' in attIds:
-            link_degree['SPE'] = 'out'
+        if 'R117' in attIds and 'R118' not in attIds:
+            link_degree['LEL'] = 'in'
+        elif 'R117' not in attIds and 'R118' in attIds:
+            link_degree['LEL'] = 'out'
 
         # 历史企业股东
-        if 'R139' in attIds or 'R140' not in attIds:
-            link_degree['SPE'] = 'in'
-        elif 'R139' not in attIds or 'R140' in attIds:
-            link_degree['SPE'] = 'out'
+        if 'R139' in attIds and 'R140' not in attIds:
+            link_degree['IHPEENS'] = 'in'
+        elif 'R139' not in attIds and 'R140' in attIds:
+            link_degree['IHPEENS'] = 'out'
 
         # 历史自然人股东
-        if 'R141' in attIds or 'R142' not in attIds:
-            link_degree['SPE'] = 'in'
-        elif 'R141' not in attIds or 'R142' in attIds:
-            link_degree['SPE'] = 'out'
+        if 'R141' in attIds and 'R142' not in attIds:
+            link_degree['IHPEENR'] = 'in'
+        elif 'R141' not in attIds and 'R142' in attIds:
+            link_degree['IHPEENR'] = 'out'
 
         # 历史任职
-        if 'R143' in attIds or 'R144' not in attIds:
-            link_degree['SPE'] = 'in'
-        elif 'R143' not in attIds or 'R144' in attIds:
-            link_degree['SPE'] = 'out'
+        if 'R143' in attIds and 'R144' not in attIds:
+            link_degree['SHPEN'] = 'in'
+        elif 'R143' not in attIds and 'R144' in attIds:
+            link_degree['SHPEN'] = 'out'
 
         return link_degree
 
@@ -769,12 +769,12 @@ class Parse(object):
                     if node['ID'] not in nodes_set:
                         node = self.get_node_attrib(node, {})
                         nodes.append(node)
-                        nodes_set.add(node['ID'])
+                        nodes_set.add(node['id'])
                 for link in tmp_links:
                     if link['ID'] not in links_set:
                         link = self.get_link_attrib(link)
                         links.append(link)
-                        links_set.add(link['ID'])
+                        links_set.add(link['id'])
 
         return nodes, links
 

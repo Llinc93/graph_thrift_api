@@ -165,8 +165,8 @@ class Neo4jClient(object):
         """
         try:
             flag = True
-            command = "MATCH (p:GS {NAME: '%s'}) MATCH (end:GS) WHERE end.NAME IN %s " \
-                      "match path = allShortestPaths((n)-[r%s* .. %s]-(m)) " \
+            command = "MATCH (start:GS {NAME: '%s'}) MATCH (end:GS) WHERE end.NAME IN %s " \
+                      "match path = allShortestPaths((start)-[r%s* .. %s]-(end)) " \
                       "RETURN nodes(path) as n, relationships(path) as r"
             rs = self.graph.run(command % (entnames[0], entnames[1:], relationship_filter, level))
             info = rs.data()

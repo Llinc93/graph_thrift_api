@@ -27,18 +27,7 @@ class MyThread(threading.Thread):
         return self.data, self.flag
 
     def stop(self):
-        tid = threading.get_ident()
-        exctype = SystemExit
-        if not inspect.isclass(exctype):
-            raise TypeError("Only types can be raised (not instances)")
-        res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, ctypes.py_object(exctype))
-        if res == 0:
-            raise ValueError("invalid thread id")
-        elif res != 1:
-            # """if it returns a number greater than one, you're in trouble,
-            # and you should call it again with exc=NULL to revert the effect"""
-            ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, 0)
-            raise SystemError("PyThreadState_SetAsyncExc failed")
+        raise ValueError
 
 
 def run(names, level, relationship_filter, relationship_filter_short):
@@ -46,13 +35,14 @@ def run(names, level, relationship_filter, relationship_filter_short):
     task_short = MyThread(names, level, relationship_filter_short, flag=False)
     task.start()
     task_short.start()
+    task.join(20)
     try:
-        task.join(20)
-        task_data, task_flag = task.get()
-    except Exception:
-        task_data, task_flag = '', False
         if task.isAlive():
             task.stop()
+        else:
+            task_data, task_flag = task.get()
+    except Exception:
+        task_data, task_flag = '', False
 
     task_short.join()
     task_short_data, task_short_flag = task_short.get()
