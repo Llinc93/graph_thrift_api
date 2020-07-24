@@ -139,16 +139,20 @@ class Neo4jClient(object):
         :param relationship_filter:
         :return:
         """
-        flag = True
-        command = "MATCH (p:GS {NAME: '%s'}) MATCH (end:GS) WHERE end.NAME IN %s " \
-                  "WITH p, collect(end) AS endNodes " \
-                  "CALL apoc.path.expandConfig(p, {relationshipFilter: '%s', minLevel: 1, maxLevel: %s, " \
-                  "endNodes: endNodes}) YIELD path RETURN nodes(path) as n, relationships(path) as r"
-        rs = self.graph.run(command % (entnames[0], entnames[1:], relationship_filter, level))
-        info = rs.data()
-        if not info:
+        try:
+            flag = True
+            command = "MATCH (p:GS {NAME: '%s'}) MATCH (end:GS) WHERE end.NAME IN %s " \
+                      "WITH p, collect(end) AS endNodes " \
+                      "CALL apoc.path.expandConfig(p, {relationshipFilter: '%s', minLevel: 1, maxLevel: %s, " \
+                      "endNodes: endNodes}) YIELD path RETURN nodes(path) as n, relationships(path) as r"
+            rs = self.graph.run(command % (entnames[0], entnames[1:], relationship_filter, level))
+            info = rs.data()
+            if not info:
+                flag = False
+            rs.close()
+        except Exception:
+            info = ''
             flag = False
-        rs.close()
         return info, flag
 
     def get_ent_relevance_seek_graph_v2(self, entnames, level, relationship_filter):
@@ -159,15 +163,19 @@ class Neo4jClient(object):
         :param relationship_filter:
         :return:
         """
-        flag = True
-        command = "MATCH (p:GS {NAME: '%s'}) MATCH (end:GS) WHERE end.NAME IN %s " \
-                  "match path = allShortestPaths((n)-[r%s* .. %s]-(m)) " \
-                  "RETURN nodes(path) as n, relationships(path) as r"
-        rs = self.graph.run(command % (entnames[0], entnames[1:], relationship_filter, level))
-        info = rs.data()
-        if not info:
+        try:
+            flag = True
+            command = "MATCH (p:GS {NAME: '%s'}) MATCH (end:GS) WHERE end.NAME IN %s " \
+                      "match path = allShortestPaths((n)-[r%s* .. %s]-(m)) " \
+                      "RETURN nodes(path) as n, relationships(path) as r"
+            rs = self.graph.run(command % (entnames[0], entnames[1:], relationship_filter, level))
+            info = rs.data()
+            if not info:
+                flag = False
+            rs.close()
+        except Exception:
+            info = ''
             flag = False
-        rs.close()
         return info, flag
 
 

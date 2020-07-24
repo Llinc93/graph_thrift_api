@@ -1,5 +1,5 @@
 # neo4j
-NEO4J_URL = 'http://localhost:7474'
+NEO4J_URL = 'http://118.192.47.57:7474'
 NEO4J_USER = 'neo4j'
 NEO4J_PASSWD = '123456'
 
