@@ -121,7 +121,7 @@ class Neo4jClient(object):
             else:
                 node_attribute = 'NAME'
         flag = True
-        command = "MATCH (p:GS {NAME: '%s'}) " \
+        command = "MATCH (p:%s {%s: '%s'}) " \
                   "CALL apoc.path.expandConfig(p, {relationshipFilter: '%s', minLevel: 1, maxLevel: %s, " \
                   "bfs: false}) YIELD path RETURN nodes(path) as n, relationships(path) as r limit 10000"
         rs = self.graph.run(command % (node_type, node_attribute, entname, relationship_filter, level))
