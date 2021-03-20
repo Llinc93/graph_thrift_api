@@ -6,7 +6,7 @@ cx-Oracle==7.3.0
 Flask==1.1.1
 idna==2.8
 itsdangerous==1.1.0
-Jinja2==2.11.1
+Jinja2==2.11.3
 MarkupSafe==1.1.1
 neobolt==1.7.16
 neotime==1.7.4
